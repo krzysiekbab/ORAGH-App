@@ -17,7 +17,7 @@ def register(request):
             # user = authenticate(username=username, password=raw_password)
             # login(request, user)
             # return render(request, "registration/success.jinja", {"user": user})
-            return redirect("/home")
+            return redirect("/login")
         
     form = UserCreationForm(request.POST or None)
     return render(request, "register.jinja", {"form": form})

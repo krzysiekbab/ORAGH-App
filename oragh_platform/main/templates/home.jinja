@@ -3,14 +3,7 @@
 {% block title %}ORAGH{% endblock %}
 
 {% block content %}
-<h1>Witaj w ORAGH!</h1>
+<h1>Witaj w ORAGH <strong>{{user.username}}</strong>!</h1>
 <p>To jest strona główna aplikacji ORAGH.</p>
 <p>Możesz tutaj przeglądać zbliające się koncerty i wydarzenia, potwierdzać w nich swój udział, sprawdzać frekwencję na próbach i wiele więcej!</p>
-
-{% if user.is_authenticated %}
-  <p>Jesteś zalogowany jako {{ user.username }}.</p>
-  <a href="/concerts" class="btn btn-primary">Przeglądaj koncerty</a>
-{% else %}
-  <p>Nie jesteś zalogowany. <a href="/login">Zaloguj się</a> lub <a href="/sign-up">zarejestruj się</a>.</p>
-{% endif %}
 {% endblock %}

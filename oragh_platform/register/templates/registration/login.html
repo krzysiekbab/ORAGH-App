@@ -1,0 +1,14 @@
+{% extends "base.jinja" %}
+
+{% block title %}Logowanie{% endblock %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <p>Proszę zalogować się, aby kontynuować.</p>
+    <form method="post" class="form-group">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <p>Nie posiadasz konta? <a href="/register">Zarejestruj się</a>.</p>
+        <button type="submit" class="btn btn-primary">Logowanie</button>
+    </form>
+{% endblock %}

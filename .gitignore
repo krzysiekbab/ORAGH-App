@@ -1,5 +1,6 @@
 venv/
 .DS_Store
 *.pyc
-oragh_platform/db.sqlite3
 .gitignore
+__pycache__/
+oragh_platform/db.sqlite3
