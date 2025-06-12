@@ -1,0 +1,22 @@
+{% extends "base.jinja" %}
+
+{% block content %}
+    <h1 class="mb-4">Edytuj koncert</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="name" class="form-label">Nazwa koncertu</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ concert.name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="date" class="form-label">Data koncertu</label>
+            <input type="date" class="form-control" id="date" name="date" value="{{ concert.date }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Opis koncertu</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required>{{ concert.description }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+    </form>
+{% endblock %}
+

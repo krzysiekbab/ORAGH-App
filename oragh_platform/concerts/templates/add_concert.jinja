@@ -1,0 +1,35 @@
+{% extends "base.jinja" %}
+
+{% block title %}Utwórz koncert{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-between align-items-center mb-4">
+        <h1 class="col-12 col-md-12 col-lg-6 mb-0">Utwórz koncert</h1>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="name" class="form-label">Nazwa koncertu</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="date" class="form-label">Data koncertu</label>
+            <input type="datetime-local" class="form-control" id="date" name="date" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Opis koncertu</label>
+            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Utwórz koncert</button>
+    </form>
+    {% if error %}
+        <div class="alert alert-danger mt-3" role="alert">
+            {{ error }}
+        </div>
+    {% endif %}
+    {% if success %}
+        <div class="alert alert-success mt-3" role="alert">
+            {{ success }}
+        </div>
+    {% endif %}
+{% endblock %}

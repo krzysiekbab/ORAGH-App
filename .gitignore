@@ -1,6 +1,11 @@
-venv/
-.DS_Store
-*.pyc
-.gitignore
-__pycache__/
+# Ignore database and migration cache
 oragh_platform/db.sqlite3
+*.pyc
+__pycache__/
+.DS_Store
+
+# Ignore specific Django directories
+/static/
+
+venv/
+
