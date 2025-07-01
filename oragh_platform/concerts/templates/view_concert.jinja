@@ -6,9 +6,80 @@
     </div>
     <div class="card mb-3 bg-light">
         <div class="card-body">
+            {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
             <h5 class="card-title">{{ concert.name }}</h5>
             <p class="card-text">{{ concert.description }}</p>
             <p class="card-text"><small class="text-muted">Data: {{ concert.date }}</small></p>
+            {% if is_joined %}
+                <div class="alert alert-success mb-2">Jesteś zapisany na ten koncert.</div>
+                <form method="post" action="{% url 'leave_concert' concert.id %}" style="margin-top:10px;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Wypisz się z koncertu</button>
+                </form>
+            {% else %}
+                <div class="alert alert-info mb-2">Nie jesteś jeszcze zapisany na ten koncert.</div>
+                <form method="post" action="{% url 'join_concert' concert.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">
+                        Zapisz się
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container px-0 pt-5">
+        <div class="row">
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Flety</h4>
+                {% with section=sections.Flet %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Oboje</h4>
+                {% with section=sections.Obój %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Klarnety</h4>
+                {% with section=sections.Klarnet %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Saksofony</h4>
+                {% with section=sections.Saksofon %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Waltornie</h4>
+                {% with section=sections.Waltornia %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Eufonia</h4>
+                {% with section=sections.Eufonium %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Trąbki</h4>
+                {% with section=sections.Trąbka %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Puzony</h4>
+                {% with section=sections.Puzon %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Tuby</h4>
+                {% with section=sections.Tuba %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Gitary</h4>
+                {% with section=sections.Gitara %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Perkusja</h4>
+                {% with section=sections.Perkusja %}{% include "section.jinja" %}{% endwith %}
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 mb-5">
+                <h4 class="bg-light border-bottom">Inne</h4>
+                {% with section=sections.Inne %}{% include "section.jinja" %}{% endwith %}
+            </div>
         </div>
     </div>
 {% endblock %}
