@@ -9,7 +9,9 @@ class CustomUserCreationForm(UserCreationForm):
     username = forms.CharField(max_length=150, required=True, label="Nick")
     email = forms.EmailField(required=True, label="Email")
     instrument = forms.ChoiceField(choices=INSTRUMENT_CHOICES, required=True, label="Instrument")
+    birthday = forms.DateField(required=True, label="Data urodzenia", widget=forms.DateInput(attrs={"type": "date"}))
+
 
     class Meta:
         model = User
-        fields = ("first_name", "last_name", "username", "email", "password1", "password2", "instrument")
+        fields = ("first_name", "last_name", "email", "password1", "password2", "birthday", "username", "instrument")
