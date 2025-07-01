@@ -4,7 +4,7 @@
     <div class="row justify-content-between align-items-center mb-4">
         <h1 class="col-6 col-md-6 mb-0">Nadchodzące koncerty</h1>
         <div class="col-6 col-md-6 justify-content-end d-flex">
-            {% if perms.main.add_concert %}
+            {% if perms.concerts.add_concert %}
                 <a href="{% url 'add_concert' %}" class="btn btn-primary">Utwórz koncert</a>
             {% endif %}
         </div>
@@ -22,7 +22,7 @@
                     <a class="card-title h5 text-dark m-0" href="{% url 'concert' concert.id %}">
                         {{ concert.date | date:"d.m.Y" }} {{ concert.name }}
                     </a>
-                    {% if perms.main.delete_concert %}
+                    {% if perms.concerts.delete_concert %}
                         <div class="dropdown">
                             <button class="btn btn-link text-dark p-0" type="button" id="dropdownMenu{{ concert.id }}" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span class="border rounded px-2" style="font-size: 1.5rem; text-decoration: none;">&#8942;</span>

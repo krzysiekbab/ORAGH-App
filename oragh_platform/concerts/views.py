@@ -142,6 +142,7 @@ def join_concert(request, concert_id):
     concert.musicians.add(musician)
     return redirect('concert', concert_id=concert.id)
 
+@login_required
 def leave_concert(request, concert_id):
     try:
         concert = Concert.objects.get(id=concert_id)
