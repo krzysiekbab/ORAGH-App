@@ -9,3 +9,6 @@ __pycache__/
 
 venv/
 
+# Ignore media files
+oragh_platform/media/
+
