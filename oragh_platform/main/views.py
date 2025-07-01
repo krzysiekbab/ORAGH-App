@@ -17,8 +17,12 @@ def profile_view(request):
 
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=profile, user=user)
+        birthday = request.POST.get('birthday', '').strip()
         if form.is_valid():
-            form.save(user=user)
+            profile = form.save(commit=False, user=user)
+            if birthday:
+                profile.birthday = birthday
+            profile.save()
             messages.success(request, "Profil został zaktualizowany.")
             return redirect('/')
     else:

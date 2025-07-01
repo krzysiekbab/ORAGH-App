@@ -7,16 +7,11 @@ class UserProfileForm(forms.ModelForm):
     last_name = forms.CharField(max_length=30, required=True, label="Nazwisko")
     email = forms.EmailField(required=True, label="Email")
     instrument = forms.ChoiceField(choices=MusicianProfile._meta.get_field('instrument').choices, required=True, label="Instrument")
-    birthday = forms.DateField(
-        required=True,
-        widget=forms.DateInput(attrs={'type': 'date'}),
-        label="Data urodzenia"
-    )
     photo = forms.ImageField(required=False, label="Zdjęcie profilowe")
 
     class Meta:
         model = MusicianProfile
-        fields = ['first_name', 'last_name', 'email', 'instrument', 'birthday', 'photo']
+        fields = ['first_name', 'last_name', 'email', 'instrument', 'photo']
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -25,9 +20,6 @@ class UserProfileForm(forms.ModelForm):
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
             self.fields['email'].initial = user.email
-        # Only set initial if not bound (GET, not POST)
-        if not self.is_bound and self.instance and self.instance.birthday:
-            self.fields['birthday'].initial = self.instance.birthday.strftime('%Y-%m-%d')
 
     def save(self, commit=True, user=None):
         profile = super().save(commit=False)

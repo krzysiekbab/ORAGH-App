@@ -17,6 +17,10 @@
                     <img src="{{ profile.photo.url }}" alt="Zdjęcie profilowe" class="img-thumbnail" width="150">
                 </div>
             {% endif %}
+            <div class="mb-3">
+                <label for="birthday" class="form-label">Data urodzenia*</label>
+                <input type="date" class="form-control" id="birthday" name="birthday" value="{{ profile.birthday|date:'Y-m-d' }}" required>
+            </div>
             <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
         </form>
     </div>
