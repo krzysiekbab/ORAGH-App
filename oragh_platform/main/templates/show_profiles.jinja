@@ -1,0 +1,46 @@
+{% extends "base.jinja" %}
+
+{% block title %}Aktywne profile{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-between align-items-center mb-4">
+        <h1 class="col-12 col-md-12 col-lg-6 mb-0">Użytkownicy</h1>
+    </div>
+    <div class="mb-3">
+        <span>Sortuj według:</span>
+        <a href="?sort=surname" class="btn btn-sm {% if sort == 'surname' %}btn-primary{% else %}btn-outline-primary{% endif %} ms-1">Nazwisko</a>
+        <a href="?sort=instrument" class="btn btn-sm {% if sort == 'instrument' %}btn-primary{% else %}btn-outline-primary{% endif %} ms-1">Instrument</a>
+        <a href="?sort=join" class="btn btn-sm {% if sort == 'join' %}btn-primary{% else %}btn-outline-primary{% endif %} ms-1">Data dołączenia</a>
+        {% if sort == 'instrument' %}
+            <form method="get" class="d-inline ms-3">
+                <input type="hidden" name="sort" value="instrument">
+                <select name="instrument" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+                    <option value="">Wszystkie instrumenty</option>
+                    {% for value, label in instrument_choices %}
+                        <option value="{{ value }}" {% if instrument_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        {% endif %}
+    </div>
+    <div class="row">
+    <div class="col-12">
+        {% for profile in profiles %}
+            <div class="card d-flex flex-row align-items-center p-2 mb-3">
+                {% if profile.photo %}
+                <img src="{{ profile.photo.url }}" class="rounded-circle me-3" alt="Zdjęcie profilowe" style="width: 64px; height: 64px; object-fit: cover;">
+                {% endif %}
+                <div class="flex-grow-1 d-flex align-items-center justify-content-between">
+                    <div>
+                        <strong>{{ profile.user.first_name }} {{ profile.user.last_name }}</strong>
+                        <span class="text-muted" style="font-size: 0.9em;">({{ profile.user.username }})</span>
+                    </div>
+                    <a href="{% url 'profile_detail' profile.id %}" class="btn btn-sm btn-outline-primary ms-3">Zobacz profil</a>
+                </div>
+            </div>
+        {% empty %}
+            <p>Brak aktywnych użytkowników.</p>
+        {% endfor %}
+    </div>
+    </div>
+{% endblock %}

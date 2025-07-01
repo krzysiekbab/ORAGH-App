@@ -1,0 +1,23 @@
+{% extends "base.jinja" %}
+
+{% block title %}Profil: {{ profile.user.get_full_name|default:profile.user.username }}{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+  <div class="card-body d-flex align-items-center">
+    {% if profile.photo %}
+      <img src="{{ profile.photo.url }}" class="rounded-circle me-4" alt="Zdjęcie profilowe" style="width: 96px; height: 96px; object-fit: cover;">
+    {% endif %}
+    <div>
+      <h3>{{ profile.user.first_name }} {{ profile.user.last_name }}</h3>
+      <div class="text-muted mb-2">({{ profile.user.username }})</div>
+      <ul class="list-unstyled mb-0">
+        <li><strong>Instrument:</strong> {{ profile.instrument }}</li>
+        <li><strong>Data urodzenia:</strong> {{ profile.birthday }}</li>
+        <li><strong>Data dołączenia:</strong> {{ profile.user.date_joined|date:"Y-m-d" }}</li>
+        <!-- Add more fields as needed -->
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
