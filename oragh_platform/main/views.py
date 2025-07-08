@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import UserProfileForm
 from django.contrib import messages
 from .models import MusicianProfile, INSTRUMENT_CHOICES
+from collections import defaultdict
 
 @login_required
 def home(request):
@@ -62,3 +63,29 @@ def show_profiles(request):
 def show_profile(request, profile_id):
     profile = MusicianProfile.objects.get(id=profile_id)
     return render(request, 'show_profile.jinja', {'profile': profile})
+
+def show_band(request):
+    # Use instrument display names from INSTRUMENT_CHOICES for section names
+    section_names = [choice[1] for choice in INSTRUMENT_CHOICES]
+    sections = {name: [] for name in section_names}
+    # Create a mapping for quick lookup (case-insensitive)
+    section_map = {name.lower(): name for name in section_names}
+    # Group musicians by instrument
+    for profile in MusicianProfile.objects.select_related('user').all():
+        instrument = (profile.instrument or '').strip().lower()
+        section = section_map.get(instrument, "Inne")
+        sections[section].append(profile)
+
+    total_members = sum(len(profiles) for profiles in sections.values())
+
+    print("Sections after grouping:")
+    for section, profiles in sections.items():
+        print(f"{section}: {len(profiles)} profiles")
+    return render(
+        request,
+        "show_band.jinja",
+        {
+            "sections": sections,
+            "total_members": total_members,
+        }
+    )
