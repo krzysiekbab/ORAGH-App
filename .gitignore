@@ -12,3 +12,8 @@ venv/
 # Ignore media files
 oragh_platform/media/
 
+# Ignore data files
+oragh_platform/data/
+
+# Ignore environment variables
+.env
