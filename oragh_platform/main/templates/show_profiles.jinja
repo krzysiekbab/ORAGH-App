@@ -3,25 +3,43 @@
 {% block title %}Aktywne profile{% endblock %}
 
 {% block content %}
+    <style>
+      @media (max-width: 576px) {
+        .sort-row {
+          flex-direction: column !important;
+          align-items: stretch !important;
+        }
+        .sort-select,
+        .instrument-filter-select {
+          width: 100% !important;
+          margin-top: 0.5rem;
+        }
+        .instrument-filter-form {
+          margin-left: 0 !important;
+          width: 100%;
+        }
+      }
+    </style>
     <div class="row justify-content-between align-items-center mb-4">
         <h1 class="col-12 col-md-12 col-lg-6 mb-0">Użytkownicy</h1>
     </div>
-    <div class="mb-3">
-        <span>Sortuj według:</span>
-        <a href="?sort=surname" class="btn btn-sm {% if sort == 'surname' %}btn-primary{% else %}btn-outline-primary{% endif %} ms-1">Nazwisko</a>
-        <a href="?sort=instrument" class="btn btn-sm {% if sort == 'instrument' %}btn-primary{% else %}btn-outline-primary{% endif %} ms-1">Instrument</a>
-        <a href="?sort=join" class="btn btn-sm {% if sort == 'join' %}btn-primary{% else %}btn-outline-primary{% endif %} ms-1">Data dołączenia</a>
-        {% if sort == 'instrument' %}
-            <form method="get" class="d-inline ms-3">
-                <input type="hidden" name="sort" value="instrument">
-                <select name="instrument" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+    <div class="mb-3 d-flex sort-row align-items-center">
+        <form method="get" class="d-inline">
+            <label for="sort-select" class="me-2">Sortuj według:</label>
+            <select id="sort-select" name="sort" class="form-select form-select-sm d-inline w-auto sort-select" onchange="this.form.submit()">
+                <option value="surname" {% if sort == 'surname' %}selected{% endif %}>Nazwisko</option>
+                <option value="instrument" {% if sort == 'instrument' %}selected{% endif %}>Instrument</option>
+                <option value="join" {% if sort == 'join' %}selected{% endif %}>Data dołączenia</option>
+            </select>
+            {% if sort == 'instrument' %}
+                <select name="instrument" class="form-select form-select-sm d-inline w-auto instrument-filter-select" onchange="this.form.submit()">
                     <option value="">Wszystkie instrumenty</option>
                     {% for value, label in instrument_choices %}
                         <option value="{{ value }}" {% if instrument_filter == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
-            </form>
-        {% endif %}
+            {% endif %}
+        </form>
     </div>
     <div class="row">
     <div class="col-12">
