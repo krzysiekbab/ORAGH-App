@@ -1,6 +1,7 @@
 {% extends "base.jinja" %}
 
 {% block title %}Aktywne profile{% endblock %}
+{% block page_title %}Użytkownicy{% endblock %}
 
 {% block content %}
     <style>
@@ -20,9 +21,6 @@
         }
       }
     </style>
-    <div class="row justify-content-between align-items-center mb-4">
-        <h1 class="col-12 col-md-12 col-lg-6 mb-0">Użytkownicy</h1>
-    </div>
     <div class="mb-3 d-flex sort-row align-items-center">
         <form method="get" class="d-inline">
             <label for="sort-select" class="me-2">Sortuj według:</label>
@@ -50,23 +48,23 @@
         </form>
     </div>
     <div class="row">
-    <div class="col-12">
-        {% for profile in profiles %}
-            <div class="card d-flex flex-row align-items-center p-2 mb-3">
-                {% if profile.photo %}
-                <img src="{{ profile.photo.url }}" class="rounded-circle me-3" alt="Zdjęcie profilowe" style="width: 64px; height: 64px; object-fit: cover;">
-                {% endif %}
-                <div class="flex-grow-1 d-flex align-items-center justify-content-between">
-                    <div>
-                        <strong>{{ profile.user.first_name }} {{ profile.user.last_name }}</strong>
-                        <span class="text-muted" style="font-size: 0.9em;">({{ profile.user.username }})</span>
+        <div class="col-12">
+            {% for profile in profiles %}
+                <div class="card d-flex flex-row align-items-center p-2 mb-3">
+                    {% if profile.photo %}
+                    <img src="{{ profile.photo.url }}" class="rounded-circle me-3" alt="Zdjęcie profilowe" style="width: 64px; height: 64px; object-fit: cover;">
+                    {% endif %}
+                    <div class="flex-grow-1 d-flex align-items-center justify-content-between">
+                        <div>
+                            <strong>{{ profile.user.first_name }} {{ profile.user.last_name }}</strong>
+                            <span class="text-muted" style="font-size: 0.9em;">({{ profile.user.username }})</span>
+                        </div>
+                        <a href="{% url 'profile_detail' profile.id %}" class="btn btn-sm btn-outline-primary ms-3">Zobacz profil</a>
                     </div>
-                    <a href="{% url 'profile_detail' profile.id %}" class="btn btn-sm btn-outline-primary ms-3">Zobacz profil</a>
                 </div>
-            </div>
-        {% empty %}
-            <p>Brak aktywnych użytkowników.</p>
-        {% endfor %}
-    </div>
+            {% empty %}
+                <p>Brak aktywnych użytkowników.</p>
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}

@@ -1,9 +1,15 @@
 {% extends "base.jinja" %}
 
 {% block title %}ORAGH{% endblock %}
+{% block page_title %}Witaj w ORAGH <strong>{{user.username}}</strong>!{% endblock %}
 
 {% block content %}
-<h1>Witaj w ORAGH <strong>{{user.username}}</strong>!</h1>
-<p>To jest strona główna aplikacji ORAGH.</p>
-<p>Możesz tutaj przeglądać zbliające się koncerty i wydarzenia, potwierdzać w nich swój udział, sprawdzać frekwencję na próbach i wiele więcej!</p>
+    <p>To jest strona główna aplikacji ORAGH.</p>
+    <p>Możesz tutaj przeglądać zbliające się koncerty i wydarzenia, potwierdzać w nich swój udział, sprawdzać frekwencję na próbach i wiele więcej!</p>
+    <div class="text-center mt-4">
+        <img src="/media/general/B584B6CC-A87F-401B-9744-462E14A3E398-e1739043183848.jpeg"
+            alt="Zdjęcie zespołu"
+            class="img-fluid rounded shadow"
+            style="max-width: 1000px;">
+    </div>
 {% endblock %}

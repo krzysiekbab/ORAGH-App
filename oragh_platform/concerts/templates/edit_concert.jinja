@@ -1,7 +1,8 @@
 {% extends "base.jinja" %}
 
+{% block page_title %}Edytuj koncert{% endblock %}
+
 {% block content %}
-    <h1 class="mb-4">Edytuj koncert</h1>
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">

@@ -1,12 +1,17 @@
 {% extends "base.jinja" %}
 
-{% block content %}
+{% block page_title %}Aktualny Skład Orkiestry{% endblock %}
+
+{% block page_header %}
     <div class="row justify-content-between align-items-center mb-4">
         <h1 class="col-12 col-md-8 col-lg-6 mb-0">Aktualny Skład Orkiestry</h1>
         <h4 class="col-12 col-md-4 col-lg-6 text-muted my-2 my-lg-0 text-start text-md-end">
             Liczba członków: {{ total_members }}
         </h4>
     </div>
+{% endblock %}
+
+{% block content %}
     <div class="container px-0 pt-3">
         <div class="row">
             <div class="col-6 col-md-3 col-lg-2 mb-5">

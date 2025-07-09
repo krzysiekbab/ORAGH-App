@@ -1,10 +1,10 @@
 {% extends "base.jinja" %}
 
 {% block title %}Logowanie{% endblock %}
+{% block page_title %}Logowanie{% endblock %}
 {% load crispy_forms_tags %}
 
 {% block content %}
-    <p>Proszę zalogować się, aby kontynuować.</p>
     <form method="post" class="form-group">
         {% csrf_token %}
         {{ form|crispy }}

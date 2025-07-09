@@ -1,6 +1,7 @@
 {% extends "base.jinja" %}
 
 {% block title %}Profil: {{ profile.user.get_full_name|default:profile.user.username }}{% endblock %}
+{% block page_title %}Profil użytkownika{% endblock %}
 
 {% block content %}
 <div class="card mb-4">
@@ -15,7 +16,6 @@
         <li><strong>Instrument:</strong> {{ profile.instrument }}</li>
         <li><strong>Data urodzenia:</strong> {{ profile.birthday }}</li>
         <li><strong>Data dołączenia:</strong> {{ profile.user.date_joined|date:"Y-m-d" }}</li>
-        <!-- Add more fields as needed -->
       </ul>
     </div>
   </div>

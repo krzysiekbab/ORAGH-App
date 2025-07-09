@@ -1,11 +1,9 @@
 {% extends "base.jinja" %}
 
 {% block title %}Utwórz koncert{% endblock %}
+{% block page_title %}Utwórz koncert{% endblock %}
 
 {% block content %}
-    <div class="row justify-content-between align-items-center mb-4">
-        <h1 class="col-12 col-md-12 col-lg-6 mb-0">Utwórz koncert</h1>
-    </div>
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">
