@@ -13,7 +13,6 @@ def remove_polish_letters(text):
 def generate_username(first_name, last_name):
     first = remove_polish_letters(first_name.strip().lower())
     last = remove_polish_letters(last_name.strip().lower())
-    print(f"Generated username: {first}.{last}")
     return f"{first}.{last}"
 
 def generate_email(first_name, last_name):

@@ -38,7 +38,12 @@ def edit_profile(request):
 def show_profiles(request):
     sort = request.GET.get('sort', 'surname')
     instrument_filter = request.GET.get('instrument', None)
+    active_filter = request.GET.get('active', '')
     profiles = MusicianProfile.objects.select_related('user')
+    if active_filter == 'active':
+        profiles = profiles.filter(active=True)
+    elif active_filter == 'inactive':
+        profiles = profiles.filter(active=False)
     if sort == 'surname':
         profiles = profiles.order_by('user__last_name', 'user__first_name')
     elif sort == 'instrument':
@@ -47,6 +52,8 @@ def show_profiles(request):
             profiles = profiles.filter(instrument=instrument_filter)
     elif sort == 'join':
         profiles = profiles.order_by('user__date_joined')
+    elif sort == 'active':
+        profiles = profiles.order_by('-active', 'user__last_name', 'user__first_name')
     else:
         profiles = profiles.all()
     return render(
@@ -57,6 +64,7 @@ def show_profiles(request):
             'sort': sort,
             'instrument_choices': INSTRUMENT_CHOICES,
             'instrument_filter': instrument_filter,
+            'active_filter': active_filter,
         }
     )
 
@@ -71,16 +79,13 @@ def show_band(request):
     # Create a mapping for quick lookup (case-insensitive)
     section_map = {name.lower(): name for name in section_names}
     # Group musicians by instrument
-    for profile in MusicianProfile.objects.select_related('user').all():
+    for profile in MusicianProfile.objects.select_related('user').filter(active=True):
         instrument = (profile.instrument or '').strip().lower()
         section = section_map.get(instrument, "Inne")
         sections[section].append(profile)
 
     total_members = sum(len(profiles) for profiles in sections.values())
 
-    print("Sections after grouping:")
-    for section, profiles in sections.items():
-        print(f"{section}: {len(profiles)} profiles")
     return render(
         request,
         "show_band.jinja",

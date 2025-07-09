@@ -30,7 +30,15 @@
                 <option value="surname" {% if sort == 'surname' %}selected{% endif %}>Nazwisko</option>
                 <option value="instrument" {% if sort == 'instrument' %}selected{% endif %}>Instrument</option>
                 <option value="join" {% if sort == 'join' %}selected{% endif %}>Data dołączenia</option>
+                <option value="active" {% if sort == 'active' %}selected{% endif %}>Status</option>
             </select>
+            {% if sort == 'active' %}
+                <select name="active" class="form-select form-select-sm d-inline w-auto ms-2" onchange="this.form.submit()">
+                    <option value="" {% if not active_filter %}selected{% endif %}>Wszyscy</option>
+                    <option value="active" {% if active_filter == 'active' %}selected{% endif %}>Aktywni</option>
+                    <option value="inactive" {% if active_filter == 'inactive' %}selected{% endif %}>Nieaktywni</option>
+                </select>
+            {% endif %}
             {% if sort == 'instrument' %}
                 <select name="instrument" class="form-select form-select-sm d-inline w-auto instrument-filter-select" onchange="this.form.submit()">
                     <option value="">Wszystkie instrumenty</option>

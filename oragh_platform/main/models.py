@@ -21,14 +21,15 @@ class MusicianProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     instrument = models.CharField(max_length=20, choices=INSTRUMENT_CHOICES)
     birthday = models.DateField(null=True, blank=True)
-    photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)  # new field
+    photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.instrument}"
     
 @admin.register(MusicianProfile)
 class MusicianProfileAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name', 'instrument')
+    list_display = ('first_name', 'last_name', 'instrument', 'active', 'birthday')
 
     def first_name(self, obj):
         return obj.user.first_name
