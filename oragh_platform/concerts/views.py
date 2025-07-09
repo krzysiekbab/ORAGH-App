@@ -4,6 +4,7 @@ from .models import Concert
 from main.models import MusicianProfile
 from django.shortcuts import redirect
 from main.models import INSTRUMENT_CHOICES
+from urllib.parse import urlencode
 
 @login_required
 @permission_required('concerts.view_concert', raise_exception=True)
@@ -72,7 +73,9 @@ def add_concert(request):
 
         concert = Concert(name=name, date=date, description=description, created_by=request.user)
         concert.save()
-        return render(request, "success.jinja", {"concert": concert})
+        from urllib.parse import urlencode
+        params = urlencode({'success': f'Koncert "{concert.name}" został pomyślnie utworzony.'})
+        return redirect(f'/concerts/?{params}')
 
     return render(request, "add_concert.jinja")
 
@@ -99,7 +102,9 @@ def change_concert(request, concert_id):
         concert.date = date
         concert.description = description
         concert.save()
-        return render(request, "success.jinja", {"concert": concert})
+        from urllib.parse import urlencode
+        params = urlencode({'success': f'Koncert "{concert.name}" został pomyślnie zaktualizowany.'})
+        return redirect(f'/concerts/?{params}')
 
     return render(request, "edit_concert.jinja", {"concert": concert})
 
@@ -112,13 +117,15 @@ def delete_concert(request, concert_id):
     try:
         concert = Concert.objects.get(id=concert_id)
     except Concert.DoesNotExist:
-        return HttpResponse("Concert not found.", status=404)
+        params = urlencode({'error': 'Nie znaleziono koncertu do usunięcia.'})
+        return redirect(f'/concerts/?{params}')
 
     if request.method == "POST":
         concert.delete()
-        return HttpResponse("Concert deleted successfully.", status=200)
+        params = urlencode({'success': 'Koncert został pomyślnie usunięty.'})
+        return redirect(f'/concerts/?{params}')
 
-    return render(request, "delete_concert.jinja", {"concert": concert})
+    return HttpResponse(status=405)  # Method Not Allowed
 
 @login_required
 def join_concert(request, concert_id):

@@ -1,8 +1,0 @@
-{% extends "base.jinja" %}
-
-{% block content %}
-    <div class="alert alert-success" role="alert">
-        Koncert "{{ concert.name }}" został pomyślnie utworzony.
-    </div>
-    <a href="{% url 'concerts' %}" class="btn btn-primary">Powrót do listy koncertów</a>
-{% endblock %}

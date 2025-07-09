@@ -13,6 +13,18 @@
 {% endblock %}
 
 {% block content %}
+    {% if request.GET.success %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ request.GET.success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+    {% if request.GET.error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ request.GET.error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
     {% if concerts|length == 0 %}
         <div class="alert alert-info" role="alert">
             Brak koncertów do wyświetlenia.
@@ -33,9 +45,9 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu{{ concert.id }}">
                                 <li>
-                                    <a class="dropdown-item text-danger" href="{% url 'delete_concert' concert.id %}">
+                                    <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteConcertModal{{ concert.id }}">
                                         Usuń koncert
-                                    </a>
+                                    </button>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="{% url 'edit_concert' concert.id %}">
@@ -43,6 +55,27 @@
                                     </a>
                                 </li>
                             </ul>
+                        </div>
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="deleteConcertModal{{ concert.id }}" tabindex="-1" aria-labelledby="deleteConcertModalLabel{{ concert.id }}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="deleteConcertModalLabel{{ concert.id }}">Potwierdź usunięcie</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body">
+                                Czy na pewno chcesz usunąć koncert "{{ concert.name }}"?
+                              </div>
+                              <div class="modal-footer">
+                                <form method="post" action="{% url 'delete_concert' concert.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Usuń</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                     {% endif %}
                 </div>
