@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import Group
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, CustomAuthenticationForm
 from main.models import MusicianProfile
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.models import User
@@ -40,7 +40,10 @@ def register(request):
 def login_view(request, *args, **kwargs):
     if request.user.is_authenticated:
         return redirect("/")
-    return auth_views.LoginView.as_view(template_name="registration/login.html")(request, *args, **kwargs)
+    return auth_views.LoginView.as_view(
+        template_name="registration/login.html",
+        authentication_form=CustomAuthenticationForm
+    )(request, *args, **kwargs)
 
 def logout_view(request, *args, **kwargs):
     logout(request)
