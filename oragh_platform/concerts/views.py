@@ -1,9 +1,8 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
+from django.urls import reverse
 from .models import Concert
-from main.models import MusicianProfile
-from django.shortcuts import redirect
-from main.models import INSTRUMENT_CHOICES
+from main.models import MusicianProfile, INSTRUMENT_CHOICES
 from urllib.parse import urlencode
 
 @login_required
@@ -12,8 +11,8 @@ def view_concerts(request):
     """
     Render the concerts page.
     """
-
-    concerts = Concert.objects.all()
+    # Order concerts by date (upcoming first)
+    concerts = Concert.objects.all().order_by('date')
     return render(request, "view_concerts.jinja", {"concerts": concerts})
 
 @login_required
@@ -37,18 +36,26 @@ def concert(request, concert_id):
 
     # Map instrument values to display names
     instrument_map = dict(INSTRUMENT_CHOICES)
+    
+    # Define all sections in logical order (woodwinds, brass, other)
     section_names = [
-        "Flet", "Obój", "Klarnet", "Saksofon", "Waltornia", "Eufonium", "Trąbka",
-        "Puzon", "Tuba", "Gitara", "Perkusja", "Inne"
+        "Flet", "Obój", "Klarnet", "Fagot", "Saksofon",  # Woodwinds
+        "Trąbka", "Waltornia", "Puzon", "Eufonium", "Tuba",  # Brass
+        "Gitara", "Perkusja"  # Other
     ]
+    
+    # Initialize all sections (empty lists for all sections)
     sections = {name: [] for name in section_names}
 
     for musician in concert.musicians.all():
-        # Get display name for instrument, default to "Inne"
+        # Get display name for instrument, default to "Perkusja" if not found
         instrument_value = getattr(musician, "instrument", None)
-        instrument_display = instrument_map.get(instrument_value, "Inne")
+        instrument_display = instrument_map.get(instrument_value, "Perkusja")
+        
+        # If instrument is not in our predefined sections, add to "Perkusja"
         if instrument_display not in sections:
-            instrument_display = "Inne"
+            instrument_display = "Perkusja"
+        
         sections[instrument_display].append(musician)
 
     return render(request, "view_concert.jinja", {
@@ -73,9 +80,8 @@ def add_concert(request):
 
         concert = Concert(name=name, date=date, description=description, created_by=request.user)
         concert.save()
-        from urllib.parse import urlencode
         params = urlencode({'success': f'Koncert "{concert.name}" został pomyślnie utworzony.'})
-        return redirect(f'/concerts/?{params}')
+        return redirect(f'{reverse("concerts")}?{params}')
 
     return render(request, "add_concert.jinja")
 
@@ -102,9 +108,8 @@ def change_concert(request, concert_id):
         concert.date = date
         concert.description = description
         concert.save()
-        from urllib.parse import urlencode
         params = urlencode({'success': f'Koncert "{concert.name}" został pomyślnie zaktualizowany.'})
-        return redirect(f'/concerts/?{params}')
+        return redirect(f'{reverse("concerts")}?{params}')
 
     return render(request, "edit_concert.jinja", {"concert": concert})
 
@@ -118,12 +123,12 @@ def delete_concert(request, concert_id):
         concert = Concert.objects.get(id=concert_id)
     except Concert.DoesNotExist:
         params = urlencode({'error': 'Nie znaleziono koncertu do usunięcia.'})
-        return redirect(f'/concerts/?{params}')
+        return redirect(f'{reverse("concerts")}?{params}')
 
     if request.method == "POST":
         concert.delete()
         params = urlencode({'success': 'Koncert został pomyślnie usunięty.'})
-        return redirect(f'/concerts/?{params}')
+        return redirect(f'{reverse("concerts")}?{params}')
 
     return HttpResponse(status=405)  # Method Not Allowed
 
