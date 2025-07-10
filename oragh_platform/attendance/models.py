@@ -1,6 +1,48 @@
 from django.db import models
 from django.conf import settings
 
+class Season(models.Model):
+    name = models.CharField(max_length=20, unique=True, help_text="e.g., 2024/2025")
+    start_date = models.DateField(help_text="Start date of the season")
+    end_date = models.DateField(help_text="End date of the season")
+    is_active = models.BooleanField(default=True, help_text="Whether this season is currently active")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_date']  # Most recent season first
+        permissions = [
+            ('manage_seasons', 'Can manage seasons'),
+        ]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        """Ensure only one season can be active at a time"""
+        if self.is_active:
+            # Deactivate all other seasons before saving this one as active
+            Season.objects.exclude(pk=self.pk).update(is_active=False)
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_current_season(cls):
+        """Get the current active season or the most recent one"""
+        from django.utils import timezone
+        today = timezone.now().date()
+        
+        # Try to find a season that contains today's date
+        current_season = cls.objects.filter(
+            start_date__lte=today,
+            end_date__gte=today,
+            is_active=True
+        ).first()
+        
+        if current_season:
+            return current_season
+        
+        # If no season contains today, return the most recent active season
+        return cls.objects.filter(is_active=True).first()
+
 class Event(models.Model):
     EVENT_TYPES = [
         ('concert', 'Koncert'),
@@ -10,9 +52,10 @@ class Event(models.Model):
     name = models.CharField(max_length=255)
     date = models.DateField()
     type = models.CharField(max_length=20, choices=EVENT_TYPES)
+    season = models.ForeignKey(Season, on_delete=models.CASCADE, related_name='events', null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name} ({self.get_type_display()}) - {self.date}"
+        return f"{self.name} ({self.get_type_display()}) - {self.date} [{self.season}]"
 
 class Attendance(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
