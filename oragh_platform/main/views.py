@@ -26,7 +26,7 @@ def edit_profile(request):
                 profile.birthday = birthday
             profile.save()
             messages.success(request, "Profil został zaktualizowany.")
-            return redirect('/')
+            return redirect('profile')
     else:
         form = UserProfileForm(instance=profile, user=user)
 
@@ -107,3 +107,15 @@ def show_band(request):
             "total_members": total_members,
         }
     )
+
+@login_required
+def profile_overview(request):
+    """
+    Display the profile overview/settings page with an edit button.
+    """
+    user = request.user
+    profile = user.musicianprofile
+    return render(request, 'profile_overview.jinja', {
+        'profile': profile,
+        'user': user,
+    })

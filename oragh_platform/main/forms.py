@@ -1,13 +1,50 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import MusicianProfile
+from .models import MusicianProfile, INSTRUMENT_CHOICES
 
 class UserProfileForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=30, required=True, label="Imię")
-    last_name = forms.CharField(max_length=30, required=True, label="Nazwisko")
-    email = forms.EmailField(required=True, label="Email")
-    instrument = forms.ChoiceField(choices=MusicianProfile._meta.get_field('instrument').choices, required=True, label="Instrument")
-    photo = forms.ImageField(required=False, label="Zdjęcie profilowe")
+    first_name = forms.CharField(
+        max_length=30, 
+        required=True, 
+        label="Imię",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Wprowadź swoje imię'
+        })
+    )
+    last_name = forms.CharField(
+        max_length=30, 
+        required=True, 
+        label="Nazwisko",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Wprowadź swoje nazwisko'
+        })
+    )
+    email = forms.EmailField(
+        required=True, 
+        label="Email",
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'twoj@email.com'
+        })
+    )
+    instrument = forms.ChoiceField(
+        choices=INSTRUMENT_CHOICES, 
+        required=True, 
+        label="Instrument",
+        widget=forms.Select(attrs={
+            'class': 'form-select'
+        })
+    )
+    photo = forms.ImageField(
+        required=False, 
+        label="Zdjęcie profilowe",
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*'
+        })
+    )
 
     class Meta:
         model = MusicianProfile
