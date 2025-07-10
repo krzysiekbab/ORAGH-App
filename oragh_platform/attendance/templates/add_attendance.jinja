@@ -1,0 +1,224 @@
+{% extends "base.jinja" %}
+{% block title %}Dodaj frekwencję{% endblock %}
+{% block page_title %}Dodaj frekwencję{% endblock %}
+{% block content %}
+<!-- Event Type Selection -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0">Wybierz typ wydarzenia</h5>
+  </div>
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-center">
+      <div class="col-auto">
+        <label for="event_type" class="col-form-label">Typ wydarzenia:</label>
+      </div>
+      <div class="col-auto">
+        <select name="event_type" id="event_type" class="form-select" onchange="this.form.submit()">
+          <option value="concert" {% if event_type == 'concert' %}selected{% endif %}>🎵 Koncert</option>
+          <option value="rehearsal" {% if event_type == 'rehearsal' %}selected{% endif %}>🎼 Próba</option>
+          <option value="soundcheck" {% if event_type == 'soundcheck' %}selected{% endif %}>🔊 Soundcheck</option>
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Upcoming Concerts Section -->
+{% if event_type == 'concert' %}
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0">Nadchodzące koncerty</h5>
+  </div>
+  <div class="card-body">
+    {% if upcoming_concerts %}
+      <div class="row">
+        {% for concert in upcoming_concerts %}
+          <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card border-primary h-100">
+              <div class="card-body">
+                <h6 class="card-title">{{ concert.name }}</h6>
+                <p class="card-text">
+                  <small class="text-muted">{{ concert.date|date:"d.m.Y" }}</small>
+                </p>
+                {% if concert.description %}
+                  <p class="card-text">{{ concert.description|truncatewords:15 }}</p>
+                {% endif %}
+                <a href="{% url 'add_attendance' %}?event_type=concert&concert_id={{ concert.id }}" 
+                   class="btn btn-sm btn-outline-primary">Wybierz ten koncert</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">Brak nadchodzących koncertów.</p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Main Form -->
+<form method="post" class="mb-4">
+  {% csrf_token %}
+  {% if error_message %}
+    <div class="alert alert-danger">{{ error_message }}</div>
+  {% endif %}
+  
+  <!-- Event Details Section -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Szczegóły wydarzenia</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="event_name" class="form-label">Nazwa wydarzenia</label>
+          <input type="text" class="form-control" id="event_name" name="event_name" 
+                 placeholder="Wprowadź nazwę wydarzenia" required
+                 value="{% if selected_concert %}{{ selected_concert.name }}{% elif event_type == 'rehearsal' %}Próba{% elif event_type == 'soundcheck' %}Soundcheck{% endif %}">
+        </div>
+        <div class="col-md-6">
+          <label for="event_date" class="form-label">Data</label>
+          <input type="date" class="form-control" id="event_date" name="event_date" required
+                 value="{% if selected_concert %}{{ selected_concert.date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}">
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Attendance Section -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Frekwencja</h5>
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="select_all" onchange="selectAll()">
+        <label class="form-check-label" for="select_all">
+          Zaznacz wszystkich
+        </label>
+      </div>
+    </div>
+    <div class="card-body">
+      {% for section in sectioned_musicians %}
+        {% if section.musicians %}
+          <div class="mb-4">
+            <h6 class="section-header bg-light p-2 rounded mb-3">{{ section.section_name }}</h6>
+            <div class="row">
+              {% for musician in section.musicians %}
+                <div class="col-12 col-md-6 col-lg-4 mb-2">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input musician-checkbox" 
+                           id="user_{{ musician.user.id }}" 
+                           name="user_{{ musician.user.id }}">
+                    <label class="form-check-label" for="user_{{ musician.user.id }}">
+                      {{ musician.user.first_name }} {{ musician.user.last_name }}
+                    </label>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      {% empty %}
+        <div class="text-center text-muted">Brak użytkowników.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="d-flex justify-content-between mt-4">
+    <a href="{% url 'attendance' %}?event_type={{ event_type }}" class="btn btn-secondary">Anuluj</a>
+    <button type="submit" class="btn btn-primary">Zapisz frekwencję</button>
+  </div>
+</form>
+
+<script>
+function selectAll() {
+    const selectAllCheckbox = document.getElementById('select_all');
+    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
+    
+    musicianCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+    
+    updateSelectAllState();
+}
+
+function updateSelectAllState() {
+    const selectAllCheckbox = document.getElementById('select_all');
+    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
+    const checkedCount = document.querySelectorAll('.musician-checkbox:checked').length;
+    const totalCount = musicianCheckboxes.length;
+    
+    if (checkedCount === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedCount === totalCount) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const eventTypeSelect = document.getElementById('event_type');
+    const eventNameInput = document.getElementById('event_name');
+    const eventDateInput = document.getElementById('event_date');
+    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
+    
+    // Make date input fully clickable
+    eventDateInput.addEventListener('click', function() {
+        this.showPicker();
+    });
+    
+    // Update event name based on event type selection
+    eventTypeSelect.addEventListener('change', function() {
+        const selectedConcert = {{ selected_concert|yesno:"true,false" }};
+        if (!selectedConcert) {  // Only update if not coming from a selected concert
+            if (this.value === 'rehearsal') {
+                eventNameInput.value = 'Próba';
+            } else if (this.value === 'soundcheck') {
+                eventNameInput.value = 'Soundcheck';
+            } else {
+                eventNameInput.value = '';
+            }
+        }
+    });
+    
+    // Add event listeners to individual checkboxes
+    musicianCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectAllState);
+    });
+    
+    // Set initial state of select all checkbox
+    updateSelectAllState();
+});
+</script>
+
+<style>
+.section-header {
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+.card-header h5 {
+    color: #495057;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .d-flex.justify-content-between .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

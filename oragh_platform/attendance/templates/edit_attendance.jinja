@@ -1,0 +1,160 @@
+{% extends "base.jinja" %}
+{% block title %}Edytuj frekwencję{% endblock %}
+{% block page_title %}Edytuj frekwencję{% endblock %}
+{% block content %}
+<form method="post" class="mb-4">
+    {% csrf_token %}
+    {% if error_message %}
+        <div class="alert alert-danger">{{ error_message }}</div>
+    {% endif %}
+    
+    <!-- Event Details Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Szczegóły wydarzenia</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="event_name" class="form-label">Nazwa wydarzenia</label>
+                    <input type="text" class="form-control" id="event_name" name="event_name" 
+                           value="{{ event.name }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="event_date" class="form-label">Data</label>
+                    <input type="date" class="form-control" id="event_date" name="event_date" 
+                           value="{{ event.date|date:'Y-m-d' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Typ wydarzenia</label>
+                    <div class="form-control-plaintext">
+                        {% if event.type == 'concert' %}
+                            🎵 Koncert
+                        {% elif event.type == 'rehearsal' %}
+                            🎼 Próba
+                        {% elif event.type == 'soundcheck' %}
+                            🔊 Soundcheck
+                        {% else %}
+                            {{ event.type|title }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Section -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Frekwencja</h5>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="select_all" onchange="selectAll()">
+                <label class="form-check-label" for="select_all">
+                    Zaznacz wszystkich
+                </label>
+            </div>
+        </div>
+        <div class="card-body">
+            {% for section in sectioned_musicians %}
+                <div class="mb-4">
+                    <h6 class="section-header bg-light p-2 rounded mb-3">{{ section.section_name }}</h6>
+                    <div class="row">
+                        {% for musician_data in section.musicians %}
+                            <div class="col-12 col-md-6 col-lg-4 mb-2">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input musician-checkbox" 
+                                           id="user_{{ musician_data.musician.user.id }}" 
+                                           name="user_{{ musician_data.musician.user.id }}"
+                                           {% if musician_data.current_attendance %}checked{% endif %}>
+                                    <label class="form-check-label" for="user_{{ musician_data.musician.user.id }}">
+                                        {{ musician_data.musician.user.first_name }} {{ musician_data.musician.user.last_name }}
+                                    </label>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'attendance' %}" class="btn btn-secondary">Anuluj</a>
+        <button type="submit" class="btn btn-primary" onclick="return confirmSave()">Zapisz zmiany</button>
+    </div>
+</form>
+
+<script>
+function confirmSave() {
+    return confirm('Czy na pewno chcesz zapisać zmiany w tym wydarzeniu?');
+}
+
+function selectAll() {
+    const selectAllCheckbox = document.getElementById('select_all');
+    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
+    
+    musicianCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+    
+    updateSelectAllState();
+}
+
+function updateSelectAllState() {
+    const selectAllCheckbox = document.getElementById('select_all');
+    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
+    const checkedCount = document.querySelectorAll('.musician-checkbox:checked').length;
+    const totalCount = musicianCheckboxes.length;
+    
+    if (checkedCount === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedCount === totalCount) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+}
+
+// Add event listeners to individual checkboxes
+document.addEventListener('DOMContentLoaded', function() {
+    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
+    musicianCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectAllState);
+    });
+    
+    // Set initial state of select all checkbox
+    updateSelectAllState();
+});
+</script>
+
+<style>
+.section-header {
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+.card-header h5 {
+    color: #495057;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .d-flex.justify-content-between .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

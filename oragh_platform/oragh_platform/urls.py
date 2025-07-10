@@ -29,6 +29,7 @@ urlpatterns = [
     path('', include('main.urls')),
     path('concerts/', include('concerts.urls')),
     path('profile/', include('main.profile_urls')),
+    path('attendance/', include('attendance.urls')),
 ]
 
 if settings.DEBUG:

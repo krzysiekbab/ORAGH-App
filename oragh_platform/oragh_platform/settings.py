@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'concerts',
     'crispy_forms',
     'crispy_bootstrap5',
+    'attendance',
 ]
 
 MIDDLEWARE = [
