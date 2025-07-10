@@ -73,16 +73,29 @@ def show_profile(request, profile_id):
     return render(request, 'show_profile.jinja', {'profile': profile})
 
 def show_band(request):
-    # Use instrument display names from INSTRUMENT_CHOICES for section names
-    section_names = [choice[1] for choice in INSTRUMENT_CHOICES]
+    # Define all sections in logical order (matching concerts app)
+    section_names = [
+        "Flet", "Obój", "Klarnet", "Fagot", "Saksofon",  # Woodwinds
+        "Trąbka", "Waltornia", "Puzon", "Eufonium", "Tuba",  # Brass
+        "Gitara", "Perkusja"  # Other
+    ]
+    
+    # Initialize all sections (empty lists for all sections)
     sections = {name: [] for name in section_names}
-    # Create a mapping for quick lookup (case-insensitive)
-    section_map = {name.lower(): name for name in section_names}
+    
+    # Map instrument values to display names
+    instrument_map = dict(INSTRUMENT_CHOICES)
+    
     # Group musicians by instrument
     for profile in MusicianProfile.objects.select_related('user').filter(active=True):
-        instrument = (profile.instrument or '').strip().lower()
-        section = section_map.get(instrument, "Inne")
-        sections[section].append(profile)
+        instrument_value = getattr(profile, "instrument", None)
+        instrument_display = instrument_map.get(instrument_value, "Perkusja")
+        
+        # If instrument is not in our predefined sections, add to "Perkusja"
+        if instrument_display not in sections:
+            instrument_display = "Perkusja"
+        
+        sections[instrument_display].append(profile)
 
     total_members = sum(len(profiles) for profiles in sections.values())
 
