@@ -41,11 +41,21 @@
               {% endif %}
               <span class="fw-bold">{{ event.name }}</span>
               <small class="text-muted">{{ event.date }}</small>
-              {% if can_check %}
-                <a href="{% url 'edit_attendance' event.id %}" class="btn btn-sm btn-outline-primary mt-1" 
-                   title="Edytuj wydarzenie">
-                  ✏️ Edytuj
-                </a>
+              {% if can_check or can_delete %}
+                <div class="btn-group mt-1" role="group">
+                  {% if can_check %}
+                    <a href="{% url 'edit_attendance' event.id %}" class="btn btn-sm btn-outline-primary" 
+                       title="Edytuj wydarzenie">
+                      ✏️ Edytuj
+                    </a>
+                  {% endif %}
+                  {% if can_delete %}
+                    <a href="{% url 'delete_attendance' event.id %}" class="btn btn-sm btn-outline-danger" 
+                       title="Usuń wydarzenie">
+                      🗑️ Usuń
+                    </a>
+                  {% endif %}
+                </div>
               {% endif %}
             </div>
           </th>

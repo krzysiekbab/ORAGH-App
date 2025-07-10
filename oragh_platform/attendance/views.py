@@ -11,11 +11,11 @@ def attendance_view(request):
     event_type = request.GET.get('event_type', 'all')
     musicians = MusicianProfile.objects.select_related('user').filter(active=True)
 
-    # Get events based on the selected type
+    # Get events based on the selected type, sorted by date (oldest first)
     if event_type == 'all':
-        events = Event.objects.all().order_by('-date')
+        events = Event.objects.all().order_by('date')
     else:
-        events = Event.objects.filter(type=event_type).order_by('-date')
+        events = Event.objects.filter(type=event_type).order_by('date')
 
     # Build attendance lookup dictionary
     attendances = Attendance.objects.select_related('event').all()
@@ -64,11 +64,13 @@ def attendance_view(request):
         sectioned_attendance_grid.append(section_data)
 
     can_check = request.user.has_perm('attendance.add_attendance')
+    can_delete = request.user.has_perm('attendance.delete_attendance')
     context = {
         'events': events,
         'sectioned_attendance_grid': sectioned_attendance_grid,
         'event_type': event_type,
         'can_check': can_check,
+        'can_delete': can_delete,
     }
     return render(request, 'view_attendance.jinja', context)
 
@@ -239,3 +241,45 @@ def edit_attendance_view(request, event_id):
         'sectioned_musicians': sectioned_musicians,
     }
     return render(request, 'edit_attendance.jinja', context)
+
+@login_required
+@permission_required('attendance.delete_attendance', raise_exception=True)
+def delete_attendance_view(request, event_id):
+    """
+    Delete an existing event and all its related attendance records.
+    Only users with delete_attendance permission can access this view.
+    """
+    event = get_object_or_404(Event, id=event_id)
+    
+    if request.method == 'POST':
+        # Additional safety check - require confirmation parameter
+        confirmation = request.POST.get('confirm_delete')
+        if confirmation != 'yes':
+            from django.contrib import messages
+            messages.error(request, 'Usunięcie wydarzenia wymaga potwierdzenia.')
+            return redirect('delete_attendance', event_id=event_id)
+            
+        event_name = event.name
+        event_date = event.date
+        
+        # Delete all attendance records for this event
+        Attendance.objects.filter(event=event).delete()
+        
+        # Delete the event itself
+        event.delete()
+        
+        # Add success message
+        from django.contrib import messages
+        messages.success(request, f'Wydarzenie "{event_name}" z dnia {event_date} zostało usunięte.')
+        return redirect('attendance')
+    
+    # For GET request, show confirmation page
+    # Get attendance count for confirmation
+    attendance_count = Attendance.objects.filter(event=event).count()
+    
+    context = {
+        'event': event,
+        'attendance_count': attendance_count,
+        'today': timezone.now().date(),
+    }
+    return render(request, 'delete_attendance.jinja', context)
