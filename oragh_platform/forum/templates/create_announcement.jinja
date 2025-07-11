@@ -1,0 +1,145 @@
+{% extends "base.jinja" %}
+
+{% block title %}Nowe ogłoszenie - Forum{% endblock %}
+{% block page_title %}Nowe ogłoszenie{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'forum:index' %}">Forum</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'forum:manage_announcements' %}">Zarządzanie ogłoszeniami</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Nowe ogłoszenie</li>
+      </ol>
+    </nav>
+
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">📢 Utwórz nowe ogłoszenie</h5>
+      </div>
+      <div class="card-body">
+        
+        <!-- Display messages if any -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zamknij"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="alert alert-info mb-4">
+          <h6 class="alert-heading">ℹ️ Informacje o ogłoszeniach</h6>
+          <ul class="mb-0 small">
+            <li>Ogłoszenia będą wyświetlane na górze strony głównej forum</li>
+            <li>Wyższy priorytet oznacza wyświetlanie na górze listy</li>
+            <li>Ogłoszenia można wyłączyć bez usuwania</li>
+          </ul>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <label for="title" class="form-label">Tytuł ogłoszenia *</label>
+            <input type="text" 
+                   class="form-control" 
+                   id="title" 
+                   name="title" 
+                   value="{{ title|default:'' }}"
+                   placeholder="Wprowadź tytuł ogłoszenia"
+                   maxlength="200"
+                   required>
+            <div class="form-text">Maksymalnie 200 znaków</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="content" class="form-label">Treść ogłoszenia *</label>
+            <textarea class="form-control" 
+                      id="content" 
+                      name="content" 
+                      rows="6"
+                      placeholder="Napisz treść ogłoszenia..."
+                      required>{{ content|default:'' }}</textarea>
+            <div class="form-text">Szczegółowa treść ogłoszenia</div>
+          </div>
+          
+          <div class="mb-4">
+            <label for="priority" class="form-label">Priorytet</label>
+            <select class="form-select" id="priority" name="priority">
+              <option value="0" {% if priority == 0 %}selected{% endif %}>0 - Normalny</option>
+              <option value="1" {% if priority == 1 %}selected{% endif %}>1 - Podwyższony</option>
+              <option value="2" {% if priority == 2 %}selected{% endif %}>2 - Wysoki</option>
+              <option value="3" {% if priority == 3 %}selected{% endif %}>3 - Bardzo wysoki</option>
+              <option value="4" {% if priority == 4 %}selected{% endif %}>4 - Krytyczny</option>
+              <option value="5" {% if priority == 5 %}selected{% endif %}>5 - Najwyższy</option>
+            </select>
+            <div class="form-text">Wyższy priorytet = wyższa pozycja na liście</div>
+          </div>
+          
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'forum:manage_announcements' %}" class="btn btn-outline-secondary">
+              ← Anuluj
+            </a>
+            <button type="submit" class="btn btn-success">
+              📢 Utwórz ogłoszenie
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #198754 0%, #157347 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #198754;
+  box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #198754 0%, #157347 100%);
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #157347 0%, #146c43 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.alert-info {
+  border-left: 4px solid #0dcaf0;
+  background-color: #e7f3ff;
+  border-color: #b6effb;
+}
+
+.breadcrumb {
+  background: none;
+  padding: 0;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+}
+</style>
+
+{% endblock %}

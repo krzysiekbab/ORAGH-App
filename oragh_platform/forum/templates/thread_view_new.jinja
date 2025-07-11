@@ -1,0 +1,349 @@
+{% extends "base.jinja" %}
+
+{% block title %}{{ thread.title }} - Forum{% endblock %}
+{% block page_title %}{{ thread.title }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'forum:index' %}">Forum</a></li>
+        <li class="breadcrumb-item"><a href="{{ thread.category.get_absolute_url }}">{{ thread.category.name }}</a></li>
+        {% if thread.directory %}
+          <li class="breadcrumb-item"><a href="{{ thread.directory.get_absolute_url }}">{{ thread.directory.name }}</a></li>
+        {% endif %}
+        <li class="breadcrumb-item active" aria-current="page">{{ thread.title }}</li>
+      </ol>
+    </nav>
+    <h4 class="mb-0">
+      {{ thread.title }}
+      {% if thread.is_pinned %}
+        <span class="badge bg-warning text-dark ms-2">Przypięty</span>
+      {% endif %}
+      {% if thread.is_locked %}
+        <span class="badge bg-danger ms-2">Zablokowany</span>
+      {% endif %}
+    </h4>
+  </div>
+  <div class="d-flex gap-2">
+    {% if can_delete_thread %}
+      <a href="{% url 'forum:delete_thread' thread.id %}" class="btn btn-outline-danger btn-sm" title="Usuń wątek">
+        🗑️ Usuń wątek
+      </a>
+    {% endif %}
+    {% if thread.directory %}
+      <a href="{{ thread.directory.get_absolute_url }}" class="btn btn-outline-secondary">
+        ← Powrót do katalogu
+      </a>
+    {% else %}
+      <a href="{{ thread.category.get_absolute_url }}" class="btn btn-outline-secondary">
+        ← Powrót do kategorii
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Comments -->
+<div class="comments-container">
+  {% for comment in comments %}
+    <div class="comment-wrapper mb-4" id="comment-{{ comment.id }}">
+      {% if comment.author == user %}
+        <!-- User's own comment - align right -->
+        <div class="row">
+          <div class="col-md-2"></div> <!-- Empty space on the left -->
+          <div class="col-md-10">
+            <div class="card comment-card comment-own">
+              <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  {% if comment.author.musicianprofile.photo %}
+                    <img src="{{ comment.author.musicianprofile.photo.url }}" 
+                         class="rounded-circle me-3" 
+                         alt="Zdjęcie profilowe" 
+                         style="width: 32px; height: 32px; object-fit: cover;">
+                  {% else %}
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" 
+                         style="width: 32px; height: 32px;">
+                      <i class="fas fa-user text-primary" style="font-size: 0.8rem;"></i>
+                    </div>
+                  {% endif %}
+                  <div>
+                    <h6 class="mb-0">{{ comment.author.first_name }} {{ comment.author.last_name }}</h6>
+                    <small>
+                      {{ comment.created_at|date:"d.m.Y H:i" }}
+                      {% if comment.is_edited %}
+                        • <em>edytowany {{ comment.updated_at|date:"d.m.Y H:i" }}</em>
+                      {% endif %}
+                    </small>
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <a href="{% url 'forum:edit_comment' comment.id %}" class="btn btn-sm btn-outline-light" title="Edytuj komentarz">
+                    ✏️
+                  </a>
+                  <a href="{% url 'forum:delete_comment' comment.id %}" class="btn btn-sm btn-outline-light" title="Usuń komentarz">
+                    🗑️
+                  </a>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="comment-content">
+                  {{ comment.content|linebreaks }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <!-- Other user's comment - align left -->
+        <div class="row">
+          <div class="col-md-10">
+            <div class="card comment-card comment-other">
+              <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  {% if comment.author.musicianprofile.photo %}
+                    <img src="{{ comment.author.musicianprofile.photo.url }}" 
+                         class="rounded-circle me-3" 
+                         alt="Zdjęcie profilowe" 
+                         style="width: 32px; height: 32px; object-fit: cover;">
+                  {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" 
+                         style="width: 32px; height: 32px;">
+                      <i class="fas fa-user text-white" style="font-size: 0.8rem;"></i>
+                    </div>
+                  {% endif %}
+                  <div>
+                    <h6 class="mb-0">{{ comment.author.first_name }} {{ comment.author.last_name }}</h6>
+                    <small class="text-muted">
+                      {{ comment.created_at|date:"d.m.Y H:i" }}
+                      {% if comment.is_edited %}
+                        • <em>edytowany {{ comment.updated_at|date:"d.m.Y H:i" }}</em>
+                      {% endif %}
+                    </small>
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  {% if comment.can_user_delete(user) %}
+                    <a href="{% url 'forum:delete_comment' comment.id %}" class="btn btn-sm btn-outline-danger" title="Usuń komentarz">
+                      🗑️
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="comment-content">
+                  {{ comment.content|linebreaks }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2"></div> <!-- Empty space on the right -->
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if comments.has_other_pages %}
+  <nav aria-label="Paginacja komentarzy" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if comments.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1">Pierwsza</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ comments.previous_page_number }}">Poprzednia</a>
+        </li>
+      {% endif %}
+      
+      <li class="page-item active">
+        <span class="page-link">
+          Strona {{ comments.number }} z {{ comments.paginator.num_pages }}
+        </span>
+      </li>
+      
+      {% if comments.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ comments.next_page_number }}">Następna</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ comments.paginator.num_pages }}">Ostatnia</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+
+<!-- Reply Form -->
+{% if can_reply %}
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5 class="mb-0">💬 Odpowiedz</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" action="{% url 'forum:create_comment' thread.id %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="content" class="form-label">Treść odpowiedzi</label>
+          <textarea name="content" id="content" class="form-control" rows="4" 
+                    placeholder="Napisz swoją odpowiedź..." required></textarea>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary">Dodaj odpowiedź</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% elif thread.is_locked %}
+  <div class="alert alert-warning mt-4">
+    <i class="fas fa-lock"></i> Ten wątek jest zablokowany. Nie można dodawać nowych odpowiedzi.
+  </div>
+{% endif %}
+
+<style>
+/* Comment styling */
+.comments-container {
+  max-width: 100%;
+}
+
+.comment-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.comment-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.comment-own {
+  border-left: 4px solid #0d6efd;
+}
+
+.comment-other {
+  border-left: 4px solid #6c757d;
+}
+
+.comment-content {
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.comment-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .comment-wrapper .col-md-2 {
+    display: none;
+  }
+  .comment-wrapper .col-md-10 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+/* Enhanced mobile responsiveness */
+@media (max-width: 768px) {
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .d-flex.justify-content-between > div {
+    text-align: center;
+  }
+  
+  .breadcrumb {
+    justify-content: center;
+  }
+  
+  .card-header .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .card-header .d-flex.align-items-center {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .card-header .me-3 {
+    margin-right: 0 !important;
+    margin-bottom: 0.5rem;
+  }
+  
+  .d-flex.gap-2 {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .card-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .badge {
+    font-size: 0.75rem;
+  }
+  
+  .btn-sm {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  h4 {
+    font-size: 1.25rem;
+  }
+  
+  h5 {
+    font-size: 1.125rem;
+  }
+  
+  h6 {
+    font-size: 1rem;
+  }
+}
+
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Comment highlight animation */
+.comment-card:target {
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+  animation: highlight 2s ease-in-out;
+}
+
+@keyframes highlight {
+  0% { box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.5); }
+  100% { box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25); }
+}
+
+/* Form styling */
+.form-control:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Alert styling */
+.alert-warning {
+  border-left: 4px solid #ffc107;
+}
+</style>
+{% endblock %}

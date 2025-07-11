@@ -1,0 +1,151 @@
+{% extends "base.jinja" %}
+
+{% block title %}Usuń wątek - {{ thread.title }} - Forum{% endblock %}
+{% block page_title %}Usuń wątek{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'forum:index' %}">Forum</a></li>
+        <li class="breadcrumb-item"><a href="{{ thread.category.get_absolute_url }}">{{ thread.category.name }}</a></li>
+        {% if thread.directory %}
+          <li class="breadcrumb-item"><a href="{{ thread.directory.get_absolute_url }}">{{ thread.directory.name }}</a></li>
+        {% endif %}
+        <li class="breadcrumb-item"><a href="{{ thread.get_absolute_url }}">{{ thread.title }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Usuń wątek</li>
+      </ol>
+    </nav>
+
+    <div class="card border-danger">
+      <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">🗑️ Potwierdź usunięcie wątku</h5>
+      </div>
+      <div class="card-body">
+        
+        <div class="alert alert-danger">
+          <h6 class="alert-heading">⚠️ Ostrzeżenie!</h6>
+          <p class="mb-0">
+            Ta operacja jest nieodwracalna. Wątek wraz ze wszystkimi komentarzami zostanie trwale usunięty z bazy danych.
+          </p>
+        </div>
+
+        <!-- Thread info -->
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="me-3 text-center">
+                  {% if thread.is_pinned %}
+                    <i class="fas fa-thumbtack text-warning" title="Przypięty"></i>
+                  {% elif thread.is_locked %}
+                    <i class="fas fa-lock text-danger" title="Zablokowany"></i>
+                  {% else %}
+                    <i class="fas fa-comment-dots text-primary"></i>
+                  {% endif %}
+                </div>
+                <div>
+                  <h6 class="mb-0">{{ thread.title }}</h6>
+                  <small class="text-muted">
+                    Autor: {{ thread.author.first_name }} {{ thread.author.last_name }} • 
+                    {{ thread.created_at|date:"d.m.Y H:i" }}
+                  </small>
+                </div>
+              </div>
+              <div>
+                {% if thread.is_pinned %}
+                  <span class="badge bg-warning text-dark">Przypięty</span>
+                {% endif %}
+                {% if thread.is_locked %}
+                  <span class="badge bg-danger">Zablokowany</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="fas fa-comments text-primary me-2"></i>
+                  <span><strong>{{ thread.get_comments_count }}</strong> komentarzy</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="fas fa-clock text-muted me-2"></i>
+                  <span>Ostatnia aktywność: {{ thread.updated_at|date:"d.m.Y H:i" }}</span>
+                </div>
+              </div>
+            </div>
+            
+            {% if thread.directory %}
+              <div class="mt-2">
+                <i class="fas fa-folder text-info me-2"></i>
+                <span>Katalog: {{ thread.directory.get_full_path }}</span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="d-flex justify-content-between">
+            <a href="{{ thread.get_absolute_url }}" class="btn btn-outline-secondary">
+              ← Anuluj
+            </a>
+            <button type="submit" class="btn btn-danger">
+              🗑️ Usuń wątek i wszystkie komentarze
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.card.border-danger {
+  border-color: #dc3545 !important;
+}
+
+.card-header.bg-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+  border-radius: 12px 12px 0 0;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  border: none;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.alert-danger {
+  border-left: 4px solid #dc3545;
+}
+
+.breadcrumb {
+  background: none;
+  padding: 0;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+</style>
+
+{% endblock %}

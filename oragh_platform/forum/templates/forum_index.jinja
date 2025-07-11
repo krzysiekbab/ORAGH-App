@@ -1,0 +1,161 @@
+{% extends "base.jinja" %}
+
+{% block title %}Forum{% endblock %}
+{% block page_title %}Forum ORAGH{% endblock %}
+
+{% block content %}
+
+<!-- Management Links for Board Members -->
+{% if user_is_board %}
+  <div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">⚙️ Panel zarządzania</h5>
+    </div>
+    <div class="card-body">
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'forum:manage_announcements' %}" class="btn btn-outline-primary btn-sm">
+          📢 Zarządzaj ogłoszeniami
+        </a>
+        <a href="{% url 'forum:create_announcement' %}" class="btn btn-outline-success btn-sm">
+          ➕ Dodaj ogłoszenie
+        </a>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Announcements Section -->
+{% if announcements %}
+<div class="card mb-4 border-warning">
+  <div class="card-header bg-warning text-dark">
+    <h5 class="mb-0">📢 Ważne ogłoszenia</h5>
+  </div>
+  <div class="card-body">
+    {% for announcement in announcements %}
+      <div class="alert alert-info {% if not forloop.last %}mb-3{% else %}mb-0{% endif %}">
+        <h6 class="alert-heading">{{ announcement.title }}</h6>
+        <p class="mb-2">{{ announcement.content|linebreaks }}</p>
+        <small class="text-muted">
+          Autor: {{ announcement.author.first_name }} {{ announcement.author.last_name }} • 
+          {{ announcement.created_at|date:"d.m.Y H:i" }}
+        </small>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Categories Section -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">📁 Kategorie forum</h5>
+  </div>
+  <div class="card-body">
+    {% if categories %}
+      <div class="row g-3">
+        {% for cat_data in categories %}
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-8">
+                    <h6 class="mb-2">
+                      <a href="{{ cat_data.category.get_absolute_url }}" class="text-decoration-none">
+                        {{ cat_data.category.name }}
+                      </a>
+                      {% if cat_data.category.access_level == 'board' %}
+                        <span class="badge bg-danger ms-2">Tylko zarząd</span>
+                      {% endif %}
+                    </h6>
+                    <p class="text-muted mb-2 small">{{ cat_data.category.description }}</p>
+                    <div class="d-flex gap-3">
+                      <small class="text-muted">
+                        <i class="fas fa-comments"></i> {{ cat_data.threads_count }} wątków
+                      </small>
+                      <small class="text-muted">
+                        <i class="fas fa-comment"></i> {{ cat_data.comments_count }} komentarzy
+                      </small>
+                    </div>
+                  </div>
+                  <div class="col-md-4 text-md-end">
+                    {% if cat_data.last_thread %}
+                      <div class="text-muted small">
+                        <strong>Ostatni wątek:</strong><br>
+                        <a href="{{ cat_data.last_thread.get_absolute_url }}" class="text-decoration-none">
+                          {{ cat_data.last_thread.title|truncatechars:30 }}
+                        </a><br>
+                        <small>{{ cat_data.last_thread.updated_at|date:"d.m.Y H:i" }}</small>
+                      </div>
+                    {% else %}
+                      <div class="text-muted small">
+                        <em>Brak wątków</em>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+        <p class="text-muted mb-0">Brak dostępnych kategorii.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+/* Enhanced mobile responsiveness */
+@media (max-width: 768px) {
+  .row.align-items-center {
+    text-align: center;
+  }
+  
+  .col-md-4.text-md-end {
+    text-align: center !important;
+    margin-top: 1rem;
+  }
+  
+  .d-flex.gap-3 {
+    justify-content: center;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-header h5 {
+    font-size: 1.125rem;
+  }
+  
+  .badge {
+    font-size: 0.7rem;
+  }
+  
+  .d-flex.gap-3 {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+}
+
+/* Card hover effects */
+.card.border-0.shadow-sm {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card.border-0.shadow-sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* Alert styling improvements */
+.alert-info {
+  border-left: 4px solid #0dcaf0;
+}
+</style>
+{% endblock %}
