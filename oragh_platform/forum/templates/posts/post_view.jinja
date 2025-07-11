@@ -1,0 +1,499 @@
+{% extends "base.jinja" %}
+
+{% block title %}{{ post.title }} - Forum{% endblock %}
+{% block page_title %}{{ post.title }}{% endblock %}
+
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'forum/css/breadcrumb.css' %}">
+{{ comment_form.media.css }}
+<style>
+.comment-avatar {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border: 2px solid #e9ecef;
+}
+
+.comment-avatar-placeholder {
+  width: 50px;
+  height: 50px;
+  background-color: #e9ecef;
+  color: #6c757d;
+  border: 2px solid #dee2e6;
+}
+
+.comment-avatar-wrapper {
+  flex-shrink: 0;
+}
+
+/* Comment card styling */
+.comment-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.comment-card:hover {
+  transform: translateY(-2px);
+}
+
+.comment-card .card {
+  border: 1px solid #e3e6f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.comment-card:hover .card {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+/* Removed special first comment styling - all comments now follow the same pattern */
+
+/* Comment container for left/right positioning */
+.comment-container {
+  display: flex;
+  padding: 0 1rem;
+}
+
+.comment-own-container {
+  justify-content: flex-end;
+}
+
+.comment-other-container {
+  justify-content: flex-start;
+}
+
+/* Subsequent comments - 75% width with left/right alignment */
+.comment-own,
+.comment-other {
+  width: 75%;
+  max-width: 75%;
+}
+
+.comment-own .card {
+  border-left: 4px solid #28a745;
+  background-color: #f0f8f0;
+}
+
+.comment-other .card {
+  border-left: 4px solid #6c757d;
+  background-color: #f8f9fa;
+}
+
+/* Comment header styling */
+.comment-header {
+  border-bottom: 1px solid #f1f3f4;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.comment-author {
+  color: #2c3e50;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.comment-meta {
+  margin-top: 2px;
+}
+
+.comment-meta small {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+/* Comment number styling */
+.comment-number {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid #e9ecef;
+}
+
+.comment-number-actions {
+  flex-shrink: 0;
+}
+
+/* Comment body styling */
+.comment-body {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #2c3e50;
+  word-wrap: break-word;
+}
+
+.comment-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Comment actions styling */
+.comment-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.comment-actions .btn {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.comment-actions .btn:hover {
+  transform: translateY(-1px);
+}
+
+.comment-actions .btn-outline-primary:hover {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.comment-actions .btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+/* Post title styling */
+.post-title {
+  color: #2c3e50;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .comment-container {
+    padding: 0 0.5rem;
+  }
+  
+  .comment-own,
+  .comment-other {
+    width: 85%;
+    max-width: 85%;
+  }
+  
+  .comment-avatar,
+  .comment-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .comment-author {
+    font-size: 0.9rem;
+  }
+  
+  .comment-meta small {
+    font-size: 0.8rem;
+  }
+  
+  .comment-body {
+    font-size: 0.9rem;
+  }
+  
+  .comment-number {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+  
+  .comment-actions .btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .comment-container {
+    padding: 0 0.25rem;
+  }
+  
+  .comment-own,
+  .comment-other {
+    width: 90%;
+    max-width: 90%;
+  }
+  
+  .comment-card .card-body {
+    padding: 1rem;
+  }
+  
+  .comment-avatar,
+  .comment-avatar-placeholder {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .comment-header {
+    align-items: flex-start !important;
+    gap: 8px;
+  }
+  
+  .comment-number-actions {
+    align-self: center;
+    margin-top: -4px;
+    position: relative;
+    z-index: 10;
+  }
+  
+  .comment-author {
+    font-size: 0.85rem;
+  }
+  
+  .comment-meta small {
+    font-size: 0.75rem;
+  }
+  
+  .comment-body {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+}
+
+/* Animation for new comments */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comment-card {
+  animation: slideInUp 0.3s ease-out;
+}
+
+/* Focus states for accessibility */
+.comment-actions .btn:focus {
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+  outline: none;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ comment_form.media.js }}
+{% endblock %}
+
+{% block content %}
+
+<!-- Enhanced breadcrumbs - Full width -->
+{% include 'shared/breadcrumb.jinja' with breadcrumb_path=post.directory.get_breadcrumb_path current_page_title=post.title current_page_icon="fas fa-file-alt" %}
+
+<!-- Post Header with Action Buttons -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="mb-1 post-title">
+      {% if post.is_pinned %}
+        <i class="fas fa-thumbtack text-warning me-2" title="Post przypięty"></i>
+      {% endif %}
+      {% if post.is_locked %}
+        <i class="fas fa-lock text-danger me-2" title="Post zablokowany"></i>
+      {% endif %}
+      {{ post.title }}
+    </h2>
+    <p class="text-muted small mb-0">
+      Autor: <strong>{{ post.author.username }}</strong> • 
+      Utworzony: {{ post.created_at|date:"d.m.Y H:i" }}
+      {% if post.updated_at != post.created_at %}
+        • Ostatnia aktywność: {{ post.updated_at|date:"d.m.Y H:i" }}
+      {% endif %}
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    {% if can_edit_post %}
+      <a href="{% url 'forum:edit_post' post.id %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-edit"></i> Edytuj
+      </a>
+    {% endif %}
+    {% if can_delete_post %}
+      <a href="{% url 'forum:delete_post' post.id %}" class="btn btn-outline-danger btn-sm">
+        <i class="fas fa-trash"></i> Usuń
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Comments Section -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">
+      <i class="fas fa-comments"></i>
+      Komentarze ({{ comments.paginator.count }})
+    </h5>
+    {% if can_reply %}
+      <a href="#reply-form" class="btn btn-primary btn-sm">
+        <i class="fas fa-reply"></i> Odpowiedz
+      </a>
+    {% endif %}
+  </div>
+  
+  <div class="card-body p-0">
+    {% for comment in comments %}
+      <!-- All comments - left/right aligned based on author -->
+      <div class="comment-container {% if request.user == comment.author %}comment-own-container{% else %}comment-other-container{% endif %} my-3">
+        <div class="comment-card {% if request.user == comment.author %}comment-own{% else %}comment-other{% endif %}" id="{{ comment.id }}">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex align-items-start">
+                <!-- Author Avatar -->
+                <div class="comment-avatar-wrapper me-3">
+                  {% if comment.author.musicianprofile.photo %}
+                    <img src="{{ comment.author.musicianprofile.photo.url }}" alt="User photo" class="rounded-circle comment-avatar">
+                  {% else %}
+                    <div class="comment-avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="fas fa-user"></i>
+                    </div>
+                  {% endif %}
+                </div>
+                
+                <!-- Comment Content -->
+                <div class="comment-content flex-grow-1">
+                  <!-- Comment Header -->
+                  <div class="comment-header d-flex justify-content-between mb-2">
+                    <div class="comment-author-info">
+                      <strong class="comment-author">{{ comment.author.username }}</strong>
+                      <div class="comment-meta">
+                        <small class="text-muted">
+                          <i class="fas fa-clock me-1"></i>
+                          {{ comment.created_at|date:"d.m.Y H:i" }}
+                          {% if comment.is_edited %}
+                            • <em>Edytowany {{ comment.updated_at|date:"d.m.Y H:i" }}</em>
+                          {% endif %}
+                        </small>
+                      </div>
+                    </div>
+                    
+                    <!-- Comment Number and Actions -->
+                    <div class="comment-number-actions d-flex align-items-center">
+                      <span class="comment-number me-2">#{{ forloop.counter }}</span>
+                      
+                      <!-- Comment Actions -->
+                      {% if request.user == comment.author or comment.user_can_delete %}
+                        <!-- Desktop actions -->
+                        <div class="d-none d-md-flex comment-actions">
+                          {% if request.user == comment.author %}
+                            <a href="{% url 'forum:edit_comment' comment.id %}" class="btn btn-sm btn-outline-primary me-1" title="Edytuj">
+                              <i class="fas fa-edit"></i>
+                              Edytuj
+                            </a>
+                          {% endif %}
+                          {% if comment.user_can_delete %}
+                            <a href="{% url 'forum:delete_comment' comment.id %}" class="btn btn-sm btn-outline-danger" title="Usuń">
+                              <i class="fas fa-trash"></i>
+                              Usuń
+                            </a>
+                          {% endif %}
+                        </div>
+                        
+                        <!-- Mobile actions -->
+                        <div class="d-md-none d-flex comment-actions">
+                          {% if request.user == comment.author %}
+                            <a href="{% url 'forum:edit_comment' comment.id %}" class="btn btn-sm btn-outline-primary me-1" title="Edytuj">
+                              <i class="fas fa-edit"></i>
+                            </a>
+                          {% endif %}
+                          {% if comment.user_can_delete %}
+                            <a href="{% url 'forum:delete_comment' comment.id %}" class="btn btn-sm btn-outline-danger" title="Usuń">
+                              <i class="fas fa-trash"></i>
+                            </a>
+                          {% endif %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  
+                  <!-- Comment Body -->
+                  <div class="comment-body">
+                    {{ comment.content|safe }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="text-center py-5 text-muted">
+        <i class="fas fa-comments fa-3x mb-3"></i>
+        <p>Brak komentarzy. Bądź pierwszy, który skomentuje!</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Pagination -->
+{% if comments.has_other_pages %}
+  <nav aria-label="Paginacja komentarzy" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if comments.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1">&laquo; Pierwsza</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ comments.previous_page_number }}">Poprzednia</a>
+        </li>
+      {% endif %}
+      
+      {% for num in comments.paginator.page_range %}
+        {% if comments.number == num %}
+          <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+          </li>
+        {% elif num > comments.number|add:'-3' and num < comments.number|add:'3' %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+      
+      {% if comments.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ comments.next_page_number }}">Następna</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ comments.paginator.num_pages }}">Ostatnia &raquo;</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+
+<!-- Reply Form -->
+{% if can_reply %}
+  <div class="card mt-4" id="reply-form">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="fas fa-reply"></i>
+        Dodaj komentarz
+      </h5>
+    </div>
+    <div class="card-body">
+      <form method="post" action="{% url 'forum:create_comment' post.id %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          {{ comment_form.content }}
+        </div>
+        <div class="d-flex justify-content-between">
+          <a href="{{ post.directory.get_absolute_url }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Powrót do katalogu
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Wyślij komentarz
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% else %}
+  <div class="alert alert-warning mt-4">
+    <i class="fas fa-lock"></i>
+    Ten post jest zablokowany. Nie można dodawać nowych komentarzy.
+  </div>
+{% endif %}
+
+{% endblock %}
+
+

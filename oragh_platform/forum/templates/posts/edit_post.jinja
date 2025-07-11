@@ -1,0 +1,206 @@
+{% extends "base.jinja" %}
+
+{% block title %}Edytuj post - {{ post.title }}{% endblock %}
+{% block page_title %}Edytuj post{% endblock %}
+
+{% block content %}
+
+<!-- Enhanced breadcrumbs - Full width -->
+{% include 'shared/breadcrumb.jinja' with breadcrumb_path=post.directory.get_breadcrumb_path post_item=post current_page_title="Edytuj post" current_page_icon="fas fa-edit" %}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0">Edytuj post</h4>
+  </div>
+  <div>
+    <a href="{{ post.get_absolute_url }}" class="btn btn-outline-secondary">
+      ← Anuluj
+    </a>
+  </div>
+</div>
+
+<form method="post" class="mb-4">
+  {% csrf_token %}
+  
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">✏️ Edycja postu</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="alert alert-info">
+            <h6 class="alert-heading">Informacje o poście</h6>
+            <p class="mb-2"><strong>Autor:</strong> {{ post.author.first_name }} {{ post.author.last_name }}</p>
+            <p class="mb-2"><strong>Data utworzenia:</strong> {{ post.created_at|date:"d.m.Y H:i" }}</p>
+            {% if post.is_edited %}
+              <p class="mb-0"><strong>Ostatnia edycja:</strong> {{ post.updated_at|date:"d.m.Y H:i" }}</p>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="col-12">
+          <label for="title" class="form-label">Tytuł postu</label>
+          <input type="text" name="title" id="title" class="form-control" 
+                 value="{{ post_title }}" placeholder="Wprowadź tytuł postu..." required>
+          <div class="form-text">Zmodyfikuj tytuł swojego postu</div>
+        </div>
+        
+        <div class="col-12">
+          <label for="content" class="form-label">Treść postu</label>
+          <textarea name="content" id="content" class="form-control" rows="8" 
+                    placeholder="Wprowadź treść postu..." 
+                    required>{{ post_content }}</textarea>
+          <div class="form-text">Zmodyfikuj treść swojego postu</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between mt-4">
+    <a href="{{ post.get_absolute_url }}" class="btn btn-secondary">
+      ❌ Anuluj
+    </a>
+    <button type="submit" class="btn btn-primary">
+      💾 Zapisz zmiany
+    </button>
+  </div>
+</form>
+
+<div class="card">
+  <div class="card-header">
+    <h6 class="mb-0">⚠️ Ważne informacje</h6>
+  </div>
+  <div class="card-body">
+    <ul class="mb-0 small text-muted">
+      <li>Po zapisaniu zmian post zostanie oznaczony jako edytowany</li>
+      <li>Data i czas ostatniej edycji będą widoczne dla innych użytkowników</li>
+      <li>Upewnij się, że zmiany są zgodne z zasadami forum</li>
+      <li>Bądź uprzejmy i szanuj innych użytkowników</li>
+    </ul>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'forum/css/breadcrumb.css' %}">
+<style>
+/* Enhanced mobile responsiveness */
+@media (max-width: 768px) {
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .d-flex.justify-content-between > div {
+    text-align: center;
+  }
+  
+  .d-flex.justify-content-between.mt-4 .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .d-flex.justify-content-between.mt-4 {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 576px) {
+  .card {
+    border-radius: 0.25rem;
+    margin: 0 -0.5rem 1rem -0.5rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .card-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .btn {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  h4 {
+    font-size: 1.25rem;
+  }
+  
+  h5 {
+    font-size: 1.125rem;
+  }
+  
+  h6 {
+    font-size: 1rem;
+  }
+}
+
+/* Form styling improvements */
+.form-control:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-text {
+  color: #6c757d;
+  line-height: 1.4;
+  font-size: 0.875rem;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 150px;
+}
+
+.form-control {
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.75rem;
+}
+
+.form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+/* Card styling */
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.card-header h5,
+.card-header h6 {
+  color: #495057;
+  margin-bottom: 0;
+}
+
+/* Alert styling */
+.alert-info {
+  border-left: 4px solid #0dcaf0;
+  background-color: #cff4fc;
+  border-color: #b8daff;
+}
+
+/* Warning card styling */
+.card:last-child .card-header {
+  background-color: #fff3cd;
+}
+
+.card:last-child {
+  border: 1px solid #ffeaa7;
+}
+</style>
+{% endblock %}

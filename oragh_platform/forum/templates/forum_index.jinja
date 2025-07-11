@@ -1,0 +1,131 @@
+{% extends "base.jinja" %}
+
+{% block title %}Forum{% endblock %}
+{% block page_title %}Forum ORAGH{% endblock %}
+
+{% block content %}
+
+<!-- Announcements Section -->
+{% if announcements or user_is_board %}
+<div class="card mb-4 border-warning">
+  <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">📢 Ważne ogłoszenia</h5>
+    {% if user_is_board %}
+      <div class="d-flex gap-2">
+        <a href="{% url 'forum:manage_announcements' %}" class="btn btn-outline-primary btn-sm" title="Zarządzaj ogłoszeniami">
+          <i class="fas fa-cog"></i>
+        </a>
+        <a href="{% url 'forum:create_announcement' %}" class="btn btn-outline-success btn-sm" title="Dodaj ogłoszenie">
+          <i class="fas fa-plus"></i>
+        </a>
+      </div>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {% if announcements %}
+      {% for announcement in announcements %}
+        <div class="alert alert-info {% if not forloop.last %}mb-3{% else %}mb-0{% endif %}">
+          <h6 class="alert-heading">{{ announcement.title }}</h6>
+          <p class="mb-2">{{ announcement.content|safe }}</p>
+          <small class="text-muted">
+            Autor: {{ announcement.author.first_name }} {{ announcement.author.last_name }} • 
+            {{ announcement.created_at|date:"d.m.Y H:i" }}
+          </small>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted mb-0">
+        <i class="fas fa-info-circle"></i> Brak ogłoszeń do wyświetlenia.
+        {% if user_is_board %}
+          <a href="{% url 'forum:create_announcement' %}" class="text-decoration-none">Dodaj pierwsze ogłoszenie</a>.
+        {% endif %}
+      </p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Breadcrumbs for Forum Index -->
+{% include 'shared/breadcrumb.jinja' with current_page_title="Forum ORAGH" current_page_icon="fas fa-home" %}
+
+<!-- Directories Section -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">📁 Katalogi forum</h5>
+    {% if user_is_board %}
+      <a href="{% url 'forum:create_directory' %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-plus"></i> Nowy katalog
+      </a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {% if directories %}
+      <div class="row g-3">
+        {% for dir_data in directories %}
+          <div class="col-12">
+            <div class="card border-0 shadow-sm directory-card {{ dir_data.directory.get_highlight_classes }}">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-8">
+                    <h6 class="mb-2 directory-title">
+                      <span class="directory-icon">{{ dir_data.directory.get_highlight_icon }}</span>
+                      <a href="{{ dir_data.directory.get_absolute_url }}" class="text-decoration-none directory-link">
+                        {{ dir_data.directory.name }}
+                      </a>
+                      {% if dir_data.directory.access_level == 'board' %}
+                        <span class="badge bg-danger ms-2">Tylko zarząd</span>
+                      {% endif %}
+                    </h6>
+                    <p class="text-muted mb-2 small">{{ dir_data.directory.description }}</p>
+                    <div class="d-flex gap-3">
+                      <small class="text-muted">
+                        <i class="fas fa-file-alt"></i> {{ dir_data.posts_count }} postów
+                      </small>
+                      <small class="text-muted">
+                        <i class="fas fa-comment"></i> {{ dir_data.comments_count }} komentarzy
+                      </small>
+                    </div>
+                  </div>
+                  <div class="col-md-4 text-md-end">
+                    {% if dir_data.last_post %}
+                      <div class="text-muted small">
+                        <strong>Ostatni post:</strong><br>
+                        <a href="{{ dir_data.last_post.get_absolute_url }}" class="text-decoration-none">
+                          {{ dir_data.last_post.title|truncatechars:30 }}
+                        </a><br>
+                        <small>{{ dir_data.last_post.updated_at|date:"d.m.Y H:i" }}</small>
+                      </div>
+                    {% else %}
+                      <div class="text-muted small">
+                        <em>Brak postów</em>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+        <p class="text-muted mb-0">Brak dostępnych katalogów.</p>
+        {% if user_is_board %}
+          <p class="text-muted">
+            <a href="{% url 'forum:create_directory' %}" class="btn btn-primary mt-2">
+              <i class="fas fa-plus"></i> Utwórz pierwszy katalog
+            </a>
+          </p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'forum/css/breadcrumb.css' %}">
+{% endblock %}
+
+{% endblock %}
