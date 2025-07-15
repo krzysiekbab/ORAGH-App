@@ -49,9 +49,17 @@ class AnnouncementForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-select'})
     )
     
+    is_active = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Aktywne",
+        help_text="Czy ogłoszenie ma być wyświetlane na forum",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    
     class Meta:
         model = Announcement
-        fields = ['title', 'content', 'priority']
+        fields = ['title', 'content', 'priority', 'is_active']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -65,3 +73,4 @@ class AnnouncementForm(forms.ModelForm):
         self.fields['title'].label = "Tytuł ogłoszenia"
         self.fields['content'].label = "Treść ogłoszenia"
         self.fields['priority'].label = "Priorytet"
+        self.fields['is_active'].label = "Aktywne"

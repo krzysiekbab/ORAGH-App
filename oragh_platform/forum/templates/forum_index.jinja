@@ -5,47 +5,8 @@
 
 {% block content %}
 
-<!-- Announcements Section -->
-{% if announcements or user_is_board %}
-<div class="card mb-4 border-warning">
-  <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">📢 Ważne ogłoszenia</h5>
-    {% if user_is_board %}
-      <div class="d-flex gap-2">
-        <a href="{% url 'forum:manage_announcements' %}" class="btn btn-outline-primary btn-sm" title="Zarządzaj ogłoszeniami">
-          <i class="fas fa-cog"></i>
-          Zarządzaj
-        </a>
-        <a href="{% url 'forum:create_announcement' %}" class="btn btn-outline-success btn-sm" title="Dodaj ogłoszenie">
-          <i class="fas fa-plus"></i>
-          Nowe ogłoszenie
-        </a>
-      </div>
-    {% endif %}
-  </div>
-  <div class="card-body">
-    {% if announcements %}
-      {% for announcement in announcements %}
-        <div class="alert alert-info {% if not forloop.last %}mb-3{% else %}mb-0{% endif %}">
-          <h6 class="alert-heading">{{ announcement.title }}</h6>
-          <p class="mb-2">{{ announcement.content|safe }}</p>
-          <small class="text-muted">
-            Autor: {{ announcement.author.first_name }} {{ announcement.author.last_name }} • 
-            {{ announcement.created_at|date:"d.m.Y H:i" }}
-          </small>
-        </div>
-      {% endfor %}
-    {% else %}
-      <p class="text-muted mb-0">
-        <i class="fas fa-info-circle"></i> Brak ogłoszeń do wyświetlenia.
-        {% if user_is_board %}
-          <a href="{% url 'forum:create_announcement' %}" class="text-decoration-none">Dodaj pierwsze ogłoszenie</a>.
-        {% endif %}
-      </p>
-    {% endif %}
-  </div>
-</div>
-{% endif %}
+<!-- Include announcements section -->
+{% include 'announcements/announcements_section.jinja' %}
 
 <!-- Breadcrumbs for Forum Index -->
 {% include 'shared/breadcrumb.jinja' with current_page_title="Forum ORAGH" current_page_icon="fas fa-home" %}
@@ -53,7 +14,7 @@
 <!-- Directories Section -->
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">📁 Katalogi forum</h5>
+    <h5 class="mb-0"><i class="fas fa-folder"></i> Katalogi forum</h5>
     {% if user_is_board %}
       <a href="{% url 'forum:create_directory' %}" class="btn btn-outline-success btn-sm">
         <i class="fas fa-plus"></i> Nowy katalog
@@ -73,6 +34,7 @@
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'forum/css/breadcrumb.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'forum/css/directory_styles.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'forum/css/announcements.css' %}">
 {% endblock %}
 
 {% endblock %}

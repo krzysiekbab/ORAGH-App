@@ -18,7 +18,7 @@
     
     <div class="card">
       <div class="card-header">
-        <h5 class="mb-0">📢 {% if editing %}Edytuj ogłoszenie{% else %}Utwórz nowe ogłoszenie{% endif %}</h5>
+        <h5 class="mb-0"><i class="fas fa-bullhorn"></i> {% if editing %}Edytuj ogłoszenie{% else %}Utwórz nowe ogłoszenie{% endif %}</h5>
       </div>
       <div class="card-body">
         
@@ -33,7 +33,7 @@
         {% endif %}
 
         <div class="alert alert-info mb-4">
-          <h6 class="alert-heading">ℹ️ Informacje o ogłoszeniach</h6>
+          <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Informacje o ogłoszeniach</h6>
           <ul class="mb-0 small">
             <li>Ogłoszenia będą wyświetlane na górze strony głównej forum</li>
             <li>Wyższy priorytet oznacza wyświetlanie na górze listy</li>
@@ -66,7 +66,7 @@
             {% endif %}
           </div>
           
-          <div class="mb-4">
+          <div class="mb-3">
             <label for="{{ form.priority.id_for_label }}" class="form-label">Priorytet</label>
             {{ form.priority }}
             <div class="form-text">Wyższy priorytet = wyższa pozycja na liście</div>
@@ -77,12 +77,29 @@
             {% endif %}
           </div>
           
+          <div class="mb-4">
+            <div class="form-check">
+              {{ form.is_active }}
+              <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                {{ form.is_active.label }}
+              </label>
+              {% if form.is_active.help_text %}
+                <div class="form-text">{{ form.is_active.help_text }}</div>
+              {% endif %}
+            </div>
+            {% if form.is_active.errors %}
+              <div class="text-danger small mt-1">
+                {% for error in form.is_active.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
           <div class="d-flex justify-content-between">
             <a href="{% url 'forum:manage_announcements' %}" class="btn btn-outline-secondary">
-              ← Anuluj
+              <i class="fas fa-arrow-left"></i> Anuluj
             </a>
             <button type="submit" class="btn btn-success">
-              📢 {% if editing %}Zaktualizuj ogłoszenie{% else %}Utwórz ogłoszenie{% endif %}
+              <i class="fas fa-bullhorn"></i> {% if editing %}Zaktualizuj ogłoszenie{% else %}Utwórz ogłoszenie{% endif %}
             </button>
           </div>
         </form>

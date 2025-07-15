@@ -8,10 +8,10 @@
 <div class="text-end align-items-center mb-4">
   <div class="button-container">
     <a href="{% url 'forum:create_announcement' %}" class="btn btn-success me-2">
-      ➕ Nowe ogłoszenie
+      <i class="fas fa-plus"></i> Nowe ogłoszenie
     </a>
     <a href="{% url 'forum:index' %}" class="btn btn-outline-secondary">
-      ← Powrót do forum
+      <i class="fas fa-arrow-left"></i> Powrót do forum
     </a>
   </div>
 </div>
@@ -29,70 +29,58 @@
 <div class="card">
   <div class="card-body">
     {% if announcements %}
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead class="table-light">
-            <tr>
-              <th>Tytuł</th>
-              <th class="text-center" style="width: 100px;">Status</th>
-              <th class="text-center" style="width: 100px;">Priorytet</th>
-              <th class="text-center" style="width: 150px;">Autor</th>
-              <th class="text-center" style="width: 150px;">Data utworzenia</th>
-              <th class="text-center" style="width: 120px;">Akcje</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for announcement in announcements %}
-              <tr class="clickable-row" onclick="window.location='{% url 'forum:edit_announcement' announcement.id %}'">
-                <td>
-                  <h6 class="mb-1">{{ announcement.title }}</h6>
-                  <p class="text-muted mb-0 small">{{ announcement.content|striptags|truncatechars:100 }}</p>
-                </td>
-                <td class="text-center">
-                  {% if announcement.is_active %}
-                    <span class="badge bg-success">Aktywne</span>
-                  {% else %}
-                    <span class="badge bg-secondary">Nieaktywne</span>
-                  {% endif %}
-                </td>
-                <td class="text-center">
-                  {% if announcement.priority > 0 %}
-                    <span class="badge bg-warning text-dark">{{ announcement.priority }}</span>
-                  {% else %}
-                    <span class="badge bg-light text-dark">0</span>
-                  {% endif %}
-                </td>
-                <td class="text-center">
-                  <div class="small">
-                    {{ announcement.author.first_name }} {{ announcement.author.last_name }}
+      <div class="row g-3">
+        {% for announcement in announcements %}
+          <div class="col-12">
+            <div class="card border-0 shadow-sm directory-card announcement-item">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-8">
+                    <h6 class="mb-2 directory-title">
+                      <span class="directory-icon">
+                        <i class="fas fa-bullhorn text-warning"></i>
+                      </span>
+                      <span class="directory-link">{{ announcement.title }}</span>
+                      {% if announcement.is_active %}
+                        <span class="badge bg-success ms-2">Aktywne</span>
+                      {% else %}
+                        <span class="badge bg-secondary ms-2">Nieaktywne</span>
+                      {% endif %}
+                      {% if announcement.priority > 0 %}
+                        <span class="badge bg-warning text-dark ms-2">Priorytet: {{ announcement.priority }}</span>
+                      {% endif %}
+                    </h6>
+                    <p class="text-muted mb-2 small">{{ announcement.content|striptags|truncatechars:120 }}</p>
+                    <div class="d-flex gap-3">
+                      <small class="text-muted">
+                        <i class="fas fa-user"></i> {{ announcement.author.first_name }} {{ announcement.author.last_name }}
+                      </small>
+                      <small class="text-muted">
+                        <i class="fas fa-calendar"></i> {{ announcement.created_at|date:"d.m.Y H:i" }}
+                      </small>
+                    </div>
                   </div>
-                </td>
-                <td class="text-center">
-                  <div class="small">
-                    {{ announcement.created_at|date:"d.m.Y" }}<br>
-                    <span class="text-muted">{{ announcement.created_at|date:"H:i" }}</span>
+                  <div class="col-md-4 text-md-end">
+                    <div class="d-flex justify-content-md-end gap-2">
+                      <a href="{% url 'forum:edit_announcement' announcement.id %}" 
+                         class="btn btn-outline-primary btn-sm"
+                         title="Edytuj ogłoszenie">
+                        <i class="fas fa-edit"></i>
+                        <span class="d-none d-sm-inline ms-1">Edytuj</span>
+                      </a>
+                      <a href="{% url 'forum:delete_announcement' announcement.id %}" 
+                         class="btn btn-outline-danger btn-sm"
+                         title="Usuń ogłoszenie">
+                        <i class="fas fa-trash"></i>
+                        <span class="d-none d-sm-inline ms-1">Usuń</span>
+                      </a>
+                    </div>
                   </div>
-                </td>
-                <td class="text-center">
-                  <div class="btn-group-vertical btn-group-sm" role="group">
-                    <a href="{% url 'forum:edit_announcement' announcement.id %}" 
-                       class="btn btn-outline-primary btn-sm"
-                       title="Edytuj ogłoszenie"
-                       onclick="event.stopPropagation();">
-                      ✏️
-                    </a>
-                    <a href="{% url 'forum:delete_announcement' announcement.id %}" 
-                       class="btn btn-outline-danger btn-sm"
-                       title="Usuń ogłoszenie"
-                       onclick="event.stopPropagation();">
-                      🗑️
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
       </div>
     {% else %}
       <div class="text-center py-5">
@@ -100,7 +88,7 @@
         <h5>Brak ogłoszeń</h5>
         <p class="text-muted mb-3">Nie ma jeszcze żadnych ogłoszeń w systemie.</p>
         <a href="{% url 'forum:create_announcement' %}" class="btn btn-success">
-          ➕ Utwórz pierwsze ogłoszenie
+          <i class="fas fa-plus"></i> Utwórz pierwsze ogłoszenie
         </a>
       </div>
     {% endif %}
@@ -108,24 +96,63 @@
 </div>
 
 <style>
-.table-hover tbody tr:hover {
-  background-color: rgba(13, 110, 253, 0.04);
+/* Directory card styling (matching forum layout) */
+.directory-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 8px;
 }
 
-.clickable-row {
-  cursor: pointer;
+.directory-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
 }
 
-.clickable-row:hover {
-  background-color: rgba(13, 110, 253, 0.08) !important;
+.directory-title {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.directory-link {
+  color: #2c3e50;
+  transition: color 0.2s ease;
+}
+
+.directory-link:hover {
+  color: #007bff;
+}
+
+.directory-icon {
+  margin-right: 8px;
+}
+
+/* Announcement specific styling */
+.announcement-item .directory-icon {
+  font-size: 1.1rem;
 }
 
 .badge {
   font-size: 0.75em;
 }
 
-.btn-group-vertical {
-  gap: 2px;
+/* Action buttons styling */
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
 }
 
 /* Button container responsive behavior */
@@ -138,7 +165,7 @@
   
   .button-container .btn {
     width: 100%;
-    margin: 0 !important; /* Remove me-2 margin on mobile */
+    margin: 0 !important;
   }
   
   .text-end {
@@ -146,40 +173,45 @@
   }
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .d-flex.justify-content-between {
+/* Mobile responsive adjustments */
+@media (max-width: 767px) {
+  .directory-card .row {
     flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
   }
   
-  .d-flex.justify-content-between > div {
-    text-align: center;
+  .directory-card .col-md-4 {
+    margin-top: 1rem;
+    text-align: center !important;
   }
   
-  .table-responsive {
-    font-size: 0.9rem;
+  .d-flex.gap-2 {
+    justify-content: center;
   }
   
-  .btn {
-    margin-bottom: 0.5rem;
+  .badge {
+    font-size: 0.7em;
   }
 }
 
+/* Very small screens */
 @media (max-width: 576px) {
-  .table th, .table td {
-    padding: 0.5rem;
+  .directory-title {
+    font-size: 1rem;
   }
   
-  h6 {
-    font-size: 0.9rem;
+  .directory-card .card-body {
+    padding: 1rem;
   }
   
-  .small {
-    font-size: 0.8rem;
+  .btn .d-none.d-sm-inline {
+    display: none !important;
   }
 }
 </style>
+
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'forum/css/directory_styles.css' %}">
+{% endblock %}
 
 {% endblock %}
