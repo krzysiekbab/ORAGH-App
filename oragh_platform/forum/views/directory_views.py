@@ -15,8 +15,28 @@ def directory_view(request, directory_id):
     if not directory.can_user_access(request.user):
         return HttpResponseForbidden("Nie masz dostępu do tego katalogu.")
     
-    # Get subdirectories
-    subdirectories = Directory.objects.filter(parent=directory)
+    # Get subdirectories with normalized data structure
+    subdirectories = []
+    for subdirectory in Directory.objects.filter(parent=directory):
+        if subdirectory.can_user_access(request.user):
+            posts_count = subdirectory.posts.count()
+            comments_count = sum(post.get_comments_count() for post in subdirectory.posts.all())
+            last_post = subdirectory.posts.first()
+            subdirectories_count = subdirectory.subdirectories.count()
+            
+            subdirectories.append({
+                'id': subdirectory.id,
+                'name': subdirectory.name,
+                'description': subdirectory.description,
+                'access_level': subdirectory.access_level,
+                'get_highlight_classes': subdirectory.get_highlight_classes(),
+                'get_highlight_icon': subdirectory.get_highlight_icon(),
+                'get_absolute_url': subdirectory.get_absolute_url(),
+                'posts_count': posts_count,
+                'comments_count': comments_count,
+                'subdirectories_count': subdirectories_count,
+                'last_post': last_post,
+            })
     
     # Get posts in this directory
     posts = Post.objects.filter(directory=directory).select_related('author')

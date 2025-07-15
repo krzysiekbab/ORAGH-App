@@ -1,7 +1,7 @@
 {% comment %}
 Reusable template for displaying a list of directories
 Parameters:
-- directories: List of directory data objects (with directory, posts_count, comments_count, last_post) OR direct directory objects
+- directories: List of directory data objects with normalized structure (id, name, description, access_level, posts_count, comments_count, subdirectories_count, last_post, etc.)
 - show_comments_count: Boolean to show comments count (default: true)
 - empty_message: Custom message when no directories (optional)
 - empty_action_url: URL for action button when empty (optional)
@@ -12,112 +12,55 @@ Parameters:
   <div class="row g-3">
     {% for item in directories %}
       <div class="col-12">
-        {% comment %}Handle both directory data objects and direct directory objects{% endcomment %}
-        {% if item.directory %}
-          {% comment %}This is a directory data object from forum_index{% endcomment %}
-          <div class="card border-0 shadow-sm directory-card {{ item.directory.get_highlight_classes|default:'' }}">
-            <div class="card-body">
-              <div class="row align-items-center">
-                <div class="col-md-8">
-                  <h6 class="mb-2 directory-title">
-                    <span class="directory-icon">{{ item.directory.get_highlight_icon|default:'📁' }}</span>
-                    <a href="{{ item.directory.get_absolute_url }}" class="text-decoration-none directory-link">
-                      {{ item.directory.name }}
-                    </a>
-                    {% if item.directory.access_level == 'board' %}
-                      <span class="badge bg-danger ms-2">Tylko zarząd</span>
-                    {% endif %}
-                  </h6>
-                  {% if item.directory.description %}
-                    <p class="text-muted mb-2 small">{{ item.directory.description }}</p>
+        <div class="card border-0 shadow-sm directory-card {{ item.get_highlight_classes|default:'' }}">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h6 class="mb-2 directory-title">
+                  <span class="directory-icon">{{ item.get_highlight_icon|default:'📁' }}</span>
+                  <a href="{{ item.get_absolute_url }}" class="text-decoration-none directory-link">
+                    {{ item.name }}
+                  </a>
+                  {% if item.access_level == 'board' %}
+                    <span class="badge bg-danger ms-2">Tylko zarząd</span>
                   {% endif %}
-                  <div class="d-flex gap-3">
+                </h6>
+                {% if item.description %}
+                  <p class="text-muted mb-2 small">{{ item.description }}</p>
+                {% endif %}
+                <div class="d-flex gap-3">
+                  <small class="text-muted">
+                    <i class="fas fa-file-alt"></i> {{ item.posts_count }} postów
+                  </small>
+                  {% if show_comments_count|default:true %}
                     <small class="text-muted">
-                      <i class="fas fa-file-alt"></i> {{ item.posts_count }} postów
+                      <i class="fas fa-comment"></i> {{ item.comments_count }} komentarzy
                     </small>
-                    {% if show_comments_count|default:true %}
-                      <small class="text-muted">
-                        <i class="fas fa-comment"></i> {{ item.comments_count }} komentarzy
-                      </small>
-                    {% else %}
-                      <small class="text-muted">
-                        <i class="fas fa-folder"></i> {{ item.directory.subdirectories.count }} podkatalogów
-                      </small>
-                    {% endif %}
-                  </div>
-                </div>
-                <div class="col-md-4 text-md-end">
-                  {% if item.last_post %}
-                    <div class="text-muted small">
-                      <strong>Ostatni post:</strong><br>
-                      <a href="{{ item.last_post.get_absolute_url }}" class="text-decoration-none">
-                        {{ item.last_post.title|truncatechars:30 }}
-                      </a><br>
-                      <small>{{ item.last_post.updated_at|date:"d.m.Y H:i" }}</small>
-                    </div>
                   {% else %}
-                    <div class="text-muted small">
-                      <em>Brak postów</em>
-                    </div>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-          </div>
-        {% else %}
-          {% comment %}This is a direct directory object from directory_view{% endcomment %}
-          <div class="card border-0 shadow-sm directory-card {{ item.get_highlight_classes|default:'' }}">
-            <div class="card-body">
-              <div class="row align-items-center">
-                <div class="col-md-8">
-                  <h6 class="mb-2 directory-title">
-                    <span class="directory-icon">{{ item.get_highlight_icon|default:'📁' }}</span>
-                    <a href="{{ item.get_absolute_url }}" class="text-decoration-none directory-link">
-                      {{ item.name }}
-                    </a>
-                    {% if item.access_level == 'board' %}
-                      <span class="badge bg-danger ms-2">Tylko zarząd</span>
-                    {% endif %}
-                  </h6>
-                  {% if item.description %}
-                    <p class="text-muted mb-2 small">{{ item.description }}</p>
-                  {% endif %}
-                  <div class="d-flex gap-3">
                     <small class="text-muted">
-                      <i class="fas fa-file-alt"></i> {{ item.posts.count }} postów
+                      <i class="fas fa-folder"></i> {{ item.subdirectories_count }} podkatalogów
                     </small>
-                    {% if show_comments_count|default:true %}
-                      <small class="text-muted">
-                        <i class="fas fa-comment"></i> 0 komentarzy
-                      </small>
-                    {% else %}
-                      <small class="text-muted">
-                        <i class="fas fa-folder"></i> {{ item.subdirectories.count }} podkatalogów
-                      </small>
-                    {% endif %}
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-md-4 text-md-end">
+                {% if item.last_post %}
+                  <div class="text-muted small">
+                    <strong>Ostatni post:</strong><br>
+                    <a href="{{ item.last_post.get_absolute_url }}" class="text-decoration-none">
+                      {{ item.last_post.title|truncatechars:30 }}
+                    </a><br>
+                    <small>{{ item.last_post.updated_at|date:"d.m.Y H:i" }}</small>
                   </div>
-                </div>
-                <div class="col-md-4 text-md-end">
-                  {% with last_post=item.posts.first %}
-                    {% if last_post %}
-                      <div class="text-muted small">
-                        <strong>Ostatni post:</strong><br>
-                        <a href="{{ last_post.get_absolute_url }}" class="text-decoration-none">
-                          {{ last_post.title|truncatechars:30 }}
-                        </a><br>
-                        <small>{{ last_post.updated_at|date:"d.m.Y H:i" }}</small>
-                      </div>
-                    {% else %}
-                      <div class="text-muted small">
-                        <em>Brak postów</em>
-                      </div>
-                    {% endif %}
-                  {% endwith %}
-                </div>
+                {% else %}
+                  <div class="text-muted small">
+                    <em>Brak postów</em>
+                  </div>
+                {% endif %}
               </div>
             </div>
           </div>
-        {% endif %}
+        </div>
       </div>
     {% endfor %}
   </div>
