@@ -9,34 +9,30 @@
 {% include 'shared/breadcrumb.jinja' with breadcrumb_path=directory.get_breadcrumb_path current_item=directory %}
 
 <!-- Directory Header with Action Buttons -->
-<div class="row align-items-start mb-4">
-  <div class="col-12 col-md-6 col-lg-6 mb-3 mb-lg-0">
-    <h4 class="mb-2 directory-title">
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-2">
       <i class="fas fa-folder-open directory-icon"></i>
-      {{ directory.name }}
-    </h4>
-    {% if directory.description %}
-      <p class="text-muted mb-0">{{ directory.description }}</p>
-    {% endif %}
-  </div>
-  <div class="col-12 col-md-6 col-lg-6">
-    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+      <h5 class="mb-0">{{ directory.name }}</h5>
+    </div>
+    <div class="d-flex gap-2">
       {% if can_create_post %}
-        <a href="{% url 'forum:create_post_in_directory' directory.id %}" class="btn btn-primary">
-          <i class="fas fa-plus"></i> 
-          <span class="d-none d-sm-inline">Nowy post</span>
-          <span class="d-sm-none">Post</span>
+        <a href="{% url 'forum:create_post_in_directory' directory.id %}" class="btn btn-outline-primary btn-sm">
+          <i class="fas fa-plus"></i> Nowy post
         </a>
       {% endif %}
       {% if can_create_directory %}
-        <a href="{% url 'forum:create_subdirectory' directory.id %}" class="btn btn-success">
-          <i class="fas fa-folder-plus"></i> 
-          <span class="d-none d-sm-inline">Nowy podkatalog</span>
-          <span class="d-sm-none">Podkatalog</span>
+        <a href="{% url 'forum:create_subdirectory' directory.id %}" class="btn btn-outline-success btn-sm">
+          <i class="fas fa-folder-plus"></i> Nowy katalog
         </a>
       {% endif %}
     </div>
   </div>
+  {% if directory.description %}
+    <div class="card-body">
+      <p class="text-muted mb-0">{{ directory.description }}</p>
+    </div>
+  {% endif %}
 </div>
 
 <!-- Subdirectories -->
@@ -46,28 +42,7 @@
       <h5 class="mb-0">📁 Podkatalogi</h5>
     </div>
     <div class="card-body">
-      <div class="row g-3">
-        {% for subdirectory in subdirectories %}
-          <div class="col-md-6 col-lg-4">
-            <div class="card border-primary">
-              <div class="card-body">
-                <h6 class="card-title">
-                  <a href="{{ subdirectory.get_absolute_url }}" class="text-decoration-none">
-                    📁 {{ subdirectory.name }}
-                  </a>
-                </h6>
-                {% if subdirectory.description %}
-                  <p class="card-text text-muted small">{{ subdirectory.description }}</p>
-                {% endif %}
-                <div class="small text-muted">
-                  Postów: {{ subdirectory.posts.count }} • 
-                  Podkatalogów: {{ subdirectory.subdirectories.count }}
-                </div>
-              </div>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
+      {% include 'shared/directory_list.jinja' with directories=subdirectories show_comments_count=false %}
     </div>
   </div>
 {% endif %}
@@ -79,67 +54,63 @@
   </div>
   <div class="card-body">
     {% if posts %}
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead class="table-light">
-            <tr>
-              <th class="post-title-col">Post</th>
-              <th class="text-center" style="width: 100px;">Odpowiedzi</th>
-              <th class="text-center" style="width: 200px;">Ostatni komentarz</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for post in posts %}
-              <tr>
-                <td class="post-title-col">
-                  <div class="d-flex align-items-start">
-                    <div class="me-3 text-center">
-                      {% if post.is_pinned %}
-                        <i class="fas fa-thumbtack text-warning" title="Przypięty"></i>
-                      {% elif post.is_locked %}
-                        <i class="fas fa-lock text-danger" title="Zablokowany"></i>
-                      {% else %}
-                        <i class="fas fa-comment-dots text-primary"></i>
-                      {% endif %}
-                    </div>
-                    <div class="flex-grow-1">
-                      <h6 class="mb-1">
-                        <a href="{{ post.get_absolute_url }}" class="text-decoration-none">
-                          {{ post.title }}
-                        </a>
+      <div class="row g-3">
+        {% for post in posts %}
+          <div class="col-12">
+            <div class="card border-0 shadow-sm directory-card">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-8">
+                    <h6 class="mb-2 directory-title">
+                      <span class="directory-icon">
                         {% if post.is_pinned %}
-                          <span class="badge bg-warning text-dark ms-1">Przypięty</span>
+                          <i class="fas fa-thumbtack text-warning" title="Przypięty"></i>
+                        {% elif post.is_locked %}
+                          <i class="fas fa-lock text-danger" title="Zablokowany"></i>
+                        {% else %}
+                          <i class="fas fa-comment-dots text-primary"></i>
                         {% endif %}
-                        {% if post.is_locked %}
-                          <span class="badge bg-danger ms-1">Zablokowany</span>
-                        {% endif %}
-                      </h6>
+                      </span>
+                      <a href="{{ post.get_absolute_url }}" class="text-decoration-none directory-link">
+                        {{ post.title }}
+                      </a>
+                      {% if post.is_pinned %}
+                        <span class="badge bg-warning text-dark ms-2">Przypięty</span>
+                      {% endif %}
+                      {% if post.is_locked %}
+                        <span class="badge bg-danger ms-2">Zablokowany</span>
+                      {% endif %}
+                    </h6>
+                    <p class="text-muted mb-2 small">
+                      Autor: {{ post.author.first_name }} {{ post.author.last_name }} • 
+                      {{ post.created_at|date:"d.m.Y H:i" }}
+                    </p>
+                    <div class="d-flex gap-3">
                       <small class="text-muted">
-                        Autor: {{ post.author.first_name }} {{ post.author.last_name }} • 
-                        {{ post.created_at|date:"d.m.Y H:i" }}
+                        <i class="fas fa-comment"></i> {{ post.get_comments_count|add:"-1" }} odpowiedzi
                       </small>
                     </div>
                   </div>
-                </td>
-                <td class="text-center">
-                  <span class="badge bg-secondary">{{ post.get_comments_count|add:"-1" }}</span>
-                </td>
-                <td class="text-center">
-                  {% with last_comment=post.get_last_comment %}
-                    {% if last_comment %}
-                      <div class="small">
-                        <div>{{ last_comment.author.first_name }} {{ last_comment.author.last_name }}</div>
-                        <div class="text-muted">{{ last_comment.created_at|date:"d.m.Y H:i" }}</div>
-                      </div>
-                    {% else %}
-                      <span class="text-muted small">Brak komentarzy</span>
-                    {% endif %}
-                  {% endwith %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                  <div class="col-md-4 text-md-end">
+                    {% with last_comment=post.get_last_comment %}
+                      {% if last_comment %}
+                        <div class="text-muted small">
+                          <strong>Ostatni komentarz:</strong><br>
+                          {{ last_comment.author.first_name }} {{ last_comment.author.last_name }}<br>
+                          <small>{{ last_comment.created_at|date:"d.m.Y H:i" }}</small>
+                        </div>
+                      {% else %}
+                        <div class="text-muted small">
+                          <em>Brak komentarzy</em>
+                        </div>
+                      {% endif %}
+                    {% endwith %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
       </div>
 
       <!-- Pagination -->
@@ -173,13 +144,13 @@
         </nav>
       {% endif %}
     {% else %}
-      <div class="text-center text-muted py-5">
-        <i class="fas fa-comment-slash fa-3x mb-3"></i>
+      <div class="text-center py-5">
+        <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
         <h5>Brak postów</h5>
-        <p>Ten katalog nie zawiera jeszcze żadnych postów.</p>
+        <p class="text-muted mb-0">Ten katalog nie zawiera jeszcze żadnych postów.</p>
         {% if can_create_post %}
-          <a href="{% url 'forum:create_post_in_directory' directory.id %}" class="btn btn-primary">
-            ➕ Utwórz pierwszy post
+          <a href="{% url 'forum:create_post_in_directory' directory.id %}" class="btn btn-primary mt-2">
+            <i class="fas fa-plus"></i> Utwórz pierwszy post
           </a>
         {% endif %}
       </div>
@@ -190,179 +161,7 @@
 {% block extra_css %}
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'forum/css/breadcrumb.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'forum/css/directory_styles.css' %}">
 {% endblock %}
-
-<style>
-/* Directory title styling */
-.directory-title {
-  font-weight: 600;
-  color: #212529;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.directory-icon {
-  color: #0d6efd;
-  font-size: 1.2em;
-  display: inline-block;
-}
-
-.directory-icon {
-  font-size: 1em;
-  display: inline-block;
-}
-
-/* Enhanced card styling */
-.card {
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.card-header {
-  border-radius: 12px 12px 0 0 !important;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-bottom: 1px solid #dee2e6;
-  padding: 1rem 1.25rem;
-}
-
-/* Directory card styling */
-.card.border-primary {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-radius: 8px;
-}
-
-.card.border-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* Post table styling */
-.post-title-col {
-  min-width: 300px;
-}
-
-.table {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.table thead th {
-  background: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
-  font-weight: 600;
-  color: #495057;
-}
-
-.table tbody tr {
-  transition: background-color 0.2s ease;
-}
-
-.table-hover tbody tr:hover {
-  background-color: rgba(13, 110, 253, 0.05);
-}
-
-/* Button enhancements */
-.btn {
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-/* Responsive adjustments */
-@media (max-width: 992px) {
-  .row.align-items-start {
-    text-align: center;
-  }
-  
-  .directory-title {
-    font-size: 1.5rem;
-  }
-  
-  .btn {
-    font-size: 0.9rem;
-    padding: 8px 16px;
-  }
-}
-
-@media (max-width: 768px) {
-  .breadcrumb-enhanced {
-    justify-content: center;
-    font-size: 0.8rem;
-    padding: 6px 12px;
-  }
-  
-  .directory-title {
-    font-size: 1.25rem;
-    text-align: center;
-  }
-  
-  .d-flex.flex-column.flex-sm-row {
-    gap: 0.75rem !important;
-  }
-  
-  .btn {
-    font-size: 0.875rem;
-    padding: 10px 20px;
-    width: 100%;
-  }
-}
-
-@media (max-width: 576px) {
-  .breadcrumb-enhanced {
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  .breadcrumb-item-enhanced {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .breadcrumb-separator-enhanced {
-    margin: 2px 0;
-    font-size: 0.7rem;
-    transform: rotate(90deg);
-  }
-  
-  .breadcrumb-link-enhanced, .breadcrumb-current-enhanced {
-    padding: 2px 6px;
-    gap: 4px;
-    justify-content: center;
-  }
-  
-  .directory-title {
-    font-size: 1.1rem;
-    text-align: center;
-  }
-  
-  .btn {
-    font-size: 0.8rem;
-    padding: 8px 12px;
-  }
-  
-  /* Hide full text on very small screens */
-  .d-sm-none {
-    font-size: 0.75rem;
-  }
-}
-
-/* Animation for directory icon */
-.directory-icon {
-  transition: transform 0.2s ease;
-}
-
-.directory-title:hover .directory-icon {
-  transform: scale(1.1);
-}
-</style>
 
 {% endblock %}

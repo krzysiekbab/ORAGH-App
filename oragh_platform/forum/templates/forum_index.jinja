@@ -14,9 +14,11 @@
       <div class="d-flex gap-2">
         <a href="{% url 'forum:manage_announcements' %}" class="btn btn-outline-primary btn-sm" title="Zarządzaj ogłoszeniami">
           <i class="fas fa-cog"></i>
+          Zarządzaj
         </a>
         <a href="{% url 'forum:create_announcement' %}" class="btn btn-outline-success btn-sm" title="Dodaj ogłoszenie">
           <i class="fas fa-plus"></i>
+          Nowe ogłoszenie
         </a>
       </div>
     {% endif %}
@@ -53,72 +55,16 @@
   <div class="card-header d-flex justify-content-between align-items-center">
     <h5 class="mb-0">📁 Katalogi forum</h5>
     {% if user_is_board %}
-      <a href="{% url 'forum:create_directory' %}" class="btn btn-outline-primary btn-sm">
+      <a href="{% url 'forum:create_directory' %}" class="btn btn-outline-success btn-sm">
         <i class="fas fa-plus"></i> Nowy katalog
       </a>
     {% endif %}
   </div>
   <div class="card-body">
-    {% if directories %}
-      <div class="row g-3">
-        {% for dir_data in directories %}
-          <div class="col-12">
-            <div class="card border-0 shadow-sm directory-card {{ dir_data.directory.get_highlight_classes }}">
-              <div class="card-body">
-                <div class="row align-items-center">
-                  <div class="col-md-8">
-                    <h6 class="mb-2 directory-title">
-                      <span class="directory-icon">{{ dir_data.directory.get_highlight_icon }}</span>
-                      <a href="{{ dir_data.directory.get_absolute_url }}" class="text-decoration-none directory-link">
-                        {{ dir_data.directory.name }}
-                      </a>
-                      {% if dir_data.directory.access_level == 'board' %}
-                        <span class="badge bg-danger ms-2">Tylko zarząd</span>
-                      {% endif %}
-                    </h6>
-                    <p class="text-muted mb-2 small">{{ dir_data.directory.description }}</p>
-                    <div class="d-flex gap-3">
-                      <small class="text-muted">
-                        <i class="fas fa-file-alt"></i> {{ dir_data.posts_count }} postów
-                      </small>
-                      <small class="text-muted">
-                        <i class="fas fa-comment"></i> {{ dir_data.comments_count }} komentarzy
-                      </small>
-                    </div>
-                  </div>
-                  <div class="col-md-4 text-md-end">
-                    {% if dir_data.last_post %}
-                      <div class="text-muted small">
-                        <strong>Ostatni post:</strong><br>
-                        <a href="{{ dir_data.last_post.get_absolute_url }}" class="text-decoration-none">
-                          {{ dir_data.last_post.title|truncatechars:30 }}
-                        </a><br>
-                        <small>{{ dir_data.last_post.updated_at|date:"d.m.Y H:i" }}</small>
-                      </div>
-                    {% else %}
-                      <div class="text-muted small">
-                        <em>Brak postów</em>
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
+    {% if user_is_board %}
+      {% include 'shared/directory_list.jinja' with directories=directories empty_action_url='forum:create_directory' empty_action_text='Utwórz pierwszy katalog' %}
     {% else %}
-      <div class="text-center py-5">
-        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-        <p class="text-muted mb-0">Brak dostępnych katalogów.</p>
-        {% if user_is_board %}
-          <p class="text-muted">
-            <a href="{% url 'forum:create_directory' %}" class="btn btn-primary mt-2">
-              <i class="fas fa-plus"></i> Utwórz pierwszy katalog
-            </a>
-          </p>
-        {% endif %}
-      </div>
+      {% include 'shared/directory_list.jinja' with directories=directories %}
     {% endif %}
   </div>
 </div>
@@ -126,6 +72,7 @@
 {% block extra_css %}
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'forum/css/breadcrumb.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'forum/css/directory_styles.css' %}">
 {% endblock %}
 
 {% endblock %}
