@@ -368,7 +368,7 @@
                     
                     <!-- Comment Number and Actions -->
                     <div class="comment-number-actions d-flex align-items-center">
-                      <span class="comment-number me-2">#{{ forloop.counter }}</span>
+                      <span class="comment-number me-2">#{{ start_index|add:forloop.counter }}</span>
                       
                       <!-- Comment Actions -->
                       {% if request.user == comment.author or comment.user_can_delete %}

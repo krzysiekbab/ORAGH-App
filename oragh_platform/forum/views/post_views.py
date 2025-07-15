@@ -26,9 +26,13 @@ def post_view(request, post_id):
     for comment in page_obj:
         comment.user_can_delete = comment.can_user_delete(request.user)
     
+    # Calculate starting comment number for current page
+    start_index = (page_obj.number - 1) * paginator.per_page
+    
     context = {
         'post': post,
         'comments': page_obj,
+        'start_index': start_index,  # Add starting index for comment numbering
         'can_reply': not post.is_locked,  # Users can reply if post is not locked
         'can_edit_post': request.user.is_staff or request.user == post.author,
         'can_delete_post': post.can_user_delete(request.user),
