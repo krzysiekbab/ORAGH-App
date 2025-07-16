@@ -112,40 +112,7 @@
   </div>
   <!-- Attendance Section -->
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Frekwencja</h5>
-      <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="select_all" onchange="selectAll()">
-        <label class="form-check-label" for="select_all">
-          Zaznacz wszystkich
-        </label>
-      </div>
-    </div>
-    <div class="card-body">
-      {% for section in sectioned_musicians %}
-        {% if section.musicians %}
-          <div class="mb-4">
-            <h6 class="section-header bg-light p-2 rounded mb-3">{{ section.section_name }}</h6>
-            <div class="row">
-              {% for musician in section.musicians %}
-                <div class="col-12 col-md-6 col-lg-4 mb-2">
-                  <div class="form-check">
-                    <input type="checkbox" class="form-check-input musician-checkbox" 
-                           id="user_{{ musician.user.id }}" 
-                           name="user_{{ musician.user.id }}">
-                    <label class="form-check-label" for="user_{{ musician.user.id }}">
-                      {{ musician.user.first_name }} {{ musician.user.last_name }}
-                    </label>
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-        {% endif %}
-      {% empty %}
-        <div class="text-center text-muted">Brak użytkowników.</div>
-      {% endfor %}
-    </div>
+    {% include 'shared/musician_grid.jinja' with checkbox_prefix='user_' show_select_all=True header_title='Frekwencja' %}
   </div>
 
   <!-- Action Buttons -->
@@ -156,40 +123,10 @@
 </form>
 
 <script>
-function selectAll() {
-    const selectAllCheckbox = document.getElementById('select_all');
-    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
-    
-    musicianCheckboxes.forEach(checkbox => {
-        checkbox.checked = selectAllCheckbox.checked;
-    });
-    
-    updateSelectAllState();
-}
-
-function updateSelectAllState() {
-    const selectAllCheckbox = document.getElementById('select_all');
-    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
-    const checkedCount = document.querySelectorAll('.musician-checkbox:checked').length;
-    const totalCount = musicianCheckboxes.length;
-    
-    if (checkedCount === 0) {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-    } else if (checkedCount === totalCount) {
-        selectAllCheckbox.checked = true;
-        selectAllCheckbox.indeterminate = false;
-    } else {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = true;
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const eventTypeSelect = document.getElementById('event_type');
     const eventNameInput = document.getElementById('event_name');
     const eventDateInput = document.getElementById('event_date');
-    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
     
     // Make date input fully clickable
     eventDateInput.addEventListener('click', function() {
@@ -209,27 +146,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
-    // Add event listeners to individual checkboxes
-    musicianCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateSelectAllState);
-    });
-    
-    // Set initial state of select all checkbox
-    updateSelectAllState();
 });
 </script>
 
 <style>
-.section-header {
-    font-weight: 600;
-    color: #495057;
-}
-
-.form-check-label {
-    cursor: pointer;
-}
-
 .card-header h5 {
     color: #495057;
 }

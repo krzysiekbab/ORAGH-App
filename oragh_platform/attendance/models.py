@@ -6,6 +6,7 @@ class Season(models.Model):
     start_date = models.DateField(help_text="Start date of the season")
     end_date = models.DateField(help_text="End date of the season")
     is_active = models.BooleanField(default=True, help_text="Whether this season is currently active")
+    musicians = models.ManyToManyField('main.MusicianProfile', blank=True, related_name='seasons')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -42,6 +43,33 @@ class Season(models.Model):
         
         # If no season contains today, return the most recent active season
         return cls.objects.filter(is_active=True).first()
+
+    def get_musicians_by_section(self):
+        """Get musicians grouped by instrument sections for this season"""
+        from main.models import INSTRUMENT_CHOICES
+        
+        musicians = self.musicians.select_related('user').filter(active=True)
+        
+        # Group musicians by instrument sections
+        section_names = [choice[1] for choice in INSTRUMENT_CHOICES]
+        sections = {name: [] for name in section_names}
+        section_map = {name.lower(): name for name in section_names}
+        
+        for musician in musicians:
+            instrument = (musician.instrument or '').strip().lower()
+            section = section_map.get(instrument, "Inne")
+            sections[section].append(musician)
+        
+        # Filter out empty sections and return as list of dictionaries
+        sectioned_musicians = []
+        for section_name, section_musicians in sections.items():
+            if section_musicians:  # Only include sections that have musicians
+                sectioned_musicians.append({
+                    'section_name': section_name,
+                    'musicians': section_musicians
+                })
+        
+        return sectioned_musicians
 
 class Event(models.Model):
     EVENT_TYPES = [

@@ -7,13 +7,13 @@
   <p class="mb-0">W systemie może być aktywny tylko jeden sezon w danym czasie. Jeśli oznaczysz ten sezon jako aktywny, wszystkie pozostałe aktywne sezony zostaną automatycznie dezaktywowane.</p>
 </div>
 
-<form method="post" class="mb-4">
+<form method="post" class="mb-4" id="seasonForm">
   {% csrf_token %}
   {% if error_message %}
     <div class="alert alert-danger">{{ error_message }}</div>
   {% endif %}
   
-  <div class="card">
+  <div class="card mb-4">
     <div class="card-header">
       <h5 class="mb-0">Szczegóły nowego sezonu</h5>
     </div>
@@ -47,6 +47,13 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Wybór muzyków</h5>
+    </div>
+    {% include 'shared/musician_grid.jinja' with checkbox_prefix='selected_musicians' show_select_all=True header_title='' %}
   </div>
 
   <div class="d-flex justify-content-between mt-4">
@@ -98,16 +105,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<style>
-@media (max-width: 768px) {
-    .d-flex.justify-content-between {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .d-flex.justify-content-between .btn {
-        width: 100%;
-    }
-}
-</style>
 {% endblock %}

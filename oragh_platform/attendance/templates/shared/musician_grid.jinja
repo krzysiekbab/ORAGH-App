@@ -1,0 +1,132 @@
+{% comment %}
+Musician grid component for selection
+Parameters:
+- sectioned_musicians: List of sections with musicians
+- checkbox_prefix: Prefix for checkbox names (e.g., 'user_' for attendance, 'selected_musicians' for seasons)
+- show_select_all: Boolean to show select all checkbox
+- current_selections: Set of currently selected musician IDs (optional)
+{% endcomment %}
+
+{% if show_select_all %}
+<div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">{{ header_title|default:"Muzycy" }}</h5>
+    <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="select_all" onchange="selectAll()">
+        <label class="form-check-label" for="select_all">
+            Zaznacz wszystkich
+        </label>
+    </div>
+</div>
+<div class="card-body">
+{% else %}
+<div class="card-body">
+    <h5 class="mb-3">{{ header_title|default:"Muzycy" }}</h5>
+{% endif %}
+
+{% for section in sectioned_musicians %}
+    <div class="mb-4">
+        <h6 class="section-header bg-light p-2 rounded mb-3">{{ section.section_name }}</h6>
+        <div class="row">
+            {% for musician in section.musicians %}
+                <div class="col-12 col-md-6 col-lg-4 mb-2">
+                    <div class="form-check">
+                        {% if musician.musician %}
+                            {% comment %}Nested structure for edit_attendance{% endcomment %}
+                            <input type="checkbox" class="form-check-input musician-checkbox" 
+                                   id="{{ checkbox_prefix }}{{ musician.musician.user.id }}" 
+                                   {% if checkbox_prefix == 'user_' %}
+                                   name="{{ checkbox_prefix }}{{ musician.musician.user.id }}"
+                                   {% else %}
+                                   name="{{ checkbox_prefix }}"
+                                   {% endif %}
+                                   value="{{ musician.musician.id }}"
+                                   {% if musician.current_attendance %}checked{% endif %}
+                                   {% if current_selections and musician.musician.id in current_selections %}checked{% endif %}>
+                            <label class="form-check-label" for="{{ checkbox_prefix }}{{ musician.musician.user.id }}">
+                                {{ musician.musician.user.first_name }} {{ musician.musician.user.last_name }}
+                            </label>
+                        {% else %}
+                            {% comment %}Direct structure for add_attendance and seasons{% endcomment %}
+                            <input type="checkbox" class="form-check-input musician-checkbox" 
+                                   id="{{ checkbox_prefix }}{{ musician.user.id }}" 
+                                   {% if checkbox_prefix == 'user_' %}
+                                   name="{{ checkbox_prefix }}{{ musician.user.id }}"
+                                   {% else %}
+                                   name="{{ checkbox_prefix }}"
+                                   {% endif %}
+                                   value="{{ musician.id }}"
+                                   {% if musician.current_attendance %}checked{% endif %}
+                                   {% if current_selections and musician.id in current_selections %}checked{% endif %}>
+                            <label class="form-check-label" for="{{ checkbox_prefix }}{{ musician.user.id }}">
+                                {{ musician.user.first_name }} {{ musician.user.last_name }}
+                            </label>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endfor %}
+
+{% if not sectioned_musicians %}
+    <div class="text-center text-muted py-4">
+        Brak muzyków do wyświetlenia.
+    </div>
+{% endif %}
+
+</div>
+
+{% if show_select_all %}
+<script>
+function selectAll() {
+    const selectAllCheckbox = document.getElementById('select_all');
+    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
+    
+    musicianCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+    
+    updateSelectAllState();
+}
+
+function updateSelectAllState() {
+    const selectAllCheckbox = document.getElementById('select_all');
+    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
+    const checkedCount = document.querySelectorAll('.musician-checkbox:checked').length;
+    const totalCount = musicianCheckboxes.length;
+    
+    if (checkedCount === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedCount === totalCount) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+}
+
+// Add event listeners to individual checkboxes
+document.addEventListener('DOMContentLoaded', function() {
+    const musicianCheckboxes = document.querySelectorAll('.musician-checkbox');
+    musicianCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectAllState);
+    });
+    
+    // Set initial state of select all checkbox
+    updateSelectAllState();
+});
+</script>
+{% endif %}
+
+<style>
+.section-header {
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+</style>

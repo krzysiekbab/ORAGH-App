@@ -13,7 +13,7 @@
     <div class="alert alert-danger">{{ error_message }}</div>
   {% endif %}
   
-  <div class="card">
+  <div class="card mb-4">
     <div class="card-header">
       <h5 class="mb-0">Szczegóły sezonu</h5>
     </div>
@@ -53,11 +53,19 @@
       <div class="mt-4">
         <h6>Statystyki sezonu:</h6>
         <ul class="list-unstyled">
+          <li><strong>Liczba muzyków:</strong> {{ season.musicians.count }}</li>
           <li><strong>Liczba wydarzeń:</strong> {{ season.events.count }}</li>
           <li><strong>Data utworzenia:</strong> {{ season.created_at|date:"d.m.Y H:i" }}</li>
         </ul>
       </div>
     </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Muzycy w sezonie</h5>
+    </div>
+    {% include 'shared/musician_grid.jinja' with checkbox_prefix='selected_musicians' show_select_all=True header_title='' current_selections=current_musician_ids %}
   </div>
 
   <div class="d-flex justify-content-between mt-4">
@@ -66,16 +74,4 @@
   </div>
 </form>
 
-<style>
-@media (max-width: 768px) {
-    .d-flex.justify-content-between {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .d-flex.justify-content-between .btn {
-        width: 100%;
-    }
-}
-</style>
 {% endblock %}

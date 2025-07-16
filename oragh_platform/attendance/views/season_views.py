@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.utils import timezone
+from django.http import JsonResponse
 
+from main.models import MusicianProfile, INSTRUMENT_CHOICES
 from ..models import Season
 
 
@@ -26,17 +28,45 @@ def manage_seasons_view(request):
 @permission_required('attendance.manage_seasons', raise_exception=True)
 def add_season_view(request):
     """
-    Add a new season.
+    Add a new season with musician selection.
     """
+    # Get all active musicians
+    all_musicians = MusicianProfile.objects.select_related('user').filter(active=True)
+    
+    # Group musicians by instrument sections
+    section_names = [choice[1] for choice in INSTRUMENT_CHOICES]
+    sections = {name: [] for name in section_names}
+    section_map = {name.lower(): name for name in section_names}
+    
+    for musician in all_musicians:
+        instrument = (musician.instrument or '').strip().lower()
+        section = section_map.get(instrument, "Inne")
+        sections[section].append(musician)
+
+    # Create sectioned data for template
+    sectioned_musicians = []
+    for section_name, section_musicians in sections.items():
+        if section_musicians:  # Only include sections that have musicians
+            sectioned_musicians.append({
+                'section_name': section_name,
+                'musicians': section_musicians
+            })
+    
+    # Get previous seasons for import option
+    previous_seasons = Season.objects.all().order_by('-start_date')
+    
     if request.method == 'POST':
         name = request.POST.get('name')
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         is_active = request.POST.get('is_active') == 'on'
+        import_from_season_id = request.POST.get('import_from_season')
         
         if not name or not start_date or not end_date:
             context = {
-                'error_message': 'Wszystkie pola są wymagane.'
+                'error_message': 'Wszystkie pola są wymagane.',
+                'sectioned_musicians': sectioned_musicians,
+                'previous_seasons': previous_seasons,
             }
             return render(request, 'seasons/add_season.jinja', context)
         
@@ -53,22 +83,46 @@ def add_season_view(request):
                 is_active=is_active
             )
             
+            # Handle musician selection
+            selected_musician_ids = []
+            if import_from_season_id:
+                # Import musicians from previous season
+                try:
+                    previous_season = Season.objects.get(id=import_from_season_id)
+                    selected_musician_ids = list(previous_season.musicians.values_list('id', flat=True))
+                except Season.DoesNotExist:
+                    pass
+            else:
+                # Get selected musicians from form
+                selected_musician_ids = request.POST.getlist('selected_musicians')
+                selected_musician_ids = [int(id) for id in selected_musician_ids if id.isdigit()]
+            
+            # Add selected musicians to season
+            if selected_musician_ids:
+                season.musicians.set(selected_musician_ids)
+            
             from django.contrib import messages
+            musician_count = len(selected_musician_ids)
             if is_active and other_active_seasons:
                 deactivated_names = [s.name for s in other_active_seasons]
-                messages.success(request, f'Sezon "{season.name}" został dodany jako aktywny.')
+                messages.success(request, f'Sezon "{season.name}" został dodany jako aktywny z {musician_count} muzykami.')
                 messages.info(request, f'Automatycznie dezaktywowano sezony: {", ".join(deactivated_names)}.')
             else:
-                messages.success(request, f'Sezon "{season.name}" został dodany.')
+                messages.success(request, f'Sezon "{season.name}" został dodany z {musician_count} muzykami.')
             
             return redirect('manage_seasons')
         except Exception as e:
             context = {
-                'error_message': f'Błąd podczas tworzenia sezonu: {str(e)}'
+                'error_message': f'Błąd podczas tworzenia sezonu: {str(e)}',
+                'sectioned_musicians': sectioned_musicians,
+                'previous_seasons': previous_seasons,
             }
             return render(request, 'seasons/add_season.jinja', context)
     
-    context = {}
+    context = {
+        'sectioned_musicians': sectioned_musicians,
+        'previous_seasons': previous_seasons,
+    }
     return render(request, 'seasons/add_season.jinja', context)
 
 
@@ -76,9 +130,34 @@ def add_season_view(request):
 @permission_required('attendance.manage_seasons', raise_exception=True)
 def edit_season_view(request, season_id):
     """
-    Edit an existing season.
+    Edit an existing season and its musicians.
     """
     season = get_object_or_404(Season, id=season_id)
+    
+    # Get all active musicians
+    all_musicians = MusicianProfile.objects.select_related('user').filter(active=True)
+    
+    # Group musicians by instrument sections
+    section_names = [choice[1] for choice in INSTRUMENT_CHOICES]
+    sections = {name: [] for name in section_names}
+    section_map = {name.lower(): name for name in section_names}
+    
+    # Get currently selected musicians for this season
+    current_musician_ids = set(season.musicians.values_list('id', flat=True))
+    
+    for musician in all_musicians:
+        instrument = (musician.instrument or '').strip().lower()
+        section = section_map.get(instrument, "Inne")
+        sections[section].append(musician)
+
+    # Create sectioned data for template
+    sectioned_musicians = []
+    for section_name, section_musicians in sections.items():
+        if section_musicians:  # Only include sections that have musicians
+            sectioned_musicians.append({
+                'section_name': section_name,
+                'musicians': section_musicians
+            })
     
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -89,6 +168,8 @@ def edit_season_view(request, season_id):
         if not name or not start_date or not end_date:
             context = {
                 'season': season,
+                'sectioned_musicians': sectioned_musicians,
+                'current_musician_ids': current_musician_ids,
                 'error_message': 'Wszystkie pola są wymagane.'
             }
             return render(request, 'seasons/edit_season.jinja', context)
@@ -106,24 +187,34 @@ def edit_season_view(request, season_id):
             season.is_active = is_active
             season.save()
             
+            # Handle musician selection
+            selected_musician_ids = request.POST.getlist('selected_musicians')
+            selected_musician_ids = [int(id) for id in selected_musician_ids if id.isdigit()]
+            season.musicians.set(selected_musician_ids)
+            
             from django.contrib import messages
+            musician_count = len(selected_musician_ids)
             if is_active and other_active_seasons:
                 deactivated_names = [s.name for s in other_active_seasons]
-                messages.success(request, f'Sezon "{season.name}" został zaktualizowany i ustawiony jako aktywny.')
+                messages.success(request, f'Sezon "{season.name}" został zaktualizowany z {musician_count} muzykami.')
                 messages.info(request, f'Automatycznie dezaktywowano sezony: {", ".join(deactivated_names)}.')
             else:
-                messages.success(request, f'Sezon "{season.name}" został zaktualizowany.')
+                messages.success(request, f'Sezon "{season.name}" został zaktualizowany z {musician_count} muzykami.')
             
             return redirect('manage_seasons')
         except Exception as e:
             context = {
                 'season': season,
+                'sectioned_musicians': sectioned_musicians,
+                'current_musician_ids': current_musician_ids,
                 'error_message': f'Błąd podczas aktualizacji sezonu: {str(e)}'
             }
             return render(request, 'seasons/edit_season.jinja', context)
     
     context = {
         'season': season,
+        'sectioned_musicians': sectioned_musicians,
+        'current_musician_ids': current_musician_ids,
     }
     return render(request, 'seasons/edit_season.jinja', context)
 
@@ -188,3 +279,21 @@ def delete_season_view(request, season_id):
         'current_season': current_season,
     }
     return render(request, 'seasons/delete_season.jinja', context)
+
+
+@login_required
+@permission_required('attendance.manage_seasons', raise_exception=True)
+def get_season_musicians_api(request, season_id):
+    """
+    API endpoint to get musicians from a specific season for import functionality.
+    """
+    try:
+        season = Season.objects.get(id=season_id)
+        musicians = list(season.musicians.values_list('id', flat=True))
+        return JsonResponse({
+            'musicians': musicians,
+            'count': len(musicians),
+            'season_name': season.name
+        })
+    except Season.DoesNotExist:
+        return JsonResponse({'error': 'Season not found'}, status=404)
