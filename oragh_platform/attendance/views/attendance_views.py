@@ -9,6 +9,20 @@ from concerts.models import Concert
 from ..models import Attendance, Event, Season
 
 
+def safe_float_conversion(value):
+    """Safely convert string to float, handling both comma and dot decimal separators"""
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        # Replace comma with dot for decimal conversion
+        value = value.replace(',', '.')
+        try:
+            return float(value)
+        except ValueError:
+            return 0.0
+    return 0.0
+
+
 @login_required
 def attendance_view(request):
     event_type = request.GET.get('event_type', 'all')
@@ -170,7 +184,7 @@ def attendance_view(request):
                 user_row['attendances'].append({
                     'event': event,
                     'attendance': attendance,
-                    'present': attendance.present if attendance else None
+                    'present': float(attendance.present) if attendance else 0.0  # Changed to use decimal value
                 })
             section_data['user_rows'].append(user_row)
         
@@ -289,11 +303,23 @@ def add_attendance_view(request):
         
         # Save attendance for all musicians
         for musician in musicians:
-            present = f'user_{musician.user.id}' in request.POST
+            # Get attendance value based on event type
+            if event_type == 'rehearsal':
+                # For rehearsals, check for specific attendance values
+                attendance_key = f'user_{musician.user.id}'
+                if attendance_key in request.POST:
+                    attendance_value = safe_float_conversion(request.POST[attendance_key])
+                else:
+                    attendance_value = 0.0
+            else:
+                # For concerts and soundchecks, use simple present/absent (1.0/0.0)
+                present = f'user_{musician.user.id}' in request.POST
+                attendance_value = 1.0 if present else 0.0
+            
             attendance = Attendance.objects.create(
                 user=musician.user,
                 event=event,
-                present=present
+                present=attendance_value
             )
         
         # Add success message
@@ -369,9 +395,9 @@ def edit_attendance_view(request, event_id):
             # Get current attendance for this musician and event
             try:
                 attendance = Attendance.objects.get(user=musician.user, event=event)
-                current_attendance = attendance.present
+                current_attendance = float(attendance.present)
             except Attendance.DoesNotExist:
-                current_attendance = False
+                current_attendance = 0.0
             
             section_data['musicians'].append({
                 'musician': musician,
@@ -409,14 +435,26 @@ def edit_attendance_view(request, event_id):
         
         # Update attendance for all musicians
         for musician in musicians:
-            present = f'user_{musician.user.id}' in request.POST
+            # Get attendance value based on event type
+            if event.type == 'rehearsal':
+                # For rehearsals, check for specific attendance values
+                attendance_key = f'user_{musician.user.id}'
+                if attendance_key in request.POST:
+                    attendance_value = safe_float_conversion(request.POST[attendance_key])
+                else:
+                    attendance_value = 0.0
+            else:
+                # For concerts and soundchecks, use simple present/absent (1.0/0.0)
+                present = f'user_{musician.user.id}' in request.POST
+                attendance_value = 1.0 if present else 0.0
+            
             attendance, created = Attendance.objects.get_or_create(
                 user=musician.user, 
                 event=event,
-                defaults={'present': present}
+                defaults={'present': attendance_value}
             )
             if not created:
-                attendance.present = present
+                attendance.present = attendance_value
                 attendance.save()
         
         # Add success message

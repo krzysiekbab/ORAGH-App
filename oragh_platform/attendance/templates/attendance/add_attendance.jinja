@@ -19,6 +19,14 @@
           <option value="soundcheck" {% if event_type == 'soundcheck' %}selected{% endif %}>🔊 Soundcheck</option>
         </select>
       </div>
+      {% if event_type == 'rehearsal' %}
+      <div class="col-auto">
+        <small class="text-info">
+          <i class="fas fa-info-circle"></i> 
+          Dla prób dostępna jest opcja połowy obecności
+        </small>
+      </div>
+      {% endif %}
     </form>
   </div>
 </div>
@@ -112,7 +120,7 @@
   </div>
   <!-- Attendance Section -->
   <div class="card">
-    {% include 'shared/musician_grid.jinja' with checkbox_prefix='user_' show_select_all=True header_title='Frekwencja' %}
+    {% include 'shared/musician_grid.jinja' with checkbox_prefix='user_' show_select_all=True header_title='Frekwencja' event_type=event_type %}
   </div>
 
   <!-- Action Buttons -->

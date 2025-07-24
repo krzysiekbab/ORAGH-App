@@ -60,6 +60,10 @@
               🎵 Koncert
             {% elif event.type == 'rehearsal' %}
               🎼 Próba
+              <small class="text-info ms-2">
+                <i class="fas fa-info-circle"></i> 
+                Dla prób dostępna jest opcja połowy obecności
+              </small>
             {% elif event.type == 'soundcheck' %}
               🔊 Soundcheck
             {% else %}
@@ -73,7 +77,7 @@
 
     <!-- Attendance Section -->
     <div class="card">
-        {% include 'shared/musician_grid.jinja' with checkbox_prefix='user_' show_select_all=True header_title='Frekwencja' %}
+        {% include 'shared/musician_grid.jinja' with checkbox_prefix='user_' show_select_all=True header_title='Frekwencja' event_type=event.type edit_mode=True %}
     </div>
 
     <!-- Action Buttons -->

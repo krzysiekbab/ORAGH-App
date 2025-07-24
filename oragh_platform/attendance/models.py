@@ -86,9 +86,30 @@ class Event(models.Model):
         return f"{self.name} ({self.get_type_display()}) - {self.date} [{self.season}]"
 
 class Attendance(models.Model):
+    ATTENDANCE_CHOICES = [
+        (0.0, 'Nieobecny'),
+        (0.5, 'Połowa'),  # Half attendance, only for rehearsals
+        (1.0, 'Obecny'),
+    ]
+    
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    present = models.BooleanField(default=False)
+    present = models.DecimalField(max_digits=3, decimal_places=1, choices=ATTENDANCE_CHOICES, default=0.0)
 
     class Meta:
         unique_together = ('user', 'event')
+    
+    @property
+    def is_present(self):
+        """For backward compatibility - returns True if attendance > 0"""
+        return self.present > 0
+    
+    @property
+    def is_half(self):
+        """Returns True if half attendance"""
+        return self.present == 0.5
+    
+    @property
+    def is_full(self):
+        """Returns True if full attendance"""
+        return self.present == 1.0

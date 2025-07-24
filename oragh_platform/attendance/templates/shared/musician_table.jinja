@@ -63,12 +63,16 @@ Parameters:
                 <td class="fw-semibold text-start">{{ user_row.user.first_name }} {{ user_row.user.last_name }}</td>
                 {% for attendance_data in user_row.attendances %}
                   <td class="text-center">
-                    {% if attendance_data.present %}
-                      <span class="text-success fs-4">&#10003;</span>
-                    {% elif attendance_data.present == False %}
-                      <span class="text-danger fs-4">&#10007;</span>
+                    {% if attendance_data.attendance %}
+                      {% if attendance_data.present >= 0.9 %}
+                        <span class="text-success" title="Obecny">✅</span>
+                      {% elif attendance_data.present >= 0.4 and attendance_data.present <= 0.6 %}
+                        <span class="text-success half-checkbox-icon" title="Połowa obecności">☑️</span>
+                      {% else %}
+                        <span class="text-danger" title="Nieobecny">❌</span>
+                      {% endif %}
                     {% else %}
-                      <span class="text-muted">-</span>
+                      <span class="text-muted" title="Brak danych">➖</span>
                     {% endif %}
                   </td>
                 {% endfor %}
@@ -100,6 +104,11 @@ Parameters:
   width: 250px;
   min-width: 250px;
   max-width: 250px;
+}
+
+/* Make half-checkbox icon match the size of other emoji icons */
+.half-checkbox-icon {
+    font-size: 1.1em;
 }
 
 /* Responsive table improvements */
