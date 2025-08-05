@@ -160,15 +160,16 @@ CKEDITOR_5_CONFIGS = {
         'toolbar': ['heading', '|', 'bold', 'italic', 'link',
                     'bulletedList', 'numberedList', 'blockQuote'],
     },
-    'forum': {
+    'advanced': {
         'toolbar': [
             'heading', '|',
-            'bold', 'italic', 'underline', '|',
+            'bold', 'italic', 'underline', 'strikethrough', '|',
             'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
-            'numberedList', 'bulletedList', '|',
-            'link', 'blockQuote', '|',
-            'insertTable', '|',
-            'specialCharacters', '|',
+            'alignment', '|',
+            'numberedList', 'bulletedList', 'todoList', '|',
+            'indent', 'outdent', '|',
+            'link', 'blockQuote', 'insertTable', 'codeBlock', '|',
+            'specialCharacters', 'horizontalLine', 'emoji', '|',
             'undo', 'redo'
         ],
         'heading': {

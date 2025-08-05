@@ -7,7 +7,7 @@ from django_ckeditor_5.fields import CKEditor5Field
 class Announcement(models.Model):
     """Model for important announcements that appear at the top of forum"""
     title = models.CharField(max_length=200, verbose_name="Tytuł")
-    content = CKEditor5Field(verbose_name="Treść", config_name='forum')
+    content = CKEditor5Field(verbose_name="Treść", config_name='advanced')
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Autor")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data utworzenia")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Data modyfikacji")
@@ -180,7 +180,7 @@ class Comment(models.Model):
     """Model for forum comments in posts"""
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name="Post")
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Autor")
-    content = CKEditor5Field(verbose_name="Treść", config_name='forum')
+    content = CKEditor5Field(verbose_name="Treść", config_name='advanced')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data utworzenia")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Data modyfikacji")
     is_edited = models.BooleanField(default=False, verbose_name="Edytowany")

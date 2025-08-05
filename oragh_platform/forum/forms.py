@@ -8,7 +8,7 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ['content']
         widgets = {
-            'content': CKEditor5Widget(config_name='forum')
+            'content': CKEditor5Widget(config_name='advanced')
         }
         
     def __init__(self, *args, **kwargs):
@@ -27,7 +27,7 @@ class PostForm(forms.Form):
     )
     content = forms.CharField(
         label="Treść postu",
-        widget=CKEditor5Widget(config_name='forum')
+        widget=CKEditor5Widget(config_name='advanced')
     )
 
 
@@ -65,7 +65,7 @@ class AnnouncementForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Tytuł ogłoszenia...'
             }),
-            'content': CKEditor5Widget(config_name='forum')
+            'content': CKEditor5Widget(config_name='advanced')
         }
         
     def __init__(self, *args, **kwargs):

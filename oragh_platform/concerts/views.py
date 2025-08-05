@@ -2,8 +2,10 @@ from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.urls import reverse
 from .models import Concert
+from .forms import ConcertForm
 from main.models import MusicianProfile, INSTRUMENT_CHOICES
 from urllib.parse import urlencode
+import re
 
 @login_required
 @permission_required('concerts.view_concert', raise_exception=True)
@@ -34,6 +36,10 @@ def concert(request, concert_id):
         except MusicianProfile.DoesNotExist:
             pass
 
+    # Check if description is empty
+    description_text = re.sub('<[^<]+?>', '', concert.description).strip() if concert.description else ''
+    setlist_text = re.sub('<[^<]+?>', '', concert.setlist).strip() if concert.setlist else ''
+
     # Map instrument values to display names
     instrument_map = dict(INSTRUMENT_CHOICES)
     
@@ -62,6 +68,8 @@ def concert(request, concert_id):
         "concert": concert,
         "is_joined": is_joined,
         "sections": sections,
+        "description_text": description_text,
+        "setlist_text": setlist_text,
     })
 
 @login_required
@@ -71,19 +79,17 @@ def add_concert(request):
     Handle concert creation.
     """
     if request.method == "POST":
-        name = request.POST.get("name")
-        date = request.POST.get("date")
-        description = request.POST.get("description")
+        form = ConcertForm(request.POST)
+        if form.is_valid():
+            concert = form.save(commit=False)
+            concert.created_by = request.user
+            concert.save()
+            params = urlencode({'success': f'Koncert "{concert.name}" został pomyślnie utworzony.'})
+            return redirect(f'{reverse("concerts")}?{params}')
+    else:
+        form = ConcertForm()
 
-        if not name or not date:
-            return HttpResponse("Name and date are required.", status=400)
-
-        concert = Concert(name=name, date=date, description=description, created_by=request.user)
-        concert.save()
-        params = urlencode({'success': f'Koncert "{concert.name}" został pomyślnie utworzony.'})
-        return redirect(f'{reverse("concerts")}?{params}')
-
-    return render(request, "add_concert.jinja")
+    return render(request, "add_concert.jinja", {"form": form})
 
 @login_required
 @permission_required('concerts.change_concert', raise_exception=True)
@@ -91,27 +97,17 @@ def change_concert(request, concert_id):
     """
     Handle concert editing.
     """
-    try:
-        concert = Concert.objects.get(id=concert_id)
-    except Concert.DoesNotExist:
-        return HttpResponse("Concert not found.", status=404)
-
+    concert = get_object_or_404(Concert, id=concert_id)
     if request.method == "POST":
-        name = request.POST.get("name")
-        date = request.POST.get("date")
-        description = request.POST.get("description")
+        form = ConcertForm(request.POST, instance=concert)
+        if form.is_valid():
+            form.save()
+            params = urlencode({'success': f'Koncert "{concert.name}" został pomyślnie zaktualizowany.'})
+            return redirect(f'{reverse("concerts")}?{params}')
+    else:
+        form = ConcertForm(instance=concert)
 
-        if not name or not date:
-            return render(request, "error.jinja", {"error": "Name and date are required."})
-
-        concert.name = name
-        concert.date = date
-        concert.description = description
-        concert.save()
-        params = urlencode({'success': f'Koncert "{concert.name}" został pomyślnie zaktualizowany.'})
-        return redirect(f'{reverse("concerts")}?{params}')
-
-    return render(request, "edit_concert.jinja", {"concert": concert})
+    return render(request, "edit_concert.jinja", {"form": form, "concert": concert})
 
 @login_required
 @permission_required('concerts.delete_concert', raise_exception=True)

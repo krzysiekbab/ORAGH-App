@@ -34,11 +34,28 @@
           </div>
         </div>
         
-        {% if concert.description %}
+        {% if description_text %}
           <div class="mb-4">
             <h6 class="text-muted mb-2">Opis koncertu</h6>
-            <p>{{ concert.description|linebreaks }}</p>
+            <div>{{ concert.description|safe }}</div>
           </div>
+        {% else %}
+            <div class="mb-4">
+                <h6 class="text-muted mb-2">Opis koncertu</h6>
+                <p>Brak opisu koncertu.</p>
+            </div>
+        {% endif %}
+
+        {% if setlist_text %}
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Setlista</h6>
+          <div>{{ concert.setlist|safe }}</div>
+        </div>
+        {% else %}
+            <div class="mb-4">
+                <h6 class="text-muted mb-2">Setlista</h6>
+                <p>Brak setlisty dla tego koncertu.</p>
+            </div>
         {% endif %}
         
         <div class="border-top pt-3">

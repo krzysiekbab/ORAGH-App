@@ -64,7 +64,7 @@
                 </td>
                 <td data-label="Opis">
                   {% if concert.description %}
-                    {{ concert.description|truncatewords:10 }}
+                    {{ concert.description|safe|truncatewords_html:10 }}
                   {% else %}
                     <span class="text-muted">Brak opisu</span>
                   {% endif %}
