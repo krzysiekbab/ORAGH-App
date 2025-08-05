@@ -1,0 +1,59 @@
+<!-- Announcements Section -->
+{% if announcements or user_is_board %}
+<div class="card mb-4 border-warning">
+  <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="fas fa-bullhorn"></i> Ważne ogłoszenia</h5>
+    {% if user_is_board %}
+      <div class="d-flex gap-2">
+        <a href="{% url 'forum:manage_announcements' %}" class="btn btn-outline-primary btn-sm" title="Zarządzaj ogłoszeniami">
+          <i class="fas fa-cog"></i>
+          Zarządzaj
+        </a>
+        <a href="{% url 'forum:create_announcement' %}" class="btn btn-outline-success btn-sm" title="Dodaj ogłoszenie">
+          <i class="fas fa-plus"></i>
+          Nowe ogłoszenie
+        </a>
+      </div>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {% if announcements %}
+      {% for announcement in announcements %}
+        <div class="alert alert-info {% if not forloop.last %}mb-3{% else %}mb-0{% endif %} position-relative">
+          <h6 class="alert-heading">{{ announcement.title }}</h6>
+          <p class="mb-2">{{ announcement.content|safe }}</p>
+          <small class="text-muted">
+            Autor: {{ announcement.author.first_name }} {{ announcement.author.last_name }} • 
+            {{ announcement.created_at|date:"d.m.Y H:i" }}
+          </small>
+          {% if user_is_board %}
+            <div class="position-absolute top-0 end-0 p-2">
+              <div class="btn-group btn-group-sm" role="group">
+                <a href="{% url 'forum:edit_announcement' announcement.id %}" 
+                   class="btn btn-outline-primary btn-sm"
+                   title="Edytuj ogłoszenie">
+                  <i class="fas fa-edit"></i>
+                  <span class="btn-text ms-1">Edytuj</span>
+                </a>
+                <a href="{% url 'forum:delete_announcement' announcement.id %}" 
+                   class="btn btn-outline-danger btn-sm"
+                   title="Usuń ogłoszenie">
+                  <i class="fas fa-trash"></i>
+                  <span class="btn-text ms-1">Usuń</span>
+                </a>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted mb-0">
+        <i class="fas fa-info-circle"></i> Brak ogłoszeń do wyświetlenia.
+        {% if user_is_board %}
+          <a href="{% url 'forum:create_announcement' %}" class="text-decoration-none">Dodaj pierwsze ogłoszenie</a>.
+        {% endif %}
+      </p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

@@ -1,0 +1,77 @@
+{% extends "base.jinja" %}
+{% block title %}Edytuj sezon{% endblock %}
+{% block page_title %}Edytuj sezon: {{ season.name }}{% endblock %}
+{% block content %}
+<div class="alert alert-info mb-4">
+  <h6 class="alert-heading">ℹ️ Informacja o aktywnych sezonach</h6>
+  <p class="mb-0">W systemie może być aktywny tylko jeden sezon w danym czasie. Jeśli oznaczysz ten sezon jako aktywny, wszystkie pozostałe aktywne sezony zostaną automatycznie dezaktywowane.</p>
+</div>
+
+<form method="post" class="mb-4">
+  {% csrf_token %}
+  {% if error_message %}
+    <div class="alert alert-danger">{{ error_message }}</div>
+  {% endif %}
+  
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Szczegóły sezonu</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="name" class="form-label">Nazwa sezonu</label>
+          <input type="text" class="form-control" id="name" name="name" 
+                 value="{{ season.name }}" required>
+          <div class="form-text">Format: YYYY/YYYY (np. 2024/2025)</div>
+        </div>
+        <div class="col-md-3">
+          <label for="start_date" class="form-label">Data rozpoczęcia</label>
+          <input type="date" class="form-control" id="start_date" name="start_date" 
+                 value="{{ season.start_date|date:'Y-m-d' }}" required>
+        </div>
+        <div class="col-md-3">
+          <label for="end_date" class="form-label">Data zakończenia</label>
+          <input type="date" class="form-control" id="end_date" name="end_date" 
+                 value="{{ season.end_date|date:'Y-m-d' }}" required>
+        </div>
+        <div class="col-12">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="is_active" name="is_active" 
+                   {% if season.is_active %}checked{% endif %}>
+            <label class="form-check-label" for="is_active">
+              <strong>Sezon aktywny</strong>
+            </label>
+            <div class="form-text">
+              <strong>Uwaga:</strong> Tylko jeden sezon może być aktywny w danym czasie. 
+              Zaznaczenie tej opcji automatycznie dezaktywuje inne aktywne sezony.
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-4">
+        <h6>Statystyki sezonu:</h6>
+        <ul class="list-unstyled">
+          <li><strong>Liczba muzyków:</strong> {{ season.musicians.count }}</li>
+          <li><strong>Liczba wydarzeń:</strong> {{ season.events.count }}</li>
+          <li><strong>Data utworzenia:</strong> {{ season.created_at|date:"d.m.Y H:i" }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Muzycy w sezonie</h5>
+    </div>
+    {% include 'shared/musician_grid.jinja' with checkbox_prefix='selected_musicians' show_select_all=True header_title='' current_selections=current_musician_ids %}
+  </div>
+
+  <div class="d-flex justify-content-between mt-4">
+    <a href="{% url 'manage_seasons' %}" class="btn btn-secondary">Anuluj</a>
+    <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+  </div>
+</form>
+
+{% endblock %}

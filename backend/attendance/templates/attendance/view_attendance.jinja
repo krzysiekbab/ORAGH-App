@@ -1,0 +1,49 @@
+{% extends "base.jinja" %}
+{% block title %}Frekwencja{% endblock %}
+{% block page_title %}Frekwencja{% endblock %}
+{% block content %}
+
+{% include 'seasons/season_section.jinja' %}
+
+{% if seasons %}
+  {% include 'shared/musician_table.jinja' %}
+  
+  <!-- Icon Legend -->
+  <div class="mt-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0">Legenda ikon frekwencji</h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-3 col-sm-6">
+            <div class="d-flex align-items-center">
+              <span class="text-success me-2" style="font-size: 1.2em;">✅</span>
+              <small class="text-muted">Obecny (pełna obecność)</small>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="d-flex align-items-center">
+              <span class="text-success me-2" style="font-size: 1.2em;">☑️</span>
+              <small class="text-muted">Połowa obecności (tylko próby)</small>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="d-flex align-items-center">
+              <span class="text-danger me-2" style="font-size: 1.2em;">❌</span>
+              <small class="text-muted">Nieobecny</small>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="d-flex align-items-center">
+              <span class="text-muted me-2" style="font-size: 1.2em;">➖</span>
+              <small class="text-muted">Brak danych</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}

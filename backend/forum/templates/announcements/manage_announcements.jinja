@@ -1,0 +1,217 @@
+{% extends "base.jinja" %}
+
+{% block title %}Zarządzaj ogłoszeniami - Forum{% endblock %}
+{% block page_title %}Zarządzaj ogłoszeniami{% endblock %}
+
+{% block content %}
+
+<div class="text-end align-items-center mb-4">
+  <div class="button-container">
+    <a href="{% url 'forum:create_announcement' %}" class="btn btn-success me-2">
+      <i class="fas fa-plus"></i> Nowe ogłoszenie
+    </a>
+    <a href="{% url 'forum:index' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> Powrót do forum
+    </a>
+  </div>
+</div>
+
+<!-- Display messages if any -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zamknij"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="card">
+  <div class="card-body">
+    {% if announcements %}
+      <div class="row g-3">
+        {% for announcement in announcements %}
+          <div class="col-12">
+            <div class="card border-0 shadow-sm directory-card announcement-item">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-8">
+                    <h6 class="mb-2 directory-title">
+                      <span class="directory-icon">
+                        <i class="fas fa-bullhorn text-warning"></i>
+                      </span>
+                      <span class="directory-link">{{ announcement.title }}</span>
+                      {% if announcement.is_active %}
+                        <span class="badge bg-success ms-2">Aktywne</span>
+                      {% else %}
+                        <span class="badge bg-secondary ms-2">Nieaktywne</span>
+                      {% endif %}
+                      {% if announcement.priority > 0 %}
+                        <span class="badge bg-warning text-dark ms-2">Priorytet: {{ announcement.priority }}</span>
+                      {% endif %}
+                    </h6>
+                    <p class="text-muted mb-2 small">{{ announcement.content|striptags|truncatechars:120 }}</p>
+                    <div class="d-flex gap-3">
+                      <small class="text-muted">
+                        <i class="fas fa-user"></i> {{ announcement.author.first_name }} {{ announcement.author.last_name }}
+                      </small>
+                      <small class="text-muted">
+                        <i class="fas fa-calendar"></i> {{ announcement.created_at|date:"d.m.Y H:i" }}
+                      </small>
+                    </div>
+                  </div>
+                  <div class="col-md-4 text-md-end">
+                    <div class="d-flex justify-content-md-end gap-2">
+                      <a href="{% url 'forum:edit_announcement' announcement.id %}" 
+                         class="btn btn-outline-primary btn-sm"
+                         title="Edytuj ogłoszenie">
+                        <i class="fas fa-edit"></i>
+                        <span class="d-none d-sm-inline ms-1">Edytuj</span>
+                      </a>
+                      <a href="{% url 'forum:delete_announcement' announcement.id %}" 
+                         class="btn btn-outline-danger btn-sm"
+                         title="Usuń ogłoszenie">
+                        <i class="fas fa-trash"></i>
+                        <span class="d-none d-sm-inline ms-1">Usuń</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+        <h5>Brak ogłoszeń</h5>
+        <p class="text-muted mb-3">Nie ma jeszcze żadnych ogłoszeń w systemie.</p>
+        <a href="{% url 'forum:create_announcement' %}" class="btn btn-success">
+          <i class="fas fa-plus"></i> Utwórz pierwsze ogłoszenie
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+/* Directory card styling (matching forum layout) */
+.directory-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 8px;
+}
+
+.directory-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.directory-title {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.directory-link {
+  color: #2c3e50;
+  transition: color 0.2s ease;
+}
+
+.directory-link:hover {
+  color: #007bff;
+}
+
+.directory-icon {
+  margin-right: 8px;
+}
+
+/* Announcement specific styling */
+.announcement-item .directory-icon {
+  font-size: 1.1rem;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+/* Action buttons styling */
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+/* Button container responsive behavior */
+@media (max-width: 768px) {
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .button-container .btn {
+    width: 100%;
+    margin: 0 !important;
+  }
+  
+  .text-end {
+    text-align: center !important;
+  }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 767px) {
+  .directory-card .row {
+    flex-direction: column;
+  }
+  
+  .directory-card .col-md-4 {
+    margin-top: 1rem;
+    text-align: center !important;
+  }
+  
+  .d-flex.gap-2 {
+    justify-content: center;
+  }
+  
+  .badge {
+    font-size: 0.7em;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 576px) {
+  .directory-title {
+    font-size: 1rem;
+  }
+  
+  .directory-card .card-body {
+    padding: 1rem;
+  }
+  
+  .btn .d-none.d-sm-inline {
+    display: none !important;
+  }
+}
+</style>
+
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'forum/css/directory_styles.css' %}">
+{% endblock %}
+
+{% endblock %}

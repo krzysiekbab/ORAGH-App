@@ -1,0 +1,84 @@
+{% extends "base.jinja" %}
+{% block title %}Usuń wydarzenie{% endblock %}
+{% block page_title %}Usuń wydarzenie{% endblock %}
+{% block content %}
+<div class="card border-danger">
+  <div class="card-header bg-danger text-white">
+    <h5 class="mb-0">⚠️ Potwierdzenie usunięcia</h5>
+  </div>
+  <div class="card-body">
+    <div class="alert alert-warning">
+      <strong>Uwaga!</strong> Ta operacja jest nieodwracalna. Wszystkie dane frekwencji dla tego wydarzenia zostaną trwale usunięte.
+    </div>
+    
+    {% if event.date > today %}
+    <div class="alert alert-info">
+      <strong>Informacja:</strong> To wydarzenie ma miejsce w przyszłości ({{ event.date|date:"d.m.Y" }}). Upewnij się, że na pewno chcesz je usunąć.
+    </div>
+    {% endif %}
+    
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <h6>Szczegóły wydarzenia do usunięcia:</h6>
+        <ul class="list-unstyled">
+          <li><strong>Nazwa:</strong> {{ event.name }}</li>
+          <li><strong>Data:</strong> {{ event.date|date:"d.m.Y" }}</li>
+          <li><strong>Typ:</strong> 
+            {% if event.type == 'concert' %}
+              🎵 Koncert
+            {% elif event.type == 'rehearsal' %}
+              🎼 Próba
+            {% elif event.type == 'soundcheck' %}
+              🔊 Soundcheck
+            {% else %}
+              {{ event.type|title }}
+            {% endif %}
+          </li>
+          <li><strong>Liczba zapisów frekwencji:</strong> {{ attendance_count }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="confirm_delete" value="yes">
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'attendance' %}" class="btn btn-secondary">
+          ← Anuluj
+        </a>
+        <button type="submit" class="btn btn-danger" onclick="return confirmDelete()">
+          🗑️ Usuń wydarzenie
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function confirmDelete() {
+    return confirm('Czy na pewno chcesz usunąć to wydarzenie?\n\nTa operacja jest nieodwracalna i usunie wszystkie zapisane dane frekwencji dla tego wydarzenia.');
+}
+</script>
+
+<style>
+.card-border-danger {
+    border-color: #dc3545;
+}
+
+.alert-warning {
+    border-left: 4px solid #ffc107;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .d-flex.justify-content-between .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,258 @@
+{% extends "base.jinja" %}
+
+{% block title %}Edytuj profil{% endblock %}
+{% block page_title %}Edytuj profil{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="mb-4">
+  {% csrf_token %}
+  
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">✏️ Szczegóły profilu</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-md-8">
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger mb-3">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+          
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="id_first_name" class="form-label">Imię</label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}
+                <div class="text-danger small">{{ form.first_name.errors }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="col-md-6">
+              <label for="id_last_name" class="form-label">Nazwisko</label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}
+                <div class="text-danger small">{{ form.last_name.errors }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="col-md-6">
+              <label for="id_email" class="form-label">Email</label>
+              {{ form.email }}
+              <div class="form-text">Używany do komunikacji</div>
+              {% if form.email.errors %}
+                <div class="text-danger small">{{ form.email.errors }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="col-md-6">
+              <label for="id_instrument" class="form-label">Instrument</label>
+              {{ form.instrument }}
+              <div class="form-text">Twój główny instrument</div>
+              {% if form.instrument.errors %}
+                <div class="text-danger small">{{ form.instrument.errors }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="col-12">
+              <label for="birthday" class="form-label">Data urodzenia</label>
+              <input type="date" 
+                     class="form-control" 
+                     id="birthday" 
+                     name="birthday" 
+                     value="{{ profile.birthday|date:'Y-m-d' }}" 
+                     required>
+              <div class="form-text">Wybierz swoją datę urodzenia</div>
+            </div>
+            
+            <div class="col-12">
+              <label for="id_photo" class="form-label">Zdjęcie profilowe</label>
+              {{ form.photo }}
+              <div class="form-text">Wybierz nowe zdjęcie profilowe (opcjonalne)</div>
+              {% if form.photo.errors %}
+                <div class="text-danger small">{{ form.photo.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="text-center">
+            <h6 class="mb-3">Aktualne zdjęcie</h6>
+            {% if profile.photo %}
+              <div class="mb-3">
+                <img src="{{ profile.photo.url }}" 
+                     alt="Zdjęcie profilowe" 
+                     class="img-thumbnail rounded-circle" 
+                     style="width: 150px; height: 150px; object-fit: cover;">
+              </div>
+              <p class="text-muted small">Obecne zdjęcie profilowe</p>
+            {% else %}
+              <div class="mb-3">
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto" 
+                     style="width: 150px; height: 150px;">
+                  <i class="fas fa-user fa-3x text-muted"></i>
+                </div>
+              </div>
+              <p class="text-muted small">Brak zdjęcia profilowego</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between mt-4">
+    <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+      ❌ Anuluj
+    </a>
+    <button type="submit" class="btn btn-primary">
+      💾 Zapisz zmiany
+    </button>
+  </div>
+</form>
+
+<style>
+/* Enhanced mobile responsiveness */
+@media (max-width: 768px) {
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .d-flex.justify-content-between .btn {
+    width: 100%;
+    padding: 0.75rem;
+  }
+  
+  .card-header h5 {
+    font-size: 1.125rem;
+  }
+  
+  .row.g-4 {
+    margin: 0;
+  }
+  
+  .row.g-4 > [class*="col-"] {
+    padding: 0.75rem 0;
+  }
+  
+  .form-control, .form-select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .form-text {
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+  
+  .col-md-4 {
+    order: -1; /* Move photo section to top on mobile */
+  }
+}
+
+@media (max-width: 576px) {
+  .card {
+    border-radius: 0.25rem;
+    margin: 0 -0.5rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .card-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .btn {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .img-thumbnail {
+    width: 120px !important;
+    height: 120px !important;
+  }
+  
+  .rounded-circle.bg-light {
+    width: 120px !important;
+    height: 120px !important;
+  }
+  
+  .fa-3x {
+    font-size: 2rem !important;
+  }
+  
+  .col-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 375px) {
+  /* Extra small screens */
+  .container-fluid, .container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  .card {
+    margin: 0 -0.25rem;
+  }
+  
+  .card-body {
+    padding: 0.75rem;
+  }
+  
+  .btn {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.8rem;
+  }
+}
+
+/* Improve form accessibility */
+.form-control:focus, .form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-text {
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+.form-control, .form-select {
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  width: 100%;
+}
+
+.form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.alert {
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.card-header h5 {
+  color: #495057;
+  margin-bottom: 0;
+}
+</style>
+{% endblock %}

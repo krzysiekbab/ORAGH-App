@@ -1,0 +1,58 @@
+/* Announcement action buttons styling */
+.alert.position-relative {
+  padding-right: 120px; /* Make space for action buttons with text */
+}
+
+.alert .btn-group {
+  opacity: 1; /* Always visible */
+  transition: all 0.2s ease;
+}
+
+.alert .btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.alert .btn-outline-primary:hover {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.alert .btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Responsive adjustments for announcement buttons */
+@media (max-width: 768px) {
+  .alert.position-relative {
+    padding-right: 15px; /* Reset padding on mobile */
+  }
+  
+  .alert .position-absolute {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    padding: 0 !important;
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  .alert .btn-sm {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .alert .btn-sm .btn-text {
+    display: none; /* Hide text on very small screens, keep only icons */
+  }
+}

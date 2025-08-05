@@ -1,0 +1,127 @@
+{% extends "base.jinja" %}
+
+{% block title %}
+  {% if parent %}
+    Nowy katalog - {{ parent.name }}
+  {% else %}
+    Nowy katalog
+  {% endif %}
+  - Forum
+{% endblock %}
+
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'forum/css/breadcrumb.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    
+    <!-- Breadcrumb -->
+    {% if parent %}
+      {% include 'shared/breadcrumb.jinja' with breadcrumb_path=parent.get_breadcrumb_path current_page_title="Nowy podkatalog" current_page_icon="fas fa-folder-plus" %}
+    {% else %}
+      {% include 'shared/breadcrumb.jinja' with current_page_title="Nowy katalog" current_page_icon="fas fa-folder-plus" %}
+    {% endif %}
+
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          📁 
+          {% if parent %}
+            Utwórz nowy podkatalog
+          {% else %}
+            Utwórz nowy katalog
+          {% endif %}
+        </h5>
+      </div>
+      <div class="card-body">
+        
+        <!-- Display messages if any -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zamknij"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <label for="name" class="form-label">Nazwa katalogu *</label>
+            <input type="text" 
+                   class="form-control" 
+                   id="name" 
+                   name="name" 
+                   value="{{ name|default:'' }}"
+                   placeholder="Wprowadź nazwę katalogu"
+                   maxlength="100"
+                   required>
+            <div class="form-text">Maksymalnie 100 znaków</div>
+          </div>
+          
+          <div class="mb-4">
+            <label for="description" class="form-label">Opis (opcjonalny)</label>
+            <textarea class="form-control" 
+                      id="description" 
+                      name="description" 
+                      rows="3"
+                      placeholder="Opisz cel i zawartość tego katalogu...">{{ description|default:'' }}</textarea>
+            <div class="form-text">Krótki opis pomoże użytkownikom zrozumieć cel tego katalogu</div>
+          </div>
+          
+          <div class="d-flex justify-content-between">
+            {% if parent %}
+              <a href="{{ parent.get_absolute_url }}" class="btn btn-outline-secondary">
+                ← Anuluj
+              </a>
+            {% else %}
+              <a href="{% url 'forum:index' %}" class="btn btn-outline-secondary">
+                ← Anuluj
+              </a>
+            {% endif %}
+            <button type="submit" class="btn btn-success">
+              📁 Utwórz katalog
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #198754 0%, #157347 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.form-control:focus {
+  border-color: #198754;
+  box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #198754 0%, #157347 100%);
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #157347 0%, #146c43 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+</style>
+
+{% endblock %}

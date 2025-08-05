@@ -1,0 +1,76 @@
+# Development version - for local development with hot reload
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: oragh_postgres_dev
+    environment:
+      POSTGRES_DB: oragh_db_dev
+      POSTGRES_USER: oragh_user
+      POSTGRES_PASSWORD: oragh_password
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - oragh_network_dev
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: oragh_redis_dev
+    ports:
+      - "6379:6379"
+    networks:
+      - oragh_network_dev
+
+  # Django Backend API (Development)
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: oragh_backend_dev
+    environment:
+      - DJANGO_SETTINGS_MODULE=oragh_platform.settings.development
+      - DATABASE_URL=postgresql://oragh_user:oragh_password@db:5432/oragh_db_dev
+      - REDIS_URL=redis://redis:6379/0
+      - DEBUG=True
+    volumes:
+      - ./backend:/app
+      - media_files_dev:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - oragh_network_dev
+    command: python manage.py runserver 0.0.0.0:8000
+
+  # React Frontend (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: oragh_frontend_dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - oragh_network_dev
+    command: npm run dev
+
+volumes:
+  postgres_data_dev:
+  media_files_dev:
+
+networks:
+  oragh_network_dev:
+    driver: bridge

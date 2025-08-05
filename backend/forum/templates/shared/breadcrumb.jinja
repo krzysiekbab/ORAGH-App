@@ -1,0 +1,54 @@
+<!-- Enhanced breadcrumbs - Full width -->
+<div class="mb-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb-enhanced">
+      {% if breadcrumb_path or post_item or current_item %}
+        {# Show Forum link only when we're not on the main forum page #}
+        <li class="breadcrumb-item-enhanced">
+          <a href="{% url 'forum:index' %}" class="breadcrumb-link-enhanced">
+            <i class="fas fa-home"></i>
+            <span>Forum</span>
+          </a>
+          <span class="breadcrumb-separator-enhanced">></span>
+        </li>
+      {% endif %}
+      {% for directory in breadcrumb_path %}
+        {% if current_item and forloop.last %}
+          {# Skip the last directory if current_item is provided to avoid duplication #}
+        {% else %}
+          <li class="breadcrumb-item-enhanced">
+            <a href="{{ directory.get_absolute_url }}" class="breadcrumb-link-enhanced">
+              <i class="fas fa-folder"></i>
+              <span>{{ directory.name }}</span>
+            </a>
+            <span class="breadcrumb-separator-enhanced">></span>
+          </li>
+        {% endif %}
+      {% endfor %}
+      {% if post_item %}
+        <li class="breadcrumb-item-enhanced">
+          <a href="{{ post_item.get_absolute_url }}" class="breadcrumb-link-enhanced">
+            <i class="fas fa-comment"></i>
+            <span>{{ post_item.title }}</span>
+          </a>
+          <span class="breadcrumb-separator-enhanced">></span>
+        </li>
+      {% endif %}
+      {% if current_item %}
+        <li class="breadcrumb-item-enhanced active" aria-current="page">
+          <span class="breadcrumb-current-enhanced">
+            <i class="{{ current_item.icon|default:'fas fa-folder-open' }}"></i>
+            <span>{{ current_item.title|default:current_item.name|truncatechars:30 }}</span>
+          </span>
+        </li>
+      {% elif current_page_title %}
+        <li class="breadcrumb-item-enhanced active" aria-current="page">
+          <span class="breadcrumb-current-enhanced">
+            <i class="{{ current_page_icon|default:'fas fa-folder-open' }}"></i>
+            <span>{{ current_page_title }}</span>
+          </span>
+        </li>
+      {% endif %}
+    </ol>
+  </nav>
+</div>

@@ -1,0 +1,328 @@
+{% extends "base.jinja" %}
+
+{% block title %}{% if editing %}Edytuj ogłoszenie{% else %}Nowe ogłoszenie{% endif %} - Forum{% endblock %}
+{% block page_title %}{% if editing %}Edytuj ogłoszenie{% else %}Nowe ogłoszenie{% endif %}{% endblock %}
+
+{% block extra_css %}
+{{ form.media.css }}
+{% endblock %}
+
+{% block extra_js %}
+{{ form.media.js }}
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-bullhorn"></i> {% if editing %}Edytuj ogłoszenie{% else %}Utwórz nowe ogłoszenie{% endif %}</h5>
+      </div>
+      <div class="card-body">
+        
+        <!-- Display messages if any -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zamknij"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="alert alert-info mb-4">
+          <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Informacje o ogłoszeniach</h6>
+          <ul class="mb-0 small">
+            <li>Ogłoszenia będą wyświetlane na górze strony głównej forum</li>
+            <li>Wyższy priorytet oznacza wyświetlanie na górze listy</li>
+            <li>Ogłoszenia można wyłączyć bez usuwania</li>
+          </ul>
+        </div>
+
+        <form method="post" id="announcement-form" novalidate>
+          {% csrf_token %}
+          
+          <div class="mb-3" id="title-field-container">
+            <label for="{{ form.title.id_for_label }}" class="form-label">Tytuł ogłoszenia *</label>
+            {{ form.title }}
+            <div class="form-text">Maksymalnie 200 znaków</div>
+            {% if form.title.errors %}
+              <div class="text-danger small mt-1">
+                {% for error in form.title.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="mb-3" id="content-field-container">
+            <label for="{{ form.content.id_for_label }}" class="form-label">Treść ogłoszenia *</label>
+            {{ form.content }}
+            <div class="form-text">Szczegółowa treść ogłoszenia</div>
+            {% if form.content.errors %}
+              <div class="text-danger small mt-1">
+                {% for error in form.content.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="mb-3">
+            <label for="{{ form.priority.id_for_label }}" class="form-label">Priorytet</label>
+            {{ form.priority }}
+            <div class="form-text">Wyższy priorytet = wyższa pozycja na liście</div>
+            {% if form.priority.errors %}
+              <div class="text-danger small mt-1">
+                {% for error in form.priority.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="mb-4">
+            <div class="form-check">
+              {{ form.is_active }}
+              <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                {{ form.is_active.label }}
+              </label>
+              {% if form.is_active.help_text %}
+                <div class="form-text">{{ form.is_active.help_text }}</div>
+              {% endif %}
+            </div>
+            {% if form.is_active.errors %}
+              <div class="text-danger small mt-1">
+                {% for error in form.is_active.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'forum:manage_announcements' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-arrow-left"></i> Anuluj
+            </a>
+            <button type="submit" class="btn btn-success">
+              <i class="fas fa-bullhorn"></i> {% if editing %}Zaktualizuj ogłoszenie{% else %}Utwórz ogłoszenie{% endif %}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #198754 0%, #157347 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #198754;
+  box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #198754 0%, #157347 100%);
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #157347 0%, #146c43 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.alert-info {
+  border-left: 4px solid #0dcaf0;
+  background-color: #e7f3ff;
+  border-color: #b6effb;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Validation styling */
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.ck-editor.is-invalid {
+  border: 2px solid #dc3545 !important;
+  border-radius: 0.375rem;
+}
+
+.invalid-feedback {
+  display: block !important;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875em;
+  color: #dc3545;
+  font-weight: 500;
+}
+
+/* Ensure error message positioning */
+#title-field-container .invalid-feedback,
+#content-field-container .invalid-feedback {
+  margin-top: 0.5rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('announcement-form');
+    const titleField = document.querySelector('input[name="title"]');
+    
+    // Remove required attribute from CKEditor textarea after CKEditor initializes
+    setTimeout(function() {
+        const ckTextarea = document.querySelector('textarea[name="content"]');
+        if (ckTextarea && ckTextarea.hasAttribute('required')) {
+            ckTextarea.removeAttribute('required');
+        }
+        
+        // Also check for CKEditor widget initialization
+        const ckEditor = document.querySelector('.ck-editor');
+    }, 1000); // Wait for CKEditor to initialize
+    
+    // Focus on title field
+    if (titleField) {
+        setTimeout(function() {
+            titleField.focus();
+        }, 300);
+    }
+    
+    // Form validation
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            clearValidationErrors();
+            let isValid = true;
+            
+            // Validate title
+            const title = titleField ? titleField.value.trim() : '';
+            if (title.length < 3) {
+                showValidationError(titleField, 'Tytuł musi mieć co najmniej 3 znaki.');
+                isValid = false;
+            }
+            
+            // Validate content with CKEditor
+            let hasContent = false;
+            const ckEditorInstance = document.querySelector('.ck-editor__editable');
+            const contentField = document.querySelector('textarea[name="content"]');
+            
+            if (ckEditorInstance) {
+                const plainText = ckEditorInstance.textContent.trim();
+                hasContent = plainText.length > 0;
+            } else if (contentField && contentField.value.trim()) {
+                hasContent = contentField.value.trim().length > 0;
+            }
+            
+            if (!hasContent) {
+                showValidationError(contentField || document.querySelector('.ck-editor'), 'Treść ogłoszenia jest wymagana.');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                
+                // Scroll to first error
+                setTimeout(function() {
+                    const firstError = document.querySelector('.is-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+        });
+    }
+    
+    function showValidationError(fieldElement, message) {
+        if (!fieldElement) {
+            return;
+        }
+        
+        // Add error styling to the field
+        fieldElement.classList.add('is-invalid');
+        
+        // For CKEditor, also add styling to the editor container
+        if (fieldElement.classList.contains('ck-editor') || fieldElement.name === 'content') {
+            const ckEditor = document.querySelector('.ck-editor');
+            if (ckEditor) {
+                ckEditor.classList.add('is-invalid');
+            }
+        }
+        
+        // Find the container div (mb-3) that contains this field
+        let container = fieldElement.closest('.mb-3') || fieldElement.closest('.mb-4');
+        
+        if (!container) {
+            // Fallback: look for parent div
+            container = fieldElement.parentElement;
+        }
+        
+        if (container) {
+            // Remove existing error message
+            const existingError = container.querySelector('.invalid-feedback');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Add new error message after the form-text (help text) if it exists, or after the field
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'invalid-feedback';
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = message;
+            
+            // Try to insert after form-text, otherwise after the field
+            const formText = container.querySelector('.form-text');
+            if (formText) {
+                formText.insertAdjacentElement('afterend', errorDiv);
+            } else {
+                // For CKEditor, insert after the CKEditor container
+                const ckEditor = container.querySelector('.ck-editor');
+                if (ckEditor) {
+                    ckEditor.insertAdjacentElement('afterend', errorDiv);
+                } else {
+                    // For regular fields, insert after the field
+                    fieldElement.insertAdjacentElement('afterend', errorDiv);
+                }
+            }
+        }
+    }
+    
+    function clearValidationErrors() {
+        // Remove invalid classes
+        document.querySelectorAll('.is-invalid').forEach(field => {
+            field.classList.remove('is-invalid');
+        });
+        
+        // Remove error messages
+        document.querySelectorAll('.invalid-feedback').forEach(error => {
+            error.remove();
+        });
+    }
+    
+    // Real-time validation for title
+    if (titleField) {
+        titleField.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid') && this.value.trim().length >= 3) {
+                this.classList.remove('is-invalid');
+                // Find and remove error message from the container
+                const container = this.closest('.mb-3') || this.closest('.mb-4');
+                if (container) {
+                    const error = container.querySelector('.invalid-feedback');
+                    if (error) error.remove();
+                }
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}
