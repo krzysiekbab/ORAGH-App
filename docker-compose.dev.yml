@@ -39,7 +39,7 @@ services:
       - DEBUG=True
     volumes:
       - ./backend:/app
-      - media_files_dev:/app/media
+      - ./backend/media:/app/media
     ports:
       - "8000:8000"
     depends_on:
@@ -69,7 +69,6 @@ services:
 
 volumes:
   postgres_data_dev:
-  media_files_dev:
 
 networks:
   oragh_network_dev:

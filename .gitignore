@@ -17,3 +17,18 @@ oragh_platform/data/
 
 # Ignore environment variables
 .env
+
+# Frontend dependencies
+frontend/node_modules/
+node_modules/
+
+# Frontend build artifacts
+frontend/dist/
+frontend/build/
+
+# Package lock files (optional - you may want to commit these)
+# package-lock.json
+backend/logs/django.log
+
+PHASE-2-COMPLETION-REPORT.md
+PROJEKT-STAN-MIGRACJI.md
