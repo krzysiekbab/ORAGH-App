@@ -16,31 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from register.views import login_view, logout_view
-from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # API endpoints
-    path('api/', include('main.api_urls')),
-    path('api/concerts/', include('concerts.api_urls')),
-    path('api/attendance/', include('attendance.api_urls')),
-    path('api/forum/', include('forum.api_urls')),
-    path('api/register/', include('register.api_urls')),
-    
-    # Traditional web views (for backward compatibility)
-    path('login/', login_view, name='login'),
-    path('logout/', logout_view, name='logout'),
-    path('register/', include('register.urls')),
-    path('', include('main.urls')),
-    path('concerts/', include('concerts.urls')),
-    path('profile/', include('main.profile_urls')),
-    path('attendance/', include('attendance.urls')),
-    path('forum/', include('forum.urls')),
-    path('ckeditor5/', include('django_ckeditor_5.urls')),
+    # Modern API endpoints (Phase 2+)
+    path('api/', include('api.urls')),
 ]
 
 if settings.DEBUG:
