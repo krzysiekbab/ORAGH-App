@@ -25,9 +25,6 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'crispy_forms',
-    'crispy_bootstrap5',
-    'django_ckeditor_5',
     'drf_yasg',
 ]
 
@@ -138,198 +135,31 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
-# Crispy Forms
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = "bootstrap5"
+# Login URLs (for admin interface only, main auth is handled by React frontend)
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = '/admin/'
+LOGOUT_REDIRECT_URL = '/admin/'
 
-# Login URLs
-LOGIN_URL = '/api/auth/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+# File upload settings
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024  # 2MB
 
-# CKEditor 5 settings
-CKEDITOR_5_CONFIGS = {
-    'default': {
-        'toolbar': ['heading', '|', 'bold', 'italic', 'link',
-                    'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
-    },
-    'advanced': {
-        'toolbar': ['heading', '|', 'bold', 'italic', 'underline', 'strikethrough',
-                    'subscript', 'superscript', '|', 'link', 'linkImage', '|',
-                    'bulletedList', 'numberedList', 'todoList', '|',
-                    'blockQuote', 'insertTable', '|',
-                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
-                    'highlight', '|', 'alignment', '|',
-                    'outdent', 'indent', '|', 'imageUpload', 'mediaEmbed',
-                    'removeFormat', 'insertTable', 'tableColumn', 'tableRow',
-                    'mergeTableCells', '|', 'undo', 'redo'],
-        'height': 300,
-        'width': '100%',
-        'removePlugins': ['Title'],
-        'heading': {
-            'options': [
-                { 'model': 'paragraph', 'title': 'Paragraph', 'class': 'ck-heading_paragraph' },
-                { 'model': 'heading1', 'view': 'h1', 'title': 'Heading 1', 'class': 'ck-heading_heading1' },
-                { 'model': 'heading2', 'view': 'h2', 'title': 'Heading 2', 'class': 'ck-heading_heading2' },
-                { 'model': 'heading3', 'view': 'h3', 'title': 'Heading 3', 'class': 'ck-heading_heading3' },
-                { 'model': 'heading4', 'view': 'h4', 'title': 'Heading 4', 'class': 'ck-heading_heading4' }
-            ]
-        },
-        'fontSize': {
-            'options': ['tiny', 'small', 'default', 'big', 'huge']
-        },
-        'fontFamily': {
-            'options': [
-                'default',
-                'Arial, Helvetica, sans-serif',
-                'Courier New, Courier, monospace',
-                'Georgia, serif',
-                'Lucida Sans Unicode, Lucida Grande, sans-serif',
-                'Tahoma, Geneva, sans-serif',
-                'Times New Roman, Times, serif',
-                'Trebuchet MS, Helvetica, sans-serif',
-                'Verdana, Geneva, sans-serif'
-            ]
-        },
-        'fontColor': {
-            'colors': [
-                {
-                    'color': 'hsl(0, 0%, 0%)',
-                    'label': 'Black'
-                },
-                {
-                    'color': 'hsl(0, 0%, 30%)',
-                    'label': 'Dim grey'
-                },
-                {
-                    'color': 'hsl(0, 0%, 60%)',
-                    'label': 'Grey'
-                },
-                {
-                    'color': 'hsl(0, 0%, 90%)',
-                    'label': 'Light grey'
-                },
-                {
-                    'color': 'hsl(0, 0%, 100%)',
-                    'label': 'White',
-                    'hasBorder': True
-                },
-                {
-                    'color': 'hsl(0, 75%, 60%)',
-                    'label': 'Red'
-                },
-                {
-                    'color': 'hsl(30, 75%, 60%)',
-                    'label': 'Orange'
-                },
-                {
-                    'color': 'hsl(60, 75%, 60%)',
-                    'label': 'Yellow'
-                },
-                {
-                    'color': 'hsl(90, 75%, 60%)',
-                    'label': 'Light green'
-                },
-                {
-                    'color': 'hsl(120, 75%, 60%)',
-                    'label': 'Green'
-                },
-                {
-                    'color': 'hsl(150, 75%, 60%)',
-                    'label': 'Aquamarine'
-                },
-                {
-                    'color': 'hsl(180, 75%, 60%)',
-                    'label': 'Turquoise'
-                },
-                {
-                    'color': 'hsl(210, 75%, 60%)',
-                    'label': 'Light blue'
-                },
-                {
-                    'color': 'hsl(240, 75%, 60%)',
-                    'label': 'Blue'
-                },
-                {
-                    'color': 'hsl(270, 75%, 60%)',
-                    'label': 'Purple'
-                },
-            ]
-        },
-        'fontBackgroundColor': {
-            'colors': [
-                {
-                    'color': 'hsl(0, 0%, 100%)',
-                    'label': 'White',
-                    'hasBorder': True
-                },
-                {
-                    'color': 'hsl(0, 0%, 90%)',
-                    'label': 'Light grey'
-                },
-                {
-                    'color': 'hsl(0, 0%, 60%)',
-                    'label': 'Grey'
-                },
-                {
-                    'color': 'hsl(0, 0%, 30%)',
-                    'label': 'Dim grey'
-                },
-                {
-                    'color': 'hsl(0, 0%, 0%)',
-                    'label': 'Black'
-                },
-                {
-                    'color': 'hsl(0, 75%, 60%)',
-                    'label': 'Red'
-                },
-                {
-                    'color': 'hsl(30, 75%, 60%)',
-                    'label': 'Orange'
-                },
-                {
-                    'color': 'hsl(60, 75%, 60%)',
-                    'label': 'Yellow'
-                },
-                {
-                    'color': 'hsl(90, 75%, 60%)',
-                    'label': 'Light green'
-                },
-                {
-                    'color': 'hsl(120, 75%, 60%)',
-                    'label': 'Green'
-                },
-                {
-                    'color': 'hsl(150, 75%, 60%)',
-                    'label': 'Aquamarine'
-                },
-                {
-                    'color': 'hsl(180, 75%, 60%)',
-                    'label': 'Turquoise'
-                },
-                {
-                    'color': 'hsl(210, 75%, 60%)',
-                    'label': 'Light blue'
-                },
-                {
-                    'color': 'hsl(240, 75%, 60%)',
-                    'label': 'Blue'
-                },
-                {
-                    'color': 'hsl(270, 75%, 60%)',
-                    'label': 'Purple'
-                },
-            ]
-        },
-        'image': {
-            'toolbar': [
-                'imageTextAlternative', 'toggleImageCaption', '|',
-                'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText', '|',
-                'resizeImage'
-            ]
-        },
-        'table': {
-            'contentToolbar': [ 'tableColumn', 'tableRow', 'mergeTableCells' ]
+# API Documentation settings (DRF-YASG)
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
         }
-    }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'SUPPORTED_SUBMIT_METHODS': [
+        'get',
+        'post',
+        'put',
+        'delete',
+        'patch'
+    ],
 }
