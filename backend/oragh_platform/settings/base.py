@@ -32,11 +32,13 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'main',
-    'register',
-    'concerts',
-    'attendance',
-    'forum',
+    # Phase 2: User Management & Profiles  
+    'api.users',
+    
+    # TODO: Future phases will add:
+    # 'api.concerts',      # Phase 4
+    # 'api.forum',         # Phase 6  
+    # 'api.attendance',    # Phase 5
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
