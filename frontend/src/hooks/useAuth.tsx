@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const validateToken = async (token: string) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/verify/`, {
+      const response = await fetch(`http://localhost:8000/api/auth/verify/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login/`, {
+      const response = await fetch(`http://localhost:8000/api/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

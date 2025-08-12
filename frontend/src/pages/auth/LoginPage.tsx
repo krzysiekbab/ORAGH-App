@@ -1,41 +1,67 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import {
   Container,
-  Paper,
+  Card,
+  CardHeader,
+  CardContent,
   TextField,
   Button,
   Typography,
-  Box,
   Alert,
+  Box,
 } from '@mui/material'
-import { useAuth } from '../../hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useAuthStore } from '../../stores/authStore'
+import toast from 'react-hot-toast'
+
+// Validation schema
+const loginSchema = z.object({
+  username: z.string().min(1, 'Nazwa użytkownika jest wymagana'),
+  password: z.string().min(1, 'Hasło jest wymagane'),
+})
+
+type LoginFormData = z.infer<typeof loginSchema>
 
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  
-  const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { login, isLoading, error, clearError, isAuthenticated } = useAuthStore()
+  
+  const from = (location.state as any)?.from?.pathname || '/'
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true })
+    }
+  }, [isAuthenticated, navigate, from])
 
+  // Form setup
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  // Clear error when component mounts
+  useEffect(() => {
+    clearError()
+  }, [clearError])
+
+  const onSubmit = async (data: LoginFormData) => {
     try {
-      const success = await login(username, password)
+      const success = await login(data)
       if (success) {
-        navigate('/')
-      } else {
-        setError('Nieprawidłowa nazwa użytkownika lub hasło')
+        toast.success('Zalogowano pomyślnie!')
+        navigate(from, { replace: true })
       }
-    } catch (error) {
-      setError('Wystąpił błąd podczas logowania')
-    } finally {
-      setIsLoading(false)
+    } catch (err) {
+      toast.error('Wystąpił nieoczekiwany błąd')
     }
   }
 
@@ -47,65 +73,80 @@ const LoginPage: React.FC = () => {
         alignItems="center"
         justifyContent="center"
         minHeight="100vh"
+        sx={{ py: 3 }}
       >
-        <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
-          <Box textAlign="center" mb={3}>
-            <Typography variant="h4" component="h1" gutterBottom>
-              ORAGH
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Zaloguj się do systemu
-            </Typography>
-          </Box>
-
-          <form onSubmit={handleSubmit}>
-            <TextField
-              label="Nazwa użytkownika"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-            <TextField
-              label="Hasło"
-              type="password"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
+        <Card elevation={3} sx={{ width: '100%', maxWidth: 400 }}>
+          <CardHeader
+            title={
+              <Box textAlign="center">
+                <Typography variant="h5" component="h1" fontWeight={600}>
+                  ORAGH
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Zaloguj się do systemu
+                </Typography>
+              </Box>
+            }
+            sx={{ textAlign: 'center', pb: 1 }}
+          />
+          
+          <CardContent>
             {error && (
-              <Alert severity="error" sx={{ mt: 2 }}>
+              <Alert severity="error" sx={{ mb: 2 }}>
+                <strong>Błąd logowania:</strong><br />
                 {error}
               </Alert>
             )}
 
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              size="large"
-              disabled={isLoading}
-              sx={{ mt: 3 }}
-            >
-              {isLoading ? 'Logowanie...' : '🔐 Zaloguj się'}
-            </Button>
-          </form>
+            <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+              <TextField
+                {...register('username')}
+                label="Nazwa użytkownika"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                error={!!errors.username}
+                helperText={errors.username?.message}
+                disabled={isLoading}
+                autoComplete="username"
+                autoFocus
+              />
 
-          <Box textAlign="center" mt={2}>
-            <Typography variant="body2" color="text.secondary">
-              Nie posiadasz konta?{' '}
-              <Button color="primary" size="small">
-                Zarejestruj się
+              <TextField
+                {...register('password')}
+                label="Hasło"
+                type="password"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                disabled={isLoading}
+                autoComplete="current-password"
+              />
+
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                size="large"
+                disabled={isLoading}
+                sx={{ mt: 3, mb: 2 }}
+              >
+                {isLoading ? 'Logowanie...' : '🔐 Zaloguj się'}
               </Button>
-            </Typography>
-          </Box>
-        </Paper>
+            </Box>
+
+            <Box textAlign="center" mt={2}>
+              <Typography variant="body2" color="text.secondary">
+                Nie posiadasz konta?{' '}
+                <Link to="/register">
+                  Zarejestruj się
+                </Link>
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
       </Box>
     </Container>
   )
