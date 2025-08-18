@@ -8,6 +8,7 @@ import ProfilePage from './pages/profiles/ProfilePage'
 import EditProfilePage from './pages/profiles/EditProfilePage'
 import ChangePasswordPage from './pages/profiles/ChangePasswordPage'
 import ProfilesListPage from './pages/profiles/ProfilesListPage'
+import UserProfilePage from './pages/profiles/UserProfilePage'
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -93,6 +94,10 @@ function App() {
       <Route 
         path="/profiles" 
         element={<ProtectedRoute><ProfilesListPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/profiles/:userId" 
+        element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} 
       />
       
       {/* Dashboard/Home route */}

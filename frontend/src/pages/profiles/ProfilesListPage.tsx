@@ -53,8 +53,11 @@ export default function ProfilesListPage() {
     setInstrumentFilter(event.target.value)
   }
 
+  // Ensure musicians is always an array
+  const safeMusicians = Array.isArray(musicians) ? musicians : []
+
   // Filter musicians based on search term and instrument
-  const filteredMusicians = musicians.filter(musician => {
+  const filteredMusicians = safeMusicians.filter(musician => {
     const nameMatch = `${musician.first_name} ${musician.last_name}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase()) ||
@@ -76,7 +79,7 @@ export default function ProfilesListPage() {
     return acc
   }, {} as Record<string, UserWithProfile[]>)
 
-  if (isLoading && musicians.length === 0) {
+  if (isLoading && (!safeMusicians || safeMusicians.length === 0)) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
         <CircularProgress />
@@ -178,7 +181,7 @@ export default function ProfilesListPage() {
                             boxShadow: 3
                           }
                         }}
-                        onClick={() => navigate(`/profiles/${musician.id}`)}
+                        onClick={() => navigate(`/profiles/${musician.id}`)} // Navigate to individual user profile
                       >
                         <CardContent sx={{ textAlign: 'center', p: 2 }}>
                           <Avatar
@@ -191,15 +194,19 @@ export default function ProfilesListPage() {
                               fontSize: '1.5rem'
                             }}
                           >
-                            {musician.first_name[0]}{musician.last_name[0]}
+                            {musician.first_name?.[0] || '?'}{musician.last_name?.[0] || '?'}
                           </Avatar>
                           
                           <Typography variant="h6" noWrap>
-                            {musician.first_name} {musician.last_name}
+                            {musician.first_name || 'Brak'} {musician.last_name || 'imienia'}
                           </Typography>
                           
                           <Typography variant="body2" color="textSecondary" noWrap>
                             @{musician.username}
+                          </Typography>
+                          
+                          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                            {instrumentChoices.find(choice => choice.value === musician.musician_profile.instrument)?.label || musician.musician_profile.instrument}
                           </Typography>
                           
                           <Box sx={{ mt: 1 }}>

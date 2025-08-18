@@ -57,11 +57,34 @@ class UserListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        """Return all users with musician profiles."""
+        """Return all users with musician profiles, excluding superusers and incomplete profiles."""
         return User.objects.filter(
             musicianprofile__isnull=False,
-            musicianprofile__active=True
+            musicianprofile__active=True,
+            is_superuser=False,
+            first_name__isnull=False,
+            last_name__isnull=False,
+            musicianprofile__instrument__isnull=False
+        ).exclude(
+            first_name='',
+            last_name='',
+            musicianprofile__instrument=''
         ).select_related('musicianprofile').order_by('first_name', 'last_name')
+
+
+class UserDetailView(generics.RetrieveAPIView):
+    """Get specific user details."""
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'user_id'
+    
+    def get_queryset(self):
+        """Return all users with musician profiles, excluding superusers."""
+        return User.objects.filter(
+            musicianprofile__isnull=False,
+            is_superuser=False
+        ).select_related('musicianprofile')
 
 
 @api_view(['POST'])

@@ -34,6 +34,14 @@ export interface ChangePasswordData {
   new_password2: string
 }
 
+// Paginated response interface
+export interface PaginatedResponse<T> {
+  count: number
+  next: string | null
+  previous: string | null
+  results: T[]
+}
+
 // User service class
 class UserService {
   // Get current user profile
@@ -68,7 +76,13 @@ class UserService {
 
   // Get all musicians
   async getMusicians(): Promise<UserWithProfile[]> {
-    const response = await apiClient.get<UserWithProfile[]>('/users/musicians/')
+    const response = await apiClient.get<PaginatedResponse<UserWithProfile>>('/users/musicians/')
+    return response.data.results
+  }
+
+  // Get specific user by ID
+  async getUserById(userId: number): Promise<UserWithProfile> {
+    const response = await apiClient.get<UserWithProfile>(`/users/${userId}/`)
     return response.data
   }
 

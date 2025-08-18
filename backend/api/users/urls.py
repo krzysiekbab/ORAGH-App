@@ -11,4 +11,5 @@ urlpatterns = [
     path('change-password/', views.change_password, name='change_password'),
     path('upload-photo/', views.upload_profile_photo, name='upload_profile_photo'),
     path('current/', views.current_user, name='current_user'),
+    path('<int:user_id>/', views.UserDetailView.as_view(), name='user_detail'),
 ]

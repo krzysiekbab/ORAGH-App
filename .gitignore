@@ -9,12 +9,6 @@ __pycache__/
 
 venv/
 
-# Ignore media files
-oragh_platform/media/
-
-# Ignore data files
-oragh_platform/data/
-
 # Ignore environment variables
 .env
 
@@ -29,6 +23,12 @@ frontend/build/
 # Package lock files (optional - you may want to commit these)
 # package-lock.json
 backend/logs/django.log
+
+# Ignore media files
+backend/media/
+
+# Ignore data files
+backend/data/
 
 PHASE-2-COMPLETION-REPORT.md
 PROJEKT-STAN-MIGRACJI.md
