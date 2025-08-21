@@ -102,7 +102,7 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, isLoading }) =>
     )
   }
 
-  if (events.length === 0) {
+  if (!events || events.length === 0) {
     return (
       <Box 
         display="flex" 
@@ -126,7 +126,7 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, isLoading }) =>
   return (
     <Box>
       <List disablePadding>
-        {events.slice(0, 5).map((event, index) => {
+        {(events || []).slice(0, 5).map((event, index) => {
           const dateInfo = formatEventDate(event.date)
           const eventColor = getEventColor(event.type)
           
@@ -136,7 +136,7 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, isLoading }) =>
               sx={{
                 px: 0,
                 py: 1.5,
-                borderBottom: index < events.length - 1 ? 1 : 0,
+                borderBottom: index < (events?.length || 0) - 1 ? 1 : 0,
                 borderColor: 'divider',
                 '&:hover': {
                   backgroundColor: 'action.hover',
@@ -200,7 +200,7 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, isLoading }) =>
         })}
       </List>
 
-      {events.length > 5 && (
+      {(events?.length || 0) > 5 && (
         <Box sx={{ mt: 2, textAlign: 'center' }}>
           <Button
             variant="outlined"

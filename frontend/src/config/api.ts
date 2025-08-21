@@ -1,9 +1,8 @@
 // Simple API Configuration for Docker setup
-const isDevelopment = import.meta.env.DEV
-
+// Always use nginx proxy (localhost) for both API and media in Docker setup
 export const API_CONFIG = {
-  BASE_URL: isDevelopment ? 'http://localhost:8000/api' : '/api',
-  MEDIA_URL: isDevelopment ? 'http://localhost:8000/media' : '/media',
+  BASE_URL: '/api',
+  MEDIA_URL: '/media',
 }
 
 // Helper function to get full media URL

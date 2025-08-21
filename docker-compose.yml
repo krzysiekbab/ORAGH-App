@@ -42,7 +42,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
     volumes:
       - ./backend:/app
-      - media_files:/app/media
+      - ./backend/media:/app/media
       - static_files:/app/staticfiles
     ports:
       - "8000:8000"
@@ -88,7 +88,7 @@ services:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
       - static_files:/var/www/static
-      - media_files:/var/www/media
+      - ./backend/media:/var/www/media
       - ./docker/nginx/ssl:/etc/nginx/ssl
     depends_on:
       - backend
@@ -100,7 +100,6 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  media_files:
   static_files:
 
 networks:

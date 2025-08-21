@@ -106,6 +106,9 @@ def change_password(request):
 @permission_classes([permissions.IsAuthenticated])
 def upload_profile_photo(request):
     """Upload profile photo."""
+    import os
+    from django.conf import settings
+    
     try:
         musician_profile = request.user.musicianprofile
     except MusicianProfile.DoesNotExist:
@@ -117,6 +120,16 @@ def upload_profile_photo(request):
         return Response({
             'error': 'Nie przesłano pliku zdjęcia.'
         }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Delete old photo if it exists
+    if musician_profile.photo:
+        old_photo_path = os.path.join(settings.MEDIA_ROOT, str(musician_profile.photo))
+        if os.path.exists(old_photo_path):
+            try:
+                os.remove(old_photo_path)
+                print(f"Deleted old photo: {old_photo_path}")
+            except OSError as e:
+                print(f"Error deleting old photo {old_photo_path}: {e}")
     
     # Update photo
     musician_profile.photo = request.FILES['photo']

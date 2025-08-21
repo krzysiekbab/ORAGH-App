@@ -139,7 +139,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, isLoading }
   return (
     <Box>
       <List disablePadding>
-        {activities.slice(0, 5).map((activity, index) => {
+        {(activities || []).slice(0, 5).map((activity, index) => {
           const activityColor = getActivityColor(activity.type)
           const relativeTime = formatRelativeTime(activity.created_at)
           

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import userService, { UserWithProfile, ProfileUpdateData, ChangePasswordData } from '../services/user'
+import { useAuthStore } from './authStore'
 
 interface UserState {
   // State
@@ -50,6 +51,10 @@ export const useUserStore = create<UserState>()(
         try {
           const updatedProfile = await userService.updateProfile(data)
           set({ profile: updatedProfile, isLoading: false })
+          
+          // Also update the auth store with the new user data
+          useAuthStore.getState().setUser(updatedProfile as any)
+          
           return true
         } catch (error: any) {
           let errorMessage = 'Błąd podczas aktualizacji profilu'
@@ -106,10 +111,23 @@ export const useUserStore = create<UserState>()(
         try {
           const updatedProfile = await userService.uploadPhoto(file)
           set({ profile: updatedProfile, isLoading: false })
+          
+          // Also update the auth store with the new user data
+          useAuthStore.getState().setUser(updatedProfile as any)
+          
           return true
         } catch (error: any) {
-          const errorMessage = error.response?.data?.error || 
-                              'Błąd podczas przesyłania zdjęcia'
+          console.error('Photo upload error:', error)
+          let errorMessage = 'Błąd podczas przesyłania zdjęcia'
+          
+          if (error.response?.data?.error) {
+            errorMessage = error.response.data.error
+          } else if (error.response?.data?.detail) {
+            errorMessage = error.response.data.detail
+          } else if (error.message) {
+            errorMessage = error.message
+          }
+          
           set({ error: errorMessage, isLoading: false })
           return false
         }

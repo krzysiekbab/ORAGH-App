@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import homeService from '../services/home'
 
 export interface HomeStats {
   totalMusicians: number
@@ -75,36 +74,89 @@ export const useHomeStore = create<HomeState>()(
       // Fetch home statistics
       fetchStats: async () => {
         try {
-          const stats = await homeService.getStats()
+          // Mock data for now - no API call
+          const stats: HomeStats = {
+            totalMusicians: 45,
+            activeMusicians: 38,
+            upcomingEvents: 8,
+            totalConcerts: 156,
+            userAttendanceRate: 89,
+            currentSeason: '2024/2025'
+          }
           set({ stats, error: null })
         } catch (error: any) {
-          const errorMessage = error.response?.data?.detail || 'Błąd podczas ładowania statystyk'
+          const errorMessage = 'Błąd podczas ładowania statystyk'
           set({ error: errorMessage })
-          throw error
         }
       },
 
       // Fetch upcoming events
       fetchUpcomingEvents: async () => {
         try {
-          const upcomingEvents = await homeService.getUpcomingEvents()
+          // Mock data for now - no API call
+          const upcomingEvents: UpcomingEvent[] = [
+            {
+              id: 1,
+              name: 'Próba generalna przed koncertem',
+              date: '2025-08-25T18:00:00Z',
+              type: 'rehearsal',
+              season: '2024/2025'
+            },
+            {
+              id: 2,
+              name: 'Koncert Noworoczny',
+              date: '2025-01-01T19:00:00Z',
+              type: 'concert',
+              season: '2024/2025'
+            },
+            {
+              id: 3,
+              name: 'Soundcheck - Filharmonia',
+              date: '2025-08-30T16:00:00Z',
+              type: 'soundcheck',
+              season: '2024/2025'
+            }
+          ]
           set({ upcomingEvents, error: null })
         } catch (error: any) {
-          const errorMessage = error.response?.data?.detail || 'Błąd podczas ładowania nadchodzących wydarzeń'
+          const errorMessage = 'Błąd podczas ładowania nadchodzących wydarzeń'
           set({ error: errorMessage })
-          throw error
         }
       },
 
       // Fetch recent activity
       fetchRecentActivity: async () => {
         try {
-          const recentActivity = await homeService.getRecentActivity()
+          // Mock data for now - no API call
+          const recentActivity: RecentActivity[] = [
+            {
+              id: 1,
+              type: 'announcement',
+              title: 'Nowe utwory na najbliższy koncert',
+              author: 'Dyrektor Artystyczny',
+              created_at: '2025-08-20T10:30:00Z',
+              description: 'Dodano nowe utwory do repertuaru na koncert 1 stycznia'
+            },
+            {
+              id: 2,
+              type: 'forum_post',
+              title: 'Pytanie o stroje na koncert',
+              author: 'Anna Kowalska',
+              created_at: '2025-08-19T15:45:00Z'
+            },
+            {
+              id: 3,
+              type: 'concert',
+              title: 'Dodano nowy koncert',
+              author: 'System',
+              created_at: '2025-08-18T09:15:00Z',
+              description: 'Koncert Noworoczny - 1 stycznia 2025'
+            }
+          ]
           set({ recentActivity, error: null })
         } catch (error: any) {
-          const errorMessage = error.response?.data?.detail || 'Błąd podczas ładowania ostatniej aktywności'
+          const errorMessage = 'Błąd podczas ładowania ostatniej aktywności'
           set({ error: errorMessage })
-          throw error
         }
       },
 
