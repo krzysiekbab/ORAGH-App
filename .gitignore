@@ -30,5 +30,4 @@ backend/media/
 # Ignore data files
 backend/data/
 
-PHASE-2-COMPLETION-REPORT.md
-PROJEKT-STAN-MIGRACJI.md
+notes/
