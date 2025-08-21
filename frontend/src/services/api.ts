@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { API_CONFIG } from '../config/api'
 
-// Configure API base URL - Use the Docker environment variable or fallback
-const API_BASE_URL = 'http://localhost:8000/api'
+// Configure API base URL - Use the environment-aware configuration
+const API_BASE_URL = API_CONFIG.BASE_URL
 
 // Create axios instance with default config
 export const apiClient = axios.create({

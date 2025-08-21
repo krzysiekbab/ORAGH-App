@@ -1,9 +1,8 @@
 import axios from 'axios'
 import type { HomeStats, UpcomingEvent, RecentActivity } from '../stores/homeStore'
+import { API_CONFIG } from '../config/api'
 
-const API_BASE = import.meta.env.PROD 
-  ? '/api' 
-  : 'http://localhost:8000/api'
+const API_BASE = API_CONFIG.BASE_URL
 
 // Create axios instance with auth token
 const api = axios.create({

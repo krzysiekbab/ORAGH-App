@@ -35,6 +35,7 @@ import {
 } from '@mui/icons-material'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
+import { getMediaUrl } from '../../config/api'
 
 const DRAWER_WIDTH = 240
 
@@ -161,9 +162,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const drawerContent = (
     <Box>
       <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          ORAGH
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <img 
+            src={getMediaUrl('general/Logo_ORAGH.jpeg')} 
+            alt="ORAGH Logo"
+            style={{ 
+              height: '32px', 
+              width: 'auto'
+            }}
+          />
+          <Typography variant="h6" noWrap component="div">
+            ORAGH
+          </Typography>
+        </Box>
       </Toolbar>
       <Divider />
       <List>
