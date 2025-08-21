@@ -17,6 +17,7 @@ interface UserState {
   fetchMusicians: () => Promise<void>
   clearError: () => void
   setProfile: (profile: UserWithProfile | null) => void
+  clearProfile: () => void
 }
 
 export const useUserStore = create<UserState>()(
@@ -136,6 +137,11 @@ export const useUserStore = create<UserState>()(
       // Set profile (for external updates)
       setProfile: (profile: UserWithProfile | null) => {
         set({ profile })
+      },
+
+      // Clear profile (useful when user changes)
+      clearProfile: () => {
+        set({ profile: null, error: null })
       },
     }),
     {

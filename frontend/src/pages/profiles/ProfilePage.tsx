@@ -25,14 +25,15 @@ import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore()
   const { 
     profile, 
     isLoading, 
     error, 
     fetchProfile, 
     uploadPhoto,
-    clearError 
+    clearError,
+    setProfile 
   } = useUserStore()
   
   const [photoDialogOpen, setPhotoDialogOpen] = useState(false)
@@ -46,11 +47,16 @@ export default function ProfilePage() {
       return
     }
     
-    // Only fetch profile if we don't have it yet
-    if (!profile) {
+    // If user changed (different ID), clear the cached profile and fetch new one
+    if (user && profile && profile.id !== user.id) {
+      setProfile(null)
+    }
+    
+    // Always fetch profile if we don't have it or if the user changed
+    if (!profile || (user && profile.id !== user.id)) {
       fetchProfile()
     }
-  }, [isAuthenticated, navigate]) // Remove profile and fetchProfile from dependencies
+  }, [isAuthenticated, navigate, user?.id, fetchProfile, profile, setProfile])
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]

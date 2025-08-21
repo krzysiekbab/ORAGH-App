@@ -131,6 +131,11 @@ export const useAuthStore = create<AuthState>()(
           error: null,
           hasCheckedAuth: true
         })
+        
+        // Clear user profile cache when logging out
+        // Note: We import this inside the function to avoid circular dependencies
+        const { useUserStore } = require('./userStore')
+        useUserStore.getState().clearProfile()
       },
 
       // Check authentication status on app load
