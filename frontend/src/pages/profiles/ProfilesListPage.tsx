@@ -4,7 +4,7 @@ import {
   Typography, 
   Box, 
   Avatar,
-  Grid,
+  Grid2 as Grid,
   Card,
   CardContent,
   Chip,
@@ -108,44 +108,61 @@ export default function ProfilesListPage() {
       </Typography>
 
       {/* Filters */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
-        <TextField
-          placeholder="Szukaj muzyków..."
-          variant="outlined"
-          size="small"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ minWidth: 250 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-        />
-        
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Instrument</InputLabel>
-          <Select
-            value={instrumentFilter}
-            label="Instrument"
-            onChange={handleInstrumentChange}
-          >
-            <MenuItem value="">Wszystkie</MenuItem>
-            {instrumentChoices.map((choice) => (
-              <MenuItem key={choice.value} value={choice.value}>
-                {choice.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      <Box sx={{ mb: 4 }}>
+        <Grid container spacing={2} sx={{ alignItems: 'center' }}>
+          {/* Search Field */}
+          <Grid size={{ xs: 12, sm: 8, md: 6, lg: 4 }}>
+            <TextField
+              placeholder="Szukaj muzyków..."
+              variant="outlined"
+              size="small"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          
+          {/* Instrument Filter */}
+          <Grid size={{ xs: 12, sm: 4, md: 3, lg: 2 }}>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Instrument</InputLabel>
+              <Select
+                value={instrumentFilter}
+                label="Instrument"
+                onChange={handleInstrumentChange}
+              >
+                <MenuItem value="">Wszystkie</MenuItem>
+                {instrumentChoices.map((choice) => (
+                  <MenuItem key={choice.value} value={choice.value}>
+                    {choice.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          {/* Results count - aligned to the right on larger screens */}
+          <Grid size={{ xs: 12, md: 3, lg: 6 }}>
+            <Typography 
+              variant="body2" 
+              color="textSecondary" 
+              sx={{ 
+                textAlign: { xs: 'left', md: 'right' },
+                mt: { xs: 1, md: 0 }
+              }}
+            >
+              Znaleziono {filteredMusicians.length} muzyków
+            </Typography>
+          </Grid>
+        </Grid>
       </Box>
-
-      {/* Results count */}
-      <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-        Znaleziono {filteredMusicians.length} muzyków
-      </Typography>
 
       {/* Musicians list - grouped by instrument */}
       {Object.keys(groupedMusicians).length === 0 ? (
@@ -170,7 +187,7 @@ export default function ProfilesListPage() {
                 {instrumentMusicians
                   .sort((a, b) => `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`))
                   .map((musician) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={musician.id}>
+                    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={musician.id}>
                       <Card 
                         sx={{ 
                           height: '100%',

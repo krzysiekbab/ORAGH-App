@@ -159,6 +159,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     return breadcrumbs
   }
 
+  const getCurrentPageTitle = () => {
+    const currentItem = navigationItems.find(item => 
+      item.path === location.pathname
+    )
+    return currentItem?.text || 'Strona Główna'
+  }
+
   const drawerContent = (
     <Box>
       <Toolbar>
@@ -248,16 +255,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </IconButton>
           
           <Box sx={{ flexGrow: 1 }}>
-            <Breadcrumbs
-              aria-label="breadcrumb"
-              sx={{ color: 'inherit' }}
-            >
-              {getBreadcrumbs()}
-            </Breadcrumbs>
+            {/* Desktop: Show full breadcrumbs */}
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <Breadcrumbs
+                aria-label="breadcrumb"
+                sx={{ color: 'inherit' }}
+              >
+                {getBreadcrumbs()}
+              </Breadcrumbs>
+            </Box>
+            
+            {/* Mobile: Show only current page title */}
+            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+              <Typography variant="h6" sx={{ color: 'inherit' }}>
+                {getCurrentPageTitle()}
+              </Typography>
+            </Box>
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" sx={{ mr: 1 }}>
+            {/* Hide user name on mobile screens */}
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                mr: 1,
+                display: { xs: 'none', md: 'block' }
+              }}
+            >
               {user?.first_name} {user?.last_name}
             </Typography>
             <IconButton

@@ -123,14 +123,21 @@ export default function ProfilePage() {
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
         {/* Header with photo and basic info */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 3 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'center', md: 'flex-start' }, 
+          mb: 4, 
+          gap: 3,
+          textAlign: { xs: 'center', md: 'left' }
+        }}>
           <Box sx={{ position: 'relative' }}>
             <Avatar
               src={musician_profile.photo || undefined}
               sx={{ 
-                width: 120, 
-                height: 120,
-                fontSize: '3rem'
+                width: { xs: 100, md: 120 }, 
+                height: { xs: 100, md: 120 },
+                fontSize: { xs: '2.5rem', md: '3rem' }
               }}
             >
               {profile.first_name[0]}{profile.last_name[0]}
@@ -154,27 +161,38 @@ export default function ProfilePage() {
             </Button>
           </Box>
           
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" gutterBottom>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.8rem', md: '2.125rem' } }}>
               {profile.first_name} {profile.last_name}
             </Typography>
-            <Typography variant="h6" color="textSecondary" gutterBottom>
+            <Typography variant="h6" color="textSecondary" gutterBottom sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
               @{profile.username}
             </Typography>
             <Chip 
               label={musician_profile.instrument} 
               color="primary" 
               variant="outlined"
-              sx={{ textTransform: 'capitalize' }}
+              size="small"
+              sx={{ textTransform: 'capitalize', mb: { xs: 2, md: 0 } }}
             />
           </Box>
 
-          <Box>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'row', md: 'column' },
+            gap: 1,
+            width: { xs: '100%', md: 'auto' },
+            maxWidth: { xs: 'none', md: '200px' }
+          }}>
             <Button
               variant="contained"
               startIcon={<Edit />}
               onClick={() => navigate('/profile/edit')}
-              sx={{ mb: 1, display: 'block' }}
+              size="small"
+              sx={{ 
+                flex: { xs: 1, md: 'none' },
+                fontSize: { xs: '0.75rem', md: '0.875rem' }
+              }}
             >
               Edytuj profil
             </Button>
@@ -182,7 +200,11 @@ export default function ProfilePage() {
               variant="outlined"
               startIcon={<Lock />}
               onClick={() => navigate('/profile/change-password')}
-              sx={{ display: 'block' }}
+              size="small"
+              sx={{ 
+                flex: { xs: 1, md: 'none' },
+                fontSize: { xs: '0.75rem', md: '0.875rem' }
+              }}
             >
               Zmień hasło
             </Button>
@@ -190,27 +212,27 @@ export default function ProfilePage() {
         </Box>
 
         {/* Profile details */}
-        <Grid2 container spacing={3}>
-          <Grid2 size={{ xs: 12, md: 6 }}>
-            <Card variant="outlined">
+        <Grid2 container spacing={{ xs: 2, md: 3 }}>
+          <Grid2 size={{ xs: 12, lg: 6 }}>
+            <Card variant="outlined" sx={{ height: '100%' }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
                   Informacje osobiste
                 </Typography>
-                <Box sx={{ display: 'grid', gap: 2 }}>
+                <Box sx={{ display: 'grid', gap: { xs: 1.5, md: 2 } }}>
                   <Box>
-                    <Typography variant="subtitle2" color="textSecondary">
+                    <Typography variant="subtitle2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                       Email
                     </Typography>
-                    <Typography variant="body1">
+                    <Typography variant="body1" sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, wordBreak: 'break-word' }}>
                       {profile.email}
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="subtitle2" color="textSecondary">
+                    <Typography variant="subtitle2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                       Data urodzenia
                     </Typography>
-                    <Typography variant="body1">
+                    <Typography variant="body1" sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
                       {musician_profile.birthday 
                         ? new Date(musician_profile.birthday).toLocaleDateString('pl-PL')
                         : 'Nie podano'
@@ -218,11 +240,14 @@ export default function ProfilePage() {
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="subtitle2" color="textSecondary">
+                    <Typography variant="subtitle2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                       Data dołączenia
                     </Typography>
-                    <Typography variant="body1">
+                    <Typography variant="body1" sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
                       {(() => {
+                        if (!profile.date_joined) {
+                          return 'Nie podano'
+                        }
                         try {
                           const date = new Date(profile.date_joined)
                           if (isNaN(date.getTime())) {
@@ -242,15 +267,15 @@ export default function ProfilePage() {
             </Card>
           </Grid2>
 
-          <Grid2 size={{ xs: 12, md: 6 }}>
-            <Card variant="outlined">
+          <Grid2 size={{ xs: 12, lg: 6 }}>
+            <Card variant="outlined" sx={{ height: '100%' }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
                   Status w orkiestrze
                 </Typography>
-                <Box sx={{ display: 'grid', gap: 2 }}>
+                <Box sx={{ display: 'grid', gap: { xs: 1.5, md: 2 } }}>
                   <Box>
-                    <Typography variant="subtitle2" color="textSecondary">
+                    <Typography variant="subtitle2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                       Status
                     </Typography>
                     <Chip 
@@ -260,10 +285,10 @@ export default function ProfilePage() {
                     />
                   </Box>
                   <Box>
-                    <Typography variant="subtitle2" color="textSecondary">
+                    <Typography variant="subtitle2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                       Instrument
                     </Typography>
-                    <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
+                    <Typography variant="body1" sx={{ textTransform: 'capitalize', fontSize: { xs: '0.875rem', md: '1rem' } }}>
                       {musician_profile.instrument}
                     </Typography>
                   </Box>
