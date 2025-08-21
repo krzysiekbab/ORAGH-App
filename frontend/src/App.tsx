@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate, Link } from 'react-router-dom'
-import { Box, CircularProgress, Typography, Button } from '@mui/material'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { Box, CircularProgress, Typography } from '@mui/material'
 import { useAuthStore } from './stores/authStore'
+import DashboardLayout from './components/layout/DashboardLayout'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import ProfilePage from './pages/profiles/ProfilePage'
@@ -9,6 +10,7 @@ import EditProfilePage from './pages/profiles/EditProfilePage'
 import ChangePasswordPage from './pages/profiles/ChangePasswordPage'
 import ProfilesListPage from './pages/profiles/ProfilesListPage'
 import UserProfilePage from './pages/profiles/UserProfilePage'
+import HomePage from './pages/HomePage'
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -36,11 +38,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />
   }
   
-  return <>{children}</>
+  return <DashboardLayout>{children}</DashboardLayout>
 }
 
 function App() {
-  const { isLoading, isAuthenticated, checkAuth, user, logout, hasCheckedAuth } = useAuthStore()
+  const { isLoading, isAuthenticated, checkAuth, hasCheckedAuth } = useAuthStore()
 
   useEffect(() => {
     // Check authentication status only once on app load
@@ -100,44 +102,14 @@ function App() {
         element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} 
       />
       
-      {/* Dashboard/Home route */}
+      {/* Home route */}
       <Route 
         path="/" 
         element={
           hasCheckedAuth && isAuthenticated ? (
-            <Box sx={{ p: 3 }}>
-              <Typography variant="h4" gutterBottom>
-                ORAGH Platform - Witamy!
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                Jesteś zalogowany ✅ {user ? `jako ${user.first_name} ${user.last_name}` : ''}
-              </Typography>
-              <Typography variant="h6" gutterBottom>
-                Dostępne funkcje:
-              </Typography>
-              <Box component="ul" sx={{ mb: 3 }}>
-                <li>
-                  <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <Typography color="primary" sx={{ '&:hover': { textDecoration: 'underline' } }}>
-                      Mój profil
-                    </Typography>
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/profiles" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <Typography color="primary" sx={{ '&:hover': { textDecoration: 'underline' } }}>
-                      Lista muzyków
-                    </Typography>
-                  </Link>
-                </li>
-              </Box>
-              <Typography variant="caption" display="block" sx={{ mb: 2 }}>
-                Następny krok: Budujemy Dashboard (Faza 3)
-              </Typography>
-              <Button variant="outlined" onClick={logout}>
-                Wyloguj się
-              </Button>
-            </Box>
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
           ) : hasCheckedAuth && !isAuthenticated ? (
             <Navigate to="/login" replace />
           ) : (

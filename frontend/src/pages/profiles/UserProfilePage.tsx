@@ -11,7 +11,7 @@ import {
   Alert,
   CircularProgress,
   Button,
-  Grid,
+  Grid2,
   Paper
 } from '@mui/material'
 import { ArrowBack, Person, MusicNote, CalendarToday } from '@mui/icons-material'
@@ -122,9 +122,9 @@ export default function UserProfilePage() {
         Powrót do listy muzyków
       </Button>
 
-      <Grid container spacing={3}>
+      <Grid2 container spacing={3}>
         {/* Profile Card */}
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <Paper elevation={2} sx={{ p: 3, textAlign: 'center' }}>
             <Avatar
               src={user.musician_profile.photo || undefined}
@@ -155,13 +155,13 @@ export default function UserProfilePage() {
               />
             </Box>
           </Paper>
-        </Grid>
+        </Grid2>
 
         {/* Details */}
-        <Grid item xs={12} md={8}>
-          <Grid container spacing={2}>
+        <Grid2 size={{ xs: 12, md: 8 }}>
+          <Grid2 container spacing={2}>
             {/* Instrument Info */}
-            <Grid item xs={12} sm={6}>
+            <Grid2 size={{ xs: 12, sm: 6 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -175,10 +175,10 @@ export default function UserProfilePage() {
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
+            </Grid2>
 
             {/* Birthday Info */}
-            <Grid item xs={12} sm={6}>
+            <Grid2 size={{ xs: 12, sm: 6 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -195,10 +195,10 @@ export default function UserProfilePage() {
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
+            </Grid2>
 
             {/* Membership Info */}
-            <Grid item xs={12}>
+            <Grid2 size={{ xs: 12 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -212,10 +212,10 @@ export default function UserProfilePage() {
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
+            </Grid2>
 
             {/* Email (if not sensitive) */}
-            <Grid item xs={12}>
+            <Grid2 size={{ xs: 12 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -226,10 +226,10 @@ export default function UserProfilePage() {
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
+            </Grid2>
+          </Grid2>
+        </Grid2>
+      </Grid2>
     </Container>
   )
 }

@@ -29,6 +29,13 @@ export interface User {
   email: string
   first_name: string
   last_name: string
+  musician_profile?: {
+    id: number
+    instrument: string
+    birthday: string | null
+    photo: string | null
+    active: boolean
+  }
 }
 
 export interface AuthError {

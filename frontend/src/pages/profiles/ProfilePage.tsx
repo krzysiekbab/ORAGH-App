@@ -6,7 +6,7 @@ import {
   Box, 
   Avatar,
   Button,
-  Grid,
+  Grid2,
   Card,
   CardContent,
   Chip,
@@ -190,8 +190,8 @@ export default function ProfilePage() {
         </Box>
 
         {/* Profile details */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+        <Grid2 container spacing={3}>
+          <Grid2 size={{ xs: 12, md: 6 }}>
             <Card variant="outlined">
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -240,9 +240,9 @@ export default function ProfilePage() {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} md={6}>
+          <Grid2 size={{ xs: 12, md: 6 }}>
             <Card variant="outlined">
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -270,8 +270,8 @@ export default function ProfilePage() {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </Paper>
 
       {/* Photo upload dialog */}

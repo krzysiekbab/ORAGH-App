@@ -39,6 +39,9 @@ urlpatterns = [
     # App URLs - Phase 2: Registration & Profiles
     path('users/', include('api.users.urls')),
     
+    # Phase 3: Home Page  
+    path('home/', include('api.home.urls')),
+    
     # TODO: Future phases will add:
     # path('concerts/', include('api.concerts.urls')),      # Phase 4
     # path('forum/', include('api.forum.urls')),            # Phase 6  

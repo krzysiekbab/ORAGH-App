@@ -83,7 +83,7 @@ export default function RegisterPage() {
       setShowSuccess(true)
       toast.success('Rejestracja zakończona pomyślnie!')
       
-      // Redirect to dashboard after short delay
+      // Redirect to home page after short delay
       setTimeout(() => {
         navigate('/')
       }, 2000)
