@@ -1,5 +1,4 @@
 # Development version - for local development with hot reload
-version: '3.8'
 
 services:
   # PostgreSQL Database

@@ -42,8 +42,10 @@ urlpatterns = [
     # Phase 3: Home Page  
     path('home/', include('api.home.urls')),
     
+    # Phase 4: Concerts
+    path('concerts/', include('api.concerts.urls')),
+    
     # TODO: Future phases will add:
-    # path('concerts/', include('api.concerts.urls')),      # Phase 4
     # path('forum/', include('api.forum.urls')),            # Phase 6  
     # path('attendance/', include('api.attendance.urls')),  # Phase 5
     

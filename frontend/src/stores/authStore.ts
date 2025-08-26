@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import authService, { LoginCredentials, RegisterData, User, AuthError } from '../services/auth'
+import { useUserStore } from './userStore'
 
 interface AuthState {
   // State
@@ -133,9 +134,11 @@ export const useAuthStore = create<AuthState>()(
         })
         
         // Clear user profile cache when logging out
-        // Note: We import this inside the function to avoid circular dependencies
-        const { useUserStore } = require('./userStore')
-        useUserStore.getState().clearProfile()
+        try {
+          useUserStore.getState().clearProfile()
+        } catch (error) {
+          console.warn('Failed to clear user profile cache:', error)
+        }
       },
 
       // Check authentication status on app load

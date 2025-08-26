@@ -14,6 +14,17 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          mui: ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+          stores: ['zustand'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
   },
   define: {
     'process.env': {},

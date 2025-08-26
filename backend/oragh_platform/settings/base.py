@@ -35,8 +35,10 @@ LOCAL_APPS = [
     # Phase 3: Home Page
     'api.home',
     
+    # Phase 4: Concerts
+    'api.concerts',
+    
     # TODO: Future phases will add:
-    # 'api.concerts',      # Phase 4
     # 'api.forum',         # Phase 6  
     # 'api.attendance',    # Phase 5
 ]

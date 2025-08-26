@@ -10,6 +10,9 @@ import EditProfilePage from './pages/profiles/EditProfilePage'
 import ChangePasswordPage from './pages/profiles/ChangePasswordPage'
 import ProfilesListPage from './pages/profiles/ProfilesListPage'
 import UserProfilePage from './pages/profiles/UserProfilePage'
+import ConcertsPage from './pages/concerts/ConcertsPage'
+import ConcertDetailPage from './pages/concerts/ConcertDetailPage'
+import EditConcertPage from './pages/concerts/EditConcertPage'
 import HomePage from './pages/HomePage'
 
 // Protected Route Component
@@ -100,6 +103,18 @@ function App() {
       <Route 
         path="/profiles/:userId" 
         element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/concerts" 
+        element={<ProtectedRoute><ConcertsPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/concerts/:id" 
+        element={<ProtectedRoute><ConcertDetailPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/concerts/:id/edit" 
+        element={<ProtectedRoute><EditConcertPage /></ProtectedRoute>} 
       />
       
       {/* Home route */}

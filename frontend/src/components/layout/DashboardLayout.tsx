@@ -70,7 +70,6 @@ const navigationItems: NavigationItem[] = [
     text: 'Koncerty',
     icon: <MusicNoteIcon />,
     path: '/concerts',
-    disabled: true,
   },
   {
     text: 'Obecności',

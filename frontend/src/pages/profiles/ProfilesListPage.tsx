@@ -98,20 +98,24 @@ export default function ProfilesListPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Muzycy Orkiestry ORAGH
-      </Typography>
-      
-      <Typography variant="body1" color="textSecondary" sx={{ mb: 4 }}>
-        Poznaj wszystkich członków naszej orkiestry
-      </Typography>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Header */}
+      <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} mb={4} gap={2}>
+        <Box>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Muzycy Orkiestry ORAGH
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Poznaj wszystkich członków naszej orkiestry
+          </Typography>
+        </Box>
+      </Box>
 
       {/* Filters */}
       <Box sx={{ mb: 4 }}>
-        <Grid container spacing={2} sx={{ alignItems: 'center' }}>
+        <Grid container spacing={2} alignItems="center">
           {/* Search Field */}
-          <Grid size={{ xs: 12, sm: 8, md: 6, lg: 4 }}>
+          <Grid size={{ xs: 12, lg: 6 }}>
             <TextField
               placeholder="Szukaj muzyków..."
               variant="outlined"
@@ -130,7 +134,7 @@ export default function ProfilesListPage() {
           </Grid>
           
           {/* Instrument Filter */}
-          <Grid size={{ xs: 12, sm: 4, md: 3, lg: 2 }}>
+          <Grid size={{ xs: 12, lg: 6 }}>
             <FormControl size="small" fullWidth>
               <InputLabel>Instrument</InputLabel>
               <Select
@@ -147,21 +151,17 @@ export default function ProfilesListPage() {
               </Select>
             </FormControl>
           </Grid>
-          
-          {/* Results count - aligned to the right on larger screens */}
-          <Grid size={{ xs: 12, md: 3, lg: 6 }}>
-            <Typography 
-              variant="body2" 
-              color="textSecondary" 
-              sx={{ 
-                textAlign: { xs: 'left', md: 'right' },
-                mt: { xs: 1, md: 0 }
-              }}
-            >
-              Znaleziono {filteredMusicians.length} muzyków
-            </Typography>
-          </Grid>
         </Grid>
+        
+        {/* Results count moved below filters */}
+        <Box sx={{ pt: 2, borderTop: 1, borderColor: 'divider', mt: 2 }}>
+          <Typography 
+            variant="body2" 
+            color="text.secondary"
+          >
+            Znaleziono {filteredMusicians.length} muzyków
+          </Typography>
+        </Box>
       </Box>
 
       {/* Musicians list - grouped by instrument */}
