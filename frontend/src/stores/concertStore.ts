@@ -22,6 +22,7 @@ interface ConcertState {
   filters: ConcertFilters
   registrationLoading: Set<number> // Track which concerts are being processed
   userPermissions: UserPermissions | null
+  permissionsLoading: boolean // Track permissions loading state
 
   // Actions
   fetchConcerts: (filters?: ConcertFilters, append?: boolean) => Promise<void>
@@ -32,6 +33,7 @@ interface ConcertState {
   registerForConcert: (id: number) => Promise<boolean>
   unregisterFromConcert: (id: number) => Promise<boolean>
   fetchUserPermissions: () => Promise<void>
+  clearPermissions: () => void
   setFilters: (filters: ConcertFilters) => void
   clearFilters: () => void
   clearError: () => void
@@ -53,6 +55,7 @@ export const useConcertStore = create<ConcertState>()(
       filters: {},
       registrationLoading: new Set(),
       userPermissions: null,
+      permissionsLoading: false,
 
       // Fetch concerts with optional filters
       fetchConcerts: async (filters = {}, append = false) => {
@@ -331,13 +334,19 @@ export const useConcertStore = create<ConcertState>()(
 
       // Fetch user permissions
       fetchUserPermissions: async () => {
+        set({ permissionsLoading: true })
         try {
           const permissions = await concertService.getUserPermissions()
-          set({ userPermissions: permissions })
+          set({ userPermissions: permissions, permissionsLoading: false })
         } catch (error) {
           console.error('Failed to fetch user permissions:', error)
-          set({ userPermissions: { can_create: false } })
+          set({ userPermissions: { can_create: false }, permissionsLoading: false })
         }
+      },
+
+      // Clear permissions (when user logs out/changes)
+      clearPermissions: () => {
+        set({ userPermissions: null, permissionsLoading: false })
       },
 
       // Set filters

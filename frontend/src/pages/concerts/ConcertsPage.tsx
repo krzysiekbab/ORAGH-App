@@ -43,8 +43,10 @@ const ConcertsPage: React.FC = () => {
     filters,
     registrationLoading,
     userPermissions,
+    permissionsLoading,
     fetchConcerts,
     fetchUserPermissions,
+    clearPermissions,
     setFilters,
     registerForConcert,
     unregisterFromConcert,
@@ -56,11 +58,23 @@ const ConcertsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
 
+  // Computed value to determine if we should show the add button
+  // Only show when: user exists, permissions are loaded, and user can create
+  const canShowAddButton = user && !permissionsLoading && userPermissions?.can_create === true
+
   useEffect(() => {
-    fetchConcerts()
+    // Fetch concerts and permissions concurrently for better performance
+    const promises = [fetchConcerts()]
+    
     if (user) {
-      fetchUserPermissions()
+      promises.push(fetchUserPermissions())
+    } else {
+      // Clear permissions when user logs out
+      clearPermissions()
     }
+    
+    // Execute promises concurrently for faster loading
+    Promise.all(promises).catch(console.error)
   }, [user])
 
   // Auto-filter when search term or status changes
@@ -169,7 +183,7 @@ const ConcertsPage: React.FC = () => {
           </Typography>
           
           {/* Mobile button */}
-          {user && userPermissions?.can_create && (
+          {canShowAddButton && (
             <Box sx={{ display: { xs: 'block', md: 'none' }, mt: 2 }} >
               <Button
                 variant="contained"
@@ -184,7 +198,7 @@ const ConcertsPage: React.FC = () => {
         </Box>
         
         {/* Desktop button */}
-        {user && userPermissions?.can_create && (
+        {canShowAddButton && (
           <Box sx={{ display: { xs: 'none', md: 'block' } }}>
             <Button
               variant="contained"
