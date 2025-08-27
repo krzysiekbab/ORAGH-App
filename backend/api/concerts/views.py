@@ -61,8 +61,8 @@ class ConcertListCreateView(generics.ListCreateAPIView):
         if search:
             queryset = queryset.filter(name__icontains=search)
         
-        # Show only public concerts for regular users
-        if not self.request.user.groups.filter(name='board').exists():
+        # Show only public concerts for regular users (users without view permission for all concerts)
+        if not self.request.user.has_perm('concerts.change_concert'):
             queryset = queryset.filter(is_public=True)
         
         return queryset
@@ -81,8 +81,8 @@ class ConcertListCreateView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         """Set the created_by field when creating a concert."""
-        # Check if user can create concerts (only board members)
-        if not self.request.user.groups.filter(name='board').exists():
+        # Check if user can create concerts using Django permissions
+        if not self.request.user.has_perm('concerts.add_concert'):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Nie masz uprawnień do tworzenia koncertów.")
         serializer.save(created_by=self.request.user)
@@ -155,7 +155,7 @@ def concert_registration(request, pk):
         )
     
     # Check if concert allows registration
-    if not concert.is_public and not request.user.groups.filter(name='board').exists():
+    if not concert.is_public and not request.user.has_perm('concerts.change_concert'):
         return Response(
             {'error': 'Ten koncert nie jest publiczny.'},
             status=status.HTTP_403_FORBIDDEN
@@ -214,7 +214,7 @@ def concert_participants(request, pk):
     concert = get_object_or_404(Concert, pk=pk)
     
     # Check if user can view participants
-    if not concert.is_public and not request.user.groups.filter(name='board').exists():
+    if not concert.is_public and not request.user.has_perm('concerts.change_concert'):
         return Response(
             {'error': 'Nie masz uprawnień do przeglądania uczestników tego koncertu.'},
             status=status.HTTP_403_FORBIDDEN

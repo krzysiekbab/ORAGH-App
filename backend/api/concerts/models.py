@@ -82,28 +82,23 @@ class Concert(models.Model):
         """Check if user can edit this concert."""
         if not user or not user.is_authenticated:
             return False
-        # Board members can edit any concert
-        if user.groups.filter(name='board').exists():
-            return True
-        # Directors can edit any concert
-        if user.groups.filter(name='director').exists():
-            return True
-        return False
+        # Check Django permission for changing concerts
+        return user.has_perm('concerts.change_concert')
 
     def can_user_delete(self, user):
         """Check if user can delete this concert."""
         if not user or not user.is_authenticated:
             return False
-        # Only board members can delete concerts
-        return user.groups.filter(name='board').exists()
+        # Check Django permission for deleting concerts
+        return user.has_perm('concerts.delete_concert')
 
     @classmethod
     def can_user_create(cls, user):
         """Check if user can create concerts."""
         if not user or not user.is_authenticated:
             return False
-        # Only board members can create concerts
-        return user.groups.filter(name='board').exists()
+        # Check Django permission for adding concerts
+        return user.has_perm('concerts.add_concert')
 
     def get_participants_display(self):
         """Get formatted participants count display."""
