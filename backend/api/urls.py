@@ -45,9 +45,11 @@ urlpatterns = [
     # Phase 4: Concerts
     path('concerts/', include('api.concerts.urls')),
     
+    # Phase 5: Attendance
+    path('attendance/', include('api.attendance.urls')),
+    
     # TODO: Future phases will add:
     # path('forum/', include('api.forum.urls')),            # Phase 6  
-    # path('attendance/', include('api.attendance.urls')),  # Phase 5
     
     # Health check
     path('health/', lambda request: HttpResponse('OK'), name='health_check'),

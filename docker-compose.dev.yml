@@ -60,7 +60,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8000/api
+      - VITE_API_URL=http://localhost:8000/api
+      - VITE_MEDIA_URL=http://localhost:8000/media
       - CHOKIDAR_USEPOLLING=true
     networks:
       - oragh_network_dev
