@@ -149,3 +149,21 @@ def current_user(request):
     """Get current authenticated user details."""
     serializer = UserSerializer(request.user, context={'request': request})
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def user_permissions(request):
+    """Get current user's permissions and groups."""
+    user = request.user
+    
+    # Get user groups
+    groups = list(user.groups.values_list('name', flat=True))
+    
+    # Get user permissions (both direct and through groups)
+    permissions = list(user.get_all_permissions())
+    
+    return Response({
+        'groups': groups,
+        'permissions': permissions
+    })
