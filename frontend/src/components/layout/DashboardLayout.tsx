@@ -75,7 +75,6 @@ const navigationItems: NavigationItem[] = [
     text: 'Obecności',
     icon: <EventNoteIcon />,
     path: '/attendance',
-    disabled: true,
   },
   {
     text: 'Forum',

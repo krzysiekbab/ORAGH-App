@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { useAuthStore } from './stores/authStore'
 import DashboardLayout from './components/layout/DashboardLayout'
+import PermissionProtectedRoute from './components/auth/PermissionProtectedRoute'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import ProfilePage from './pages/profiles/ProfilePage'
@@ -13,6 +14,13 @@ import UserProfilePage from './pages/profiles/UserProfilePage'
 import ConcertsPage from './pages/concerts/ConcertsPage'
 import ConcertDetailPage from './pages/concerts/ConcertDetailPage'
 import EditConcertPage from './pages/concerts/EditConcertPage'
+import AttendancePage from './pages/attendance/AttendancePage'
+import MarkAttendancePage from './pages/attendance/MarkAttendancePage'
+import SeasonManagementPage from './pages/attendance/SeasonManagementPage'
+import SeasonMusiciansPage from './pages/attendance/SeasonMusiciansPage'
+import SeasonEventsPage from './pages/attendance/SeasonEventsPage'
+import EventAttendancePage from './pages/attendance/EventAttendancePage'
+import AttendanceStatsPage from './pages/attendance/AttendanceStatsPage'
 import HomePage from './pages/HomePage'
 
 // Protected Route Component
@@ -115,6 +123,80 @@ function App() {
       <Route 
         path="/concerts/:id/edit" 
         element={<ProtectedRoute><EditConcertPage /></ProtectedRoute>} 
+      />
+      
+      {/* Attendance routes */}
+      <Route 
+        path="/attendance" 
+        element={<ProtectedRoute><AttendancePage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/attendance/mark" 
+        element={
+          <ProtectedRoute>
+            <PermissionProtectedRoute 
+              requiredPermissions={['attendance.add_event']}
+            >
+              <MarkAttendancePage />
+            </PermissionProtectedRoute>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/attendance/seasons" 
+        element={
+          <ProtectedRoute>
+            <PermissionProtectedRoute 
+              requiredPermissions={['attendance.add_season', 'attendance.change_season', 'attendance.manage_seasons']}
+              requireAny={true}
+            >
+              <SeasonManagementPage />
+            </PermissionProtectedRoute>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/attendance/seasons/:seasonId/musicians" 
+        element={
+          <ProtectedRoute>
+            <PermissionProtectedRoute 
+              requiredPermissions={['attendance.add_season', 'attendance.change_season', 'attendance.manage_seasons']}
+              requireAny={true}
+            >
+              <SeasonMusiciansPage />
+            </PermissionProtectedRoute>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/attendance/seasons/:seasonId/events" 
+        element={
+          <ProtectedRoute>
+            <PermissionProtectedRoute 
+              requiredPermissions={['attendance.add_season', 'attendance.change_season', 'attendance.manage_seasons']}
+              requireAny={true}
+            >
+              <SeasonEventsPage />
+            </PermissionProtectedRoute>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/attendance/seasons/:seasonId/events/:eventId/attendance" 
+        element={
+          <ProtectedRoute>
+            <PermissionProtectedRoute 
+              requiredPermissions={['attendance.add_attendance', 'attendance.change_attendance', 'attendance.manage_attendance']}
+              requireAny={true}
+            >
+              <EventAttendancePage />
+            </PermissionProtectedRoute>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/attendance/stats" 
+        element={<ProtectedRoute><AttendanceStatsPage /></ProtectedRoute>} 
       />
       
       {/* Home route */}
