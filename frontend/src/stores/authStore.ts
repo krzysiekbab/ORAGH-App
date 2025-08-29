@@ -140,6 +140,15 @@ export const useAuthStore = create<AuthState>()(
           console.warn('Failed to clear user profile cache:', error)
         }
         
+        // Clear permissions cache when logging out
+        try {
+          import('../services/permissions').then(({ permissionsService }) => {
+            permissionsService.clearCache()
+          })
+        } catch (error) {
+          console.warn('Failed to clear permissions cache:', error)
+        }
+        
         // Clear concert permissions cache when logging out
         try {
           import('./concertStore').then(({ useConcertStore }) => {
