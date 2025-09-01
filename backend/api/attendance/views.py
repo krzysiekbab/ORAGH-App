@@ -15,7 +15,7 @@ from .models import Season, Event, Attendance
 from .serializers import (
     SeasonListSerializer, SeasonDetailSerializer, SeasonCreateUpdateSerializer,
     EventListSerializer, EventDetailSerializer, EventCreateUpdateSerializer,
-    AttendanceSerializer, AttendanceMarkSerializer, AttendanceStatsSerializer,
+    AttendanceSerializer, AttendanceMarkSerializer,
     SeasonAttendanceGridSerializer
 )
 from .permissions import IsBoardMemberOrReadOnly, IsConductorOrBoardMember
@@ -292,6 +292,17 @@ class EventViewSet(viewsets.ModelViewSet):
             return EventCreateUpdateSerializer
         return EventDetailSerializer
     
+    def create(self, request, *args, **kwargs):
+        """Create a new event and return the full event details."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save(created_by=request.user)
+        
+        # Return the full event details using EventDetailSerializer
+        response_serializer = EventDetailSerializer(instance, context={'request': request})
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
     def get_queryset(self):
         """Filter events based on query parameters."""
         queryset = Event.objects.select_related('season', 'created_by')
@@ -435,65 +446,3 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(present=1.0)
         
         return queryset
-    
-    @action(detail=False, methods=['get'])
-    def stats(self, request):
-        """Get attendance statistics."""
-        season_id = request.query_params.get('season')
-        user_id = request.query_params.get('user')
-        
-        # Build base queryset
-        attendances = Attendance.objects.select_related('user', 'event')
-        
-        if season_id:
-            try:
-                attendances = attendances.filter(event__season_id=int(season_id))
-            except ValueError:
-                pass
-        
-        if user_id:
-            try:
-                attendances = attendances.filter(user_id=int(user_id))
-            except ValueError:
-                pass
-        
-        # Get statistics per user
-        user_stats = []
-        users = User.objects.filter(
-            id__in=attendances.values_list('user_id', flat=True).distinct()
-        ).select_related('musicianprofile')
-        
-        for user in users:
-            user_attendances = attendances.filter(user=user)
-            total_events = user_attendances.count()
-            attended_events = user_attendances.filter(present__gt=0).count()
-            half_attended_events = user_attendances.filter(present=0.5).count()
-            full_attended_events = user_attendances.filter(present=1.0).count()
-            absent_events = user_attendances.filter(present=0).count()
-            
-            attendance_rate = (attended_events / total_events * 100) if total_events > 0 else 0
-            
-            # Calculate effective attendance rate (half attendance counts as 0.5)
-            total_attendance_value = user_attendances.aggregate(
-                total=Sum('present')
-            )['total'] or 0
-            effective_attendance_rate = (total_attendance_value / total_events * 100) if total_events > 0 else 0
-            
-            user_stat = {
-                'user': user,
-                'musician_profile': getattr(user, 'musicianprofile', None),
-                'total_events': total_events,
-                'attended_events': attended_events,
-                'half_attended_events': half_attended_events,
-                'full_attended_events': full_attended_events,
-                'absent_events': absent_events,
-                'attendance_rate': round(attendance_rate, 2),
-                'effective_attendance_rate': round(effective_attendance_rate, 2)
-            }
-            user_stats.append(user_stat)
-        
-        # Sort by attendance rate
-        user_stats.sort(key=lambda x: x['effective_attendance_rate'], reverse=True)
-        
-        serializer = AttendanceStatsSerializer(user_stats, many=True, context={'request': request})
-        return Response(serializer.data)

@@ -93,29 +93,6 @@ export interface Attendance {
   updated_at: string
 }
 
-export interface AttendanceStats {
-  user: {
-    id: number
-    username: string
-    first_name: string
-    last_name: string
-    email: string
-  }
-  musician_profile?: {
-    id: number
-    instrument: string
-    profile_photo?: string
-    active: boolean
-  }
-  total_events: number
-  attended_events: number
-  half_attended_events: number
-  full_attended_events: number
-  absent_events: number
-  attendance_rate: number
-  effective_attendance_rate: number
-}
-
 export interface AttendanceGrid {
   season: Season
   events: Event[]
@@ -381,20 +358,6 @@ class AttendanceService {
     }
 
     const response = await apiClient.get(`${this.basePath}/attendances/?${params}`)
-    return response.data
-  }
-
-  async getAttendanceStats(filters: { season?: number; user?: number } = {}): Promise<AttendanceStats[]> {
-    const params = new URLSearchParams()
-    
-    if (filters.season) {
-      params.append('season', filters.season.toString())
-    }
-    if (filters.user) {
-      params.append('user', filters.user.toString())
-    }
-
-    const response = await apiClient.get(`${this.basePath}/attendances/stats/?${params}`)
     return response.data
   }
 

@@ -241,19 +241,6 @@ class AttendanceMarkSerializer(serializers.Serializer):
         return value
 
 
-class AttendanceStatsSerializer(serializers.Serializer):
-    """Serializer for attendance statistics."""
-    user = UserSerializer(read_only=True)
-    musician_profile = MusicianProfileSerializer(read_only=True)
-    total_events = serializers.IntegerField()
-    attended_events = serializers.IntegerField()
-    half_attended_events = serializers.IntegerField()
-    full_attended_events = serializers.IntegerField()
-    absent_events = serializers.IntegerField()
-    attendance_rate = serializers.FloatField()
-    effective_attendance_rate = serializers.FloatField()  # Includes half attendance as 0.5
-
-
 class SeasonAttendanceGridSerializer(serializers.Serializer):
     """Serializer for season attendance grid display."""
     season = SeasonListSerializer(read_only=True)

@@ -39,6 +39,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useAttendanceStore } from '../../stores/attendanceStore'
 import { SeasonCreateData } from '../../services/attendance'
+import DeleteConfirmationDialog from '../../components/common/DeleteConfirmationDialog'
 
 const SeasonManagementPage: React.FC = () => {
   const navigate = useNavigate()
@@ -65,11 +66,16 @@ const SeasonManagementPage: React.FC = () => {
 
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
   const [selectedSeasonId, setSelectedSeasonId] = useState<number | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [seasonToDelete, setSeasonToDelete] = useState<number | null>(null)
 
   useEffect(() => {
     fetchSeasons()
     return () => clearErrors()
   }, [fetchSeasons, clearErrors])
+
+  // Sort seasons alphabetically by name
+  const sortedSeasons = [...seasons].sort((a, b) => a.name.localeCompare(b.name))
 
   const handleOpenDialog = (seasonId?: number) => {
     if (seasonId) {
@@ -132,14 +138,26 @@ const SeasonManagementPage: React.FC = () => {
   }
 
   const handleDelete = async (seasonId: number) => {
-    if (window.confirm('Czy na pewno chcesz usunąć ten sezon? Wszystkie powiązane wydarzenia i obecności również zostaną usunięte.')) {
-      const success = await deleteSeason(seasonId)
+    setSeasonToDelete(seasonId)
+    setDeleteDialogOpen(true)
+    setMenuAnchor(null)
+    setSelectedSeasonId(null)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (seasonToDelete) {
+      const success = await deleteSeason(seasonToDelete)
       if (success) {
         fetchSeasons()
       }
     }
-    setMenuAnchor(null)
-    setSelectedSeasonId(null)
+    setDeleteDialogOpen(false)
+    setSeasonToDelete(null)
+  }
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false)
+    setSeasonToDelete(null)
   }
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, seasonId: number) => {
@@ -265,7 +283,7 @@ const SeasonManagementPage: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {seasons.map((season) => (
+                  {sortedSeasons.map((season) => (
                     <TableRow key={season.id}>
                       <TableCell>
                         <Box>
@@ -375,7 +393,7 @@ const SeasonManagementPage: React.FC = () => {
           <EventIcon sx={{ mr: 1 }} />
           Zarządzaj wydarzeniami
         </MenuItem>
-        {selectedSeasonId && !seasons.find(s => s.id === selectedSeasonId)?.is_current && (
+        {selectedSeasonId && !sortedSeasons.find(s => s.id === selectedSeasonId)?.is_current && (
           <MenuItem
             onClick={() => {
               if (selectedSeasonId) handleSetCurrent(selectedSeasonId)
@@ -406,6 +424,33 @@ const SeasonManagementPage: React.FC = () => {
           Usuń
         </MenuItem>
       </Menu>
+
+      {/* Delete Confirmation Dialog */}
+      {seasonToDelete && (
+        <DeleteConfirmationDialog
+          open={deleteDialogOpen}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
+          title="Usuń sezon"
+          itemName={sortedSeasons.find(s => s.id === seasonToDelete)?.name || ''}
+          itemType="Sezon"
+          description="Czy na pewno chcesz usunąć ten sezon?"
+          warningMessage="Wszystkie powiązane wydarzenia i obecności również zostaną trwale usunięte."
+          additionalInfo={[
+            {
+              label: 'Wydarzenia',
+              value: sortedSeasons.find(s => s.id === seasonToDelete)?.events_count || 0,
+              color: 'info'
+            },
+            {
+              label: 'Muzycy',
+              value: sortedSeasons.find(s => s.id === seasonToDelete)?.musicians_count || 0,
+              color: 'info'
+            }
+          ]}
+          loading={seasonsLoading}
+        />
+      )}
 
       {/* Create/Edit Season Dialog */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>

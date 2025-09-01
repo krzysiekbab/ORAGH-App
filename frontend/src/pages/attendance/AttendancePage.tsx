@@ -26,7 +26,6 @@ import {
 import {
   Add as AddIcon,
   People as PeopleIcon,
-  Assessment as AssessmentIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Remove as RemoveIcon
@@ -35,6 +34,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAttendanceStore } from '../../stores/attendanceStore'
 import { usePermissions } from '../../hooks/usePermissions'
 import { useAuthStore } from '../../stores/authStore'
+import EventActions from '../../components/attendance/EventActions'
 
 const AttendancePage: React.FC = () => {
   const navigate = useNavigate()
@@ -118,6 +118,21 @@ const AttendancePage: React.FC = () => {
     setSelectedSeasonId(seasonId)
     setHasUserSelectedSeason(true) // Mark that user has manually selected a season
     setMonthFilter(null) // Reset month filter when changing season
+  }
+
+  const handleRefreshAttendanceGrid = () => {
+    if (selectedSeasonId) {
+      const filters: { event_type?: string; month?: number } = {}
+      
+      if (eventTypeFilter !== 'all') {
+        filters.event_type = eventTypeFilter
+      }
+      if (monthFilter) {
+        filters.month = monthFilter
+      }
+      
+      fetchAttendanceGrid(selectedSeasonId, filters)
+    }
   }
 
   const getAttendanceIcon = (present: number) => {
@@ -217,15 +232,6 @@ const AttendancePage: React.FC = () => {
           gap={1}
           width={{ xs: '100%', sm: 'auto' }}
         >
-          <Button
-            variant="outlined"
-            startIcon={<AssessmentIcon />}
-            onClick={() => navigate('/attendance/stats')}
-            sx={{ width: { xs: '100%', sm: 'auto' } }}
-            size="small"
-          >
-            Statystyki
-          </Button>
           {canManageSeasons() && (
             <Button
               variant="outlined"
@@ -456,7 +462,6 @@ const AttendancePage: React.FC = () => {
                 <TableContainer 
                   component={Paper} 
                   sx={{ 
-                    maxHeight: { xs: 500, sm: 600 },
                     '& .MuiTableCell-root': {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
                       padding: { xs: '4px 8px', sm: '16px' }
@@ -477,45 +482,90 @@ const AttendancePage: React.FC = () => {
                         >
                           Muzyk
                         </TableCell>
-                        {attendanceGrid.events.map((event) => (
+                        {attendanceGrid.events.map((event, index) => (
                           <TableCell 
                             key={event.id} 
                             align="center"
                             sx={{ 
-                              minWidth: { xs: 60, sm: 80 },
-                              backgroundColor: 'grey.100'
+                              minWidth: { xs: 90, sm: 120 },
+                              backgroundColor: index % 2 === 0 ? 'grey.50' : 'grey.100',
+                              padding: { xs: '8px 4px', sm: '12px 8px' },
+                              position: 'relative',
+                              borderLeft: index > 0 ? '2px solid' : 'none',
+                              borderLeftColor: 'grey.300'
                             }}
                           >
-                            <Box>
-                              <Typography variant="caption" display="block" sx={{ fontSize: { xs: '0.625rem', sm: '0.75rem' } }}>
-                                {new Date(event.date).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' })}
-                              </Typography>
+                            {/* Actions button positioned absolutely in top-right */}
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: { xs: 4, sm: 6 },
+                                right: { xs: 4, sm: 8 },
+                                zIndex: 2
+                              }}
+                            >
+                              <EventActions event={event} onRefreshNeeded={handleRefreshAttendanceGrid} />
+                            </Box>
+                            
+                            {/* Main content centered */}
+                            <Box 
+                              display="flex" 
+                              flexDirection="column" 
+                              alignItems="center" 
+                              justifyContent="center"
+                              gap={{ xs: 0.5, sm: 0.75 }}
+                              sx={{ 
+                                width: '100%',
+                                minHeight: { xs: 60, sm: 70 },
+                                paddingRight: { xs: '20px', sm: '28px' } // Space for actions button
+                              }}
+                            >
+                              {/* Event Name */}
                               <Typography 
-                                variant="caption" 
-                                display="block" 
+                                variant="body2"
                                 sx={{ 
-                                  fontSize: { xs: '0.6rem', sm: '0.7rem' },
-                                  fontWeight: 'medium',
-                                  mb: 0.5,
+                                  fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                                  fontWeight: 600,
+                                  textAlign: 'center',
                                   lineHeight: 1.2,
-                                  maxWidth: { xs: 60, sm: 80 },
+                                  color: 'text.primary',
+                                  maxWidth: '100%',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap'
+                                  whiteSpace: 'nowrap',
+                                  display: 'block'
                                 }}
-                                title={event.name} // Show full name on hover
+                                title={event.name}
                               >
                                 {event.name}
                               </Typography>
+                              
+                              {/* Date */}
+                              <Typography 
+                                variant="caption"
+                                sx={{ 
+                                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                                  fontWeight: 400,
+                                  textAlign: 'center',
+                                  lineHeight: 1.3,
+                                  color: 'text.secondary'
+                                }}
+                              >
+                                {new Date(event.date).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' })}
+                              </Typography>
+                              
+                              {/* Event Type Chip */}
                               <Chip
                                 label={getEventTypeLabel(event.type)}
                                 size="small"
                                 color={getEventTypeColor(event.type) as any}
                                 sx={{ 
-                                  fontSize: { xs: 8, sm: 10 },
-                                  height: { xs: 16, sm: 20 },
+                                  fontSize: { xs: '0.625rem', sm: '0.75rem' },
+                                  height: { xs: 18, sm: 22 },
+                                  minWidth: { xs: 45, sm: 55 },
                                   '& .MuiChip-label': {
-                                    px: { xs: 0.5, sm: 1 }
+                                    px: { xs: 0.75, sm: 1 },
+                                    py: 0
                                   }
                                 }}
                               />
@@ -557,8 +607,9 @@ const AttendancePage: React.FC = () => {
                           {/* Musicians in Section */}
                           {section.user_rows.map((userRow) => {
                             const totalEvents = userRow.attendances.length
-                            const presentEvents = userRow.attendances.filter(a => a.present > 0).length
-                            const attendanceRate = totalEvents > 0 ? Math.round((presentEvents / totalEvents) * 100) : 0
+                            // Calculate effective attendance rate (0.5 counts as 50%, 1.0 as 100%)
+                            const totalAttendanceValue = userRow.attendances.reduce((sum, a) => sum + a.present, 0)
+                            const attendanceRate = totalEvents > 0 ? Math.round((totalAttendanceValue / totalEvents) * 100) : 0
                             
                             return (
                               <TableRow key={userRow.user.id} hover>
@@ -592,7 +643,15 @@ const AttendancePage: React.FC = () => {
                                 </TableCell>
                                 
                                 {userRow.attendances.map((attendance, index) => (
-                                  <TableCell key={index} align="center">
+                                  <TableCell 
+                                    key={index} 
+                                    align="center"
+                                    sx={{
+                                      backgroundColor: index % 2 === 0 ? 'grey.50' : 'grey.100',
+                                      borderLeft: index > 0 ? '2px solid' : 'none',
+                                      borderLeftColor: 'grey.300'
+                                    }}
+                                  >
                                     <Tooltip title={getAttendanceTooltip(attendance.present)}>
                                       <Box>
                                         {getAttendanceIcon(attendance.present)}

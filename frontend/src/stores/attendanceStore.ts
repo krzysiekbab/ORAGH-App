@@ -6,7 +6,6 @@ import attendanceService, {
   Event,
   EventDetail,
   Attendance,
-  AttendanceStats,
   AttendanceGrid,
   SeasonCreateData,
   SeasonUpdateData,
@@ -40,7 +39,6 @@ interface AttendanceState {
 
   // Attendance
   attendances: Attendance[]
-  attendanceStats: AttendanceStats[]
   attendanceGrid: AttendanceGrid | null
   attendanceLoading: boolean
   attendanceTotalCount: number
@@ -75,7 +73,6 @@ interface AttendanceState {
 
   // Actions - Attendance
   fetchAttendances: (filters?: AttendanceFilters, append?: boolean) => Promise<void>
-  fetchAttendanceStats: (filters?: { season?: number; user?: number }) => Promise<void>
   fetchAttendanceGrid: (seasonId: number, filters?: { event_type?: string; month?: number }) => Promise<void>
   markAttendance: (eventId: number, data: AttendanceMarkData) => Promise<boolean>
 
@@ -111,7 +108,6 @@ export const useAttendanceStore = create<AttendanceState>()(
       eventError: null,
 
       attendances: [],
-      attendanceStats: [],
       attendanceGrid: null,
       attendanceLoading: false,
       attendanceTotalCount: 0,
@@ -348,10 +344,17 @@ export const useAttendanceStore = create<AttendanceState>()(
         try {
           const newEvent = await attendanceService.createEvent(data)
           
-          // Add to the beginning of the list
+          // Cast to EventDetail - the created event should have all required fields
+          const eventDetail: EventDetail = {
+            ...newEvent,
+            updated_at: newEvent.created_at // Use created_at as updated_at for new events
+          }
+          
+          // Add to the beginning of the list and set as current event
           const currentEvents = get().events
           set({ 
             events: [newEvent, ...currentEvents],
+            currentEvent: eventDetail,
             eventsTotalCount: get().eventsTotalCount + 1,
             eventsLoading: false 
           })
@@ -461,18 +464,6 @@ export const useAttendanceStore = create<AttendanceState>()(
           })
         } catch (error: any) {
           const errorMessage = error.response?.data?.detail || 'Błąd podczas pobierania obecności'
-          set({ attendanceError: errorMessage, attendanceLoading: false })
-        }
-      },
-
-      fetchAttendanceStats: async (filters = {}) => {
-        set({ attendanceLoading: true, attendanceError: null })
-        
-        try {
-          const stats = await attendanceService.getAttendanceStats(filters)
-          set({ attendanceStats: stats, attendanceLoading: false })
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.detail || 'Błąd podczas pobierania statystyk'
           set({ attendanceError: errorMessage, attendanceLoading: false })
         }
       },

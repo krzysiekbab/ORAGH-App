@@ -18,7 +18,6 @@ import {
   Chip,
   Alert,
   CircularProgress,
-  Menu,
   Paper,
   Table,
   TableBody,
@@ -31,14 +30,12 @@ import {
 } from '@mui/material'
 import {
   Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  MoreVert as MoreVertIcon,
   ArrowBack as ArrowBackIcon,
   People as PeopleIcon
 } from '@mui/icons-material'
 import { useParams, useNavigate } from 'react-router-dom'
-import attendanceService, { EventCreateData, EventUpdateData } from '../../services/attendance'
+import attendanceService, { EventCreateData } from '../../services/attendance'
+import EventActions from '../../components/attendance/EventActions'
 
 const SeasonEventsPage: React.FC = () => {
   const { seasonId } = useParams<{ seasonId: string }>()
@@ -48,11 +45,7 @@ const SeasonEventsPage: React.FC = () => {
   
   const [season, setSeason] = useState<any>(null)
   const [events, setEvents] = useState<any[]>([])
-  const [selectedEvent, setSelectedEvent] = useState<any>(null)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -91,16 +84,6 @@ const SeasonEventsPage: React.FC = () => {
     fetchSeasonData()
   }, [seasonId])
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, eventData: any) => {
-    setMenuAnchor(event.currentTarget)
-    setSelectedEvent(eventData)
-  }
-
-  const handleMenuClose = () => {
-    setMenuAnchor(null)
-    setSelectedEvent(null)
-  }
-
   const handleAddEvent = () => {
     setFormData({
       name: '',
@@ -109,24 +92,6 @@ const SeasonEventsPage: React.FC = () => {
       season: parseInt(seasonId || '0')
     })
     setAddDialogOpen(true)
-  }
-
-  const handleEditEvent = (eventData: any) => {
-    setFormData({
-      name: eventData.name,
-      date: eventData.date,
-      type: eventData.type,
-      season: eventData.season
-    })
-    setSelectedEvent(eventData)
-    setEditDialogOpen(true)
-    handleMenuClose()
-  }
-
-  const handleDeleteEvent = (eventData: any) => {
-    setSelectedEvent(eventData)
-    setDeleteDialogOpen(true)
-    handleMenuClose()
   }
 
   const submitAddEvent = async () => {
@@ -141,45 +106,6 @@ const SeasonEventsPage: React.FC = () => {
     } catch (err) {
       console.error('Error creating event:', err)
       setError('Błąd podczas tworzenia wydarzenia')
-    } finally {
-      setProcessing(false)
-    }
-  }
-
-  const submitEditEvent = async () => {
-    if (!selectedEvent || !formData.name || !formData.date) return
-
-    try {
-      setProcessing(true)
-      const updateData: EventUpdateData = {
-        name: formData.name,
-        date: formData.date,
-        type: formData.type
-      }
-      await attendanceService.updateEvent(selectedEvent.id, updateData)
-      await fetchSeasonData()
-      setEditDialogOpen(false)
-      setSelectedEvent(null)
-    } catch (err) {
-      console.error('Error updating event:', err)
-      setError('Błąd podczas aktualizacji wydarzenia')
-    } finally {
-      setProcessing(false)
-    }
-  }
-
-  const confirmDeleteEvent = async () => {
-    if (!selectedEvent) return
-
-    try {
-      setProcessing(true)
-      await attendanceService.deleteEvent(selectedEvent.id)
-      await fetchSeasonData()
-      setDeleteDialogOpen(false)
-      setSelectedEvent(null)
-    } catch (err) {
-      console.error('Error deleting event:', err)
-      setError('Błąd podczas usuwania wydarzenia')
     } finally {
       setProcessing(false)
     }
@@ -287,13 +213,7 @@ const SeasonEventsPage: React.FC = () => {
                         <Typography variant="subtitle1" fontWeight="medium" sx={{ flexGrow: 1, pr: 1 }}>
                           {event.name}
                         </Typography>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleMenuClick(e, event)}
-                          sx={{ mt: -1 }}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
+                        <EventActions event={event} onRefreshNeeded={fetchSeasonData} />
                       </Box>
                       
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -370,12 +290,7 @@ const SeasonEventsPage: React.FC = () => {
                           </Box>
                         </TableCell>
                         <TableCell align="center">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleMenuClick(e, event)}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
+                          <EventActions event={event} onRefreshNeeded={fetchSeasonData} />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -390,34 +305,6 @@ const SeasonEventsPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Actions Menu */}
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={() => {
-          if (selectedEvent) {
-            navigate(`/attendance/seasons/${seasonId}/events/${selectedEvent.id}/attendance`)
-          }
-          handleMenuClose()
-        }}>
-          <PeopleIcon sx={{ mr: 1 }} />
-          Zarządzaj obecnością
-        </MenuItem>
-        <MenuItem onClick={() => handleEditEvent(selectedEvent)}>
-          <EditIcon sx={{ mr: 1 }} />
-          Edytuj
-        </MenuItem>
-        <MenuItem
-          onClick={() => handleDeleteEvent(selectedEvent)}
-          sx={{ color: 'error.main' }}
-        >
-          <DeleteIcon sx={{ mr: 1 }} />
-          Usuń
-        </MenuItem>
-      </Menu>
 
       {/* Add Event Dialog */}
       <Dialog 
@@ -473,91 +360,6 @@ const SeasonEventsPage: React.FC = () => {
             startIcon={processing ? <CircularProgress size={20} /> : <AddIcon />}
           >
             Dodaj
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit Event Dialog */}
-      <Dialog 
-        open={editDialogOpen} 
-        onClose={() => setEditDialogOpen(false)} 
-        maxWidth="sm" 
-        fullWidth
-        fullScreen={isMobile}
-      >
-        <DialogTitle>Edytuj wydarzenie</DialogTitle>
-        <DialogContent>
-          <Box sx={{ mt: 1 }}>
-            <TextField
-              fullWidth
-              label="Nazwa wydarzenia"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Data"
-              type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              margin="normal"
-              required
-              InputLabelProps={{ shrink: true }}
-            />
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Typ wydarzenia</InputLabel>
-              <Select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                label="Typ wydarzenia"
-              >
-                <MenuItem value="rehearsal">Próba</MenuItem>
-                <MenuItem value="concert">Koncert</MenuItem>
-                <MenuItem value="soundcheck">Soundcheck</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>
-            Anuluj
-          </Button>
-          <Button
-            onClick={submitEditEvent}
-            variant="contained"
-            disabled={processing || !formData.name || !formData.date}
-            startIcon={processing ? <CircularProgress size={20} /> : <EditIcon />}
-          >
-            Zapisz
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Usuń wydarzenie</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Czy na pewno chcesz usunąć wydarzenie "{selectedEvent?.name}"?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Ta operacja jest nieodwracalna i usunie również wszystkie powiązane dane o obecności.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>
-            Anuluj
-          </Button>
-          <Button
-            onClick={confirmDeleteEvent}
-            color="error"
-            variant="contained"
-            disabled={processing}
-            startIcon={processing ? <CircularProgress size={20} /> : <DeleteIcon />}
-          >
-            Usuń
           </Button>
         </DialogActions>
       </Dialog>

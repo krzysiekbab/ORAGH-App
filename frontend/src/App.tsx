@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { useAuthStore } from './stores/authStore'
 import DashboardLayout from './components/layout/DashboardLayout'
@@ -19,9 +19,13 @@ import MarkAttendancePage from './pages/attendance/MarkAttendancePage'
 import SeasonManagementPage from './pages/attendance/SeasonManagementPage'
 import SeasonMusiciansPage from './pages/attendance/SeasonMusiciansPage'
 import SeasonEventsPage from './pages/attendance/SeasonEventsPage'
-import EventAttendancePage from './pages/attendance/EventAttendancePage'
-import AttendanceStatsPage from './pages/attendance/AttendanceStatsPage'
 import HomePage from './pages/HomePage'
+
+// Redirect component for old attendance route
+function AttendanceRedirect() {
+  const { eventId } = useParams<{ eventId: string }>()
+  return <Navigate to={`/attendance/mark/${eventId}`} replace />
+}
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -143,6 +147,19 @@ function App() {
         } 
       />
       <Route 
+        path="/attendance/mark/:eventId" 
+        element={
+          <ProtectedRoute>
+            <PermissionProtectedRoute 
+              requiredPermissions={['attendance.change_event', 'attendance.add_event']}
+              requireAny={true}
+            >
+              <MarkAttendancePage />
+            </PermissionProtectedRoute>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/attendance/seasons" 
         element={
           <ProtectedRoute>
@@ -189,14 +206,10 @@ function App() {
               requiredPermissions={['attendance.add_attendance', 'attendance.change_attendance', 'attendance.manage_attendance']}
               requireAny={true}
             >
-              <EventAttendancePage />
+              <AttendanceRedirect />
             </PermissionProtectedRoute>
           </ProtectedRoute>
         } 
-      />
-      <Route 
-        path="/attendance/stats" 
-        element={<ProtectedRoute><AttendanceStatsPage /></ProtectedRoute>} 
       />
       
       {/* Home route */}

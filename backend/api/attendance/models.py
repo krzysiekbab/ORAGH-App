@@ -15,7 +15,7 @@ class Season(models.Model):
     name = models.CharField(max_length=20, unique=True, help_text="e.g., 2024/2025")
     start_date = models.DateField(help_text="Start date of the season")
     end_date = models.DateField(help_text="End date of the season")
-    is_active = models.BooleanField(default=True, help_text="Whether this season is currently active")
+    is_active = models.BooleanField(default=False, help_text="Whether this season is currently active")
     musicians = models.ManyToManyField(MusicianProfile, blank=True, related_name='attendance_seasons')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -106,17 +106,17 @@ class Season(models.Model):
             }
         
         total_attendances = Attendance.objects.filter(event__season=self).count()
-        present_attendances = Attendance.objects.filter(
-            event__season=self, 
-            present__gt=0
-        ).count()
+        # Calculate effective attendance rate (0.5 counts as 50%, 1.0 as 100%)
+        from django.db.models import Sum
+        total_attendance_value = Attendance.objects.filter(
+            event__season=self
+        ).aggregate(total=Sum('present'))['total'] or 0
         
-        attendance_rate = (present_attendances / total_attendances * 100) if total_attendances > 0 else 0
+        attendance_rate = (total_attendance_value / total_attendances * 100) if total_attendances > 0 else 0
         
         return {
             'total_events': total_events,
             'total_attendances': total_attendances,
-            'present_attendances': present_attendances,
             'attendance_rate': round(attendance_rate, 2)
         }
 
@@ -179,12 +179,15 @@ class Event(models.Model):
     def get_attendance_stats(self):
         """Get detailed attendance statistics for this event."""
         total = self.attendance_count
-        present = self.present_count
+        present = self.present_count  # Number of people with any attendance (for compatibility)
         absent = self.absent_count
         half = self.half_count
         full = self.full_count
         
-        attendance_rate = (present / total * 100) if total > 0 else 0
+        # Calculate effective attendance rate (0.5 counts as 50%, 1.0 as 100%)
+        from django.db.models import Sum
+        total_attendance_value = self.attendances.aggregate(total=Sum('present'))['total'] or 0
+        attendance_rate = (total_attendance_value / total * 100) if total > 0 else 0
         
         return {
             'total': total,

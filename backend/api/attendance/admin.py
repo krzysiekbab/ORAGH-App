@@ -54,7 +54,9 @@ class SeasonAdmin(admin.ModelAdmin):
         """Display number of musicians in this season."""
         count = obj.musicians.count()
         if count > 0:
-            return f'{count} muzyków'
+            # Create a link to edit this season to manage musicians
+            url = reverse('admin:attendance_season_change', args=[obj.id]) + '#musicians'
+            return format_html('<a href="{}" title="Kliknij aby zarządzać muzykami sezonu">{} muzyków</a>', url, count)
         return f'{count} muzyków'
     musicians_count.short_description = 'Muzycy'
     
