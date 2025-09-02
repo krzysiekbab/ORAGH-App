@@ -141,16 +141,176 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     ]
 
     if (pathSegments.length > 0) {
-      const currentItem = navigationItems.find(item => 
-        item.path === location.pathname
-      )
+      // Handle main navigation items first
+      const mainPath = `/${pathSegments[0]}`
+      const mainItem = navigationItems.find(item => item.path === mainPath)
       
-      if (currentItem) {
+      if (mainItem) {
+        breadcrumbs.push(
+          <Link 
+            key="main" 
+            color="inherit" 
+            onClick={() => navigate(mainItem.path)}
+            sx={{ cursor: 'pointer' }}
+          >
+            {mainItem.text}
+          </Link>
+        )
+      }
+
+      // Handle specific sub-pages
+      if (pathSegments.length > 1) {
+        const specificBreadcrumbs = getSpecificPageBreadcrumbs(pathSegments)
+        breadcrumbs.push(...specificBreadcrumbs)
+      }
+    }
+
+    return breadcrumbs
+  }
+
+  const getSpecificPageBreadcrumbs = (pathSegments: string[]): React.ReactElement[] => {
+    const breadcrumbs: React.ReactElement[] = []
+    
+    // Concert specific pages
+    if (pathSegments[0] === 'concerts') {
+      if (pathSegments[1] && pathSegments[1] !== 'create') {
+        if (pathSegments[2] === 'edit') {
+          breadcrumbs.push(
+            <Link 
+              key="concert-detail" 
+              color="inherit" 
+              onClick={() => navigate(`/concerts/${pathSegments[1]}`)}
+              sx={{ cursor: 'pointer' }}
+            >
+              Szczegóły koncertu
+            </Link>
+          )
+          breadcrumbs.push(
+            <Typography key="current" color="textPrimary">
+              Edycja koncertu
+            </Typography>
+          )
+        } else {
+          breadcrumbs.push(
+            <Typography key="current" color="textPrimary">
+              Szczegóły koncertu
+            </Typography>
+          )
+        }
+      }
+    }
+
+    // Profile specific pages
+    if (pathSegments[0] === 'profile') {
+      if (pathSegments[1] === 'edit') {
         breadcrumbs.push(
           <Typography key="current" color="textPrimary">
-            {currentItem.text}
+            Edycja profilu
           </Typography>
         )
+      } else if (pathSegments[1] === 'change-password') {
+        breadcrumbs.push(
+          <Typography key="current" color="textPrimary">
+            Zmiana hasła
+          </Typography>
+        )
+      }
+    }
+
+    // Profiles list and user profiles
+    if (pathSegments[0] === 'profiles') {
+      if (pathSegments[1] && pathSegments[1] !== 'edit') {
+        breadcrumbs.push(
+          <Typography key="current" color="textPrimary">
+            Profil użytkownika
+          </Typography>
+        )
+      }
+    }
+
+    // Attendance specific pages
+    if (pathSegments[0] === 'attendance') {
+      if (pathSegments[1] === 'mark') {
+        if (pathSegments[2]) {
+          breadcrumbs.push(
+            <Link 
+              key="mark-attendance" 
+              color="inherit" 
+              onClick={() => navigate('/attendance/mark')}
+              sx={{ cursor: 'pointer' }}
+            >
+              Oznacz obecności
+            </Link>
+          )
+          breadcrumbs.push(
+            <Typography key="current" color="textPrimary">
+              Wydarzenie
+            </Typography>
+          )
+        } else {
+          breadcrumbs.push(
+            <Typography key="current" color="textPrimary">
+              Oznacz obecności
+            </Typography>
+          )
+        }
+      } else if (pathSegments[1] === 'seasons') {
+        if (pathSegments[2]) {
+          breadcrumbs.push(
+            <Link 
+              key="seasons" 
+              color="inherit" 
+              onClick={() => navigate('/attendance/seasons')}
+              sx={{ cursor: 'pointer' }}
+            >
+              Zarządzanie sezonami
+            </Link>
+          )
+          
+          if (pathSegments[3] === 'musicians') {
+            breadcrumbs.push(
+              <Typography key="current" color="textPrimary">
+                Muzycy sezonu
+              </Typography>
+            )
+          } else if (pathSegments[3] === 'events') {
+            if (pathSegments[4]) {
+              breadcrumbs.push(
+                <Link 
+                  key="season-events" 
+                  color="inherit" 
+                  onClick={() => navigate(`/attendance/seasons/${pathSegments[2]}/events`)}
+                  sx={{ cursor: 'pointer' }}
+                >
+                  Wydarzenia sezonu
+                </Link>
+              )
+              breadcrumbs.push(
+                <Typography key="current" color="textPrimary">
+                  Szczegóły wydarzenia
+                </Typography>
+              )
+            } else {
+              breadcrumbs.push(
+                <Typography key="current" color="textPrimary">
+                  Wydarzenia sezonu
+                </Typography>
+              )
+            }
+          } else {
+            breadcrumbs.push(
+              <Typography key="current" color="textPrimary">
+                Sezon
+              </Typography>
+            )
+          }
+        } else {
+          breadcrumbs.push(
+            <Typography key="current" color="textPrimary">
+              Zarządzanie sezonami
+            </Typography>
+          )
+        }
       }
     }
 
@@ -158,9 +318,57 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   }
 
   const getCurrentPageTitle = () => {
-    const currentItem = navigationItems.find(item => 
-      item.path === location.pathname
-    )
+    const pathSegments = location.pathname.split('/').filter(Boolean)
+    
+    // Handle main navigation items first
+    const mainPath = pathSegments.length > 0 ? `/${pathSegments[0]}` : '/'
+    const currentItem = navigationItems.find(item => item.path === mainPath)
+    
+    // Handle specific sub-pages
+    if (pathSegments.length > 1) {
+      // Concert pages
+      if (pathSegments[0] === 'concerts') {
+        if (pathSegments[2] === 'edit') {
+          return 'Edycja koncertu'
+        } else if (pathSegments[1]) {
+          return 'Koncert'
+        }
+      }
+      
+      // Profile pages
+      if (pathSegments[0] === 'profile') {
+        if (pathSegments[1] === 'edit') {
+          return 'Edycja profilu'
+        } else if (pathSegments[1] === 'change-password') {
+          return 'Zmiana hasła'
+        }
+      }
+      
+      // Profiles list pages
+      if (pathSegments[0] === 'profiles' && pathSegments[1]) {
+        return 'Profil'
+      }
+      
+      // Attendance pages
+      if (pathSegments[0] === 'attendance') {
+        if (pathSegments[1] === 'mark') {
+          if (pathSegments[2]) {
+            return 'Wydarzenie'
+          }
+          return 'Oznacz obecności'
+        } else if (pathSegments[1] === 'seasons') {
+          if (pathSegments[3] === 'musicians') {
+            return 'Muzycy sezonu'
+          } else if (pathSegments[3] === 'events') {
+            return 'Wydarzenia'
+          } else if (pathSegments[2]) {
+            return 'Sezon'
+          }
+          return 'Sezony'
+        }
+      }
+    }
+    
     return currentItem?.text || 'Strona Główna'
   }
 
