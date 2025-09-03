@@ -47,6 +47,7 @@ import { z } from 'zod'
 import toast from 'react-hot-toast'
 import { useForumStore } from '../../stores/forumStore'
 import { CreateDirectoryData } from '../../services/forum'
+import { useForumViewMode } from '../../hooks/useForumViewMode'
 
 // Form schemas
 const directorySchema = z.object({
@@ -62,7 +63,7 @@ type DirectoryFormData = z.infer<typeof directorySchema>
 const ForumPage: React.FC = () => {
   const navigate = useNavigate()
   const [showCreateDirectoryDialog, setShowCreateDirectoryDialog] = useState(false)
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table')
+  const { viewMode, setViewMode } = useForumViewMode()
 
   const {
     directoryTree,

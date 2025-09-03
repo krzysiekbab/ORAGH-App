@@ -52,6 +52,7 @@ import toast from 'react-hot-toast'
 import { useForumStore } from '../../stores/forumStore'
 import { CreatePostData, CreateDirectoryData, forumService } from '../../services/forum'
 import UserAvatar from '../../components/common/UserAvatar'
+import { useForumViewMode } from '../../hooks/useForumViewMode'
 
 // Form schemas
 const postSchema = z.object({
@@ -78,7 +79,7 @@ const DirectoryPage: React.FC = () => {
   const [subdirectories, setSubdirectories] = useState<any[]>([])
   const [directoryPath, setDirectoryPath] = useState<any[]>([])
   const [isNavigating, setIsNavigating] = useState(false)
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table')
+  const { viewMode, setViewMode } = useForumViewMode()
   const [showCreatePostDialog, setShowCreatePostDialog] = useState(false)
   const [showCreateDirectoryDialog, setShowCreateDirectoryDialog] = useState(false)
   const [showEditDirectoryDialog, setShowEditDirectoryDialog] = useState(false)
@@ -504,21 +505,23 @@ const DirectoryPage: React.FC = () => {
             </Button>
             
             {/* View Toggle */}
-            <ButtonGroup size="small" aria-label="view mode toggle">
-              <Button
-                variant={viewMode === 'cards' ? 'contained' : 'outlined'}
-                onClick={() => setViewMode('cards')}
-                startIcon={<ViewModuleIcon />}
-              >
-                Karty
-              </Button>
-              <Button
-                variant={viewMode === 'table' ? 'contained' : 'outlined'}
-                onClick={() => setViewMode('table')}
-                startIcon={<TableRowsIcon />}
-              >
-                Tabela
-              </Button>
+            <ButtonGroup variant="outlined" size="small">
+              <Tooltip title="Widok tabeli">
+                <Button
+                  variant={viewMode === 'table' ? 'contained' : 'outlined'}
+                  onClick={() => setViewMode('table')}
+                >
+                  <TableRowsIcon />
+                </Button>
+              </Tooltip>
+              <Tooltip title="Widok kart">
+                <Button
+                  variant={viewMode === 'cards' ? 'contained' : 'outlined'}
+                  onClick={() => setViewMode('cards')}
+                >
+                  <ViewModuleIcon />
+                </Button>
+              </Tooltip>
             </ButtonGroup>
           </Box>
         </Box>
@@ -786,83 +789,203 @@ const DirectoryPage: React.FC = () => {
           Posty w tym katalogu
         </Typography>
         
-        <Paper>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Tytuł</TableCell>
-                  <TableCell align="center">Odpowiedzi</TableCell>
-                  <TableCell>Autor</TableCell>
-                  <TableCell>Ostatnia odpowiedź</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {posts.length > 0 ? (
-                  posts.map((post) => (
-                    <TableRow 
-                      key={post.id}
-                      hover
-                      sx={{ cursor: 'pointer' }}
-                      onClick={() => navigate(`/forum/post/${post.id}`)}
-                    >
-                      <TableCell>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
+        {viewMode === 'cards' ? (
+          /* Cards View for Posts */
+          posts.length > 0 ? (
+            <Grid container spacing={{ xs: 2, sm: 3 }}>
+              {posts.map((post) => (
+                <Grid key={post.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Card 
+                    sx={{ 
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: 3
+                      },
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}
+                    onClick={() => navigate(`/forum/post/${post.id}`)}
+                  >
+                    <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'flex-start', 
+                        mb: 2,
+                        gap: 1
+                      }}>
+                        <ArticleIcon sx={{ mr: 1, color: 'primary.main', mt: 0.5 }} />
+                        <Typography 
+                          variant="h6" 
+                          component="h3" 
+                          sx={{ 
+                            flexGrow: 1,
+                            fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                            lineHeight: 1.2,
+                            minWidth: 0,
+                            wordBreak: 'break-word',
+                            fontWeight: 'medium'
+                          }}
+                        >
                           {post.title}
                         </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body2">
-                          {post.comments_count}
+                      </Box>
+                      
+                      {post.content && (
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary" 
+                          sx={{ 
+                            mb: 2,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            lineHeight: 1.4
+                          }}
+                        >
+                          {post.content.replace(/<[^>]*>/g, '').substring(0, 150)}
+                          {post.content.length > 150 ? '...' : ''}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
+                      )}
+                      
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: 1,
+                        mt: 'auto'
+                      }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           <UserAvatar user={post.author} size="small" />
-                          <Box>
-                            <Typography variant="body2">
-                              {post.author.first_name} {post.author.last_name}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {formatDate(post.created_at)}
-                            </Typography>
-                          </Box>
+                          <Typography variant="caption" color="text.secondary">
+                            {post.author.first_name} {post.author.last_name}
+                          </Typography>
                         </Box>
-                      </TableCell>
-                      <TableCell>
-                        {post.last_comment ? (
+                        
+                        <Chip
+                          icon={<ArticleIcon />}
+                          label={`${post.comments_count} odpowiedzi`}
+                          size="small"
+                          variant="outlined"
+                          sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' } }}
+                        />
+                      </Box>
+                      
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        mt: 2,
+                        pt: 2,
+                        borderTop: '1px solid',
+                        borderColor: 'divider'
+                      }}>
+                        <Typography variant="caption" color="text.secondary">
+                          Utworzony: {formatDate(post.created_at)}
+                        </Typography>
+                        
+                        {post.last_comment && (
+                          <Typography variant="caption" color="text.secondary">
+                            Ostatnia odpowiedź: {formatDate(post.last_comment.created_at)}
+                          </Typography>
+                        )}
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Box sx={{ py: 4 }}>
+              <Alert severity="info" sx={{ display: 'inline-flex' }}>
+                Brak postów w tym katalogu. Dodaj pierwszy post!
+              </Alert>
+            </Box>
+          )
+        ) : (
+          /* Table View for Posts */
+          <Paper>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Tytuł</TableCell>
+                    <TableCell align="center">Odpowiedzi</TableCell>
+                    <TableCell>Autor</TableCell>
+                    <TableCell>Ostatnia odpowiedź</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {posts.length > 0 ? (
+                    posts.map((post) => (
+                      <TableRow 
+                        key={post.id}
+                        hover
+                        sx={{ cursor: 'pointer' }}
+                        onClick={() => navigate(`/forum/post/${post.id}`)}
+                      >
+                        <TableCell>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
+                            {post.title}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Typography variant="body2">
+                            {post.comments_count}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <AccessTimeIcon fontSize="small" color="action" />
+                            <UserAvatar user={post.author} size="small" />
                             <Box>
-                              <Typography variant="caption" color="text.secondary">
-                                {formatDate(post.last_comment.created_at)}
+                              <Typography variant="body2">
+                                {post.author.first_name} {post.author.last_name}
                               </Typography>
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                przez {post.last_comment.author.first_name} {post.last_comment.author.last_name}
+                              <Typography variant="caption" color="text.secondary">
+                                {formatDate(post.created_at)}
                               </Typography>
                             </Box>
                           </Box>
-                        ) : (
-                          <Typography variant="caption" color="text.secondary">
-                            Brak odpowiedzi
-                          </Typography>
-                        )}
+                        </TableCell>
+                        <TableCell>
+                          {post.last_comment ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <AccessTimeIcon fontSize="small" color="action" />
+                              <Box>
+                                <Typography variant="caption" color="text.secondary">
+                                  {formatDate(post.last_comment.created_at)}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                  przez {post.last_comment.author.first_name} {post.last_comment.author.last_name}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          ) : (
+                            <Typography variant="caption" color="text.secondary">
+                              Brak odpowiedzi
+                            </Typography>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                        <Alert severity="info" sx={{ display: 'inline-flex' }}>
+                          Brak postów w tym katalogu. Dodaj pierwszy post!
+                        </Alert>
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                      <Alert severity="info" sx={{ display: 'inline-flex' }}>
-                        Brak postów w tym katalogu. Dodaj pierwszy post!
-                      </Alert>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        )}
       </Box>
 
       {/* Create Post Dialog */}
