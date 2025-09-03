@@ -98,7 +98,7 @@ class Command(BaseCommand):
             perm = get_permission_safe(content_types['attendance_attendance'], 'view_attendance')
             if perm: musician_permissions.append(perm)
         
-        # Forum - basic permissions for musicians
+        # Forum - basic permissions for musicians (no directory creation)
         if 'forum_directory' in content_types:
             perm = get_permission_safe(content_types['forum_directory'], 'view_directory')
             if perm: musician_permissions.append(perm)

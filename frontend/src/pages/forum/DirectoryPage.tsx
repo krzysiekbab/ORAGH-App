@@ -29,7 +29,9 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  IconButton,
+  Menu
 } from '@mui/material'
 import {
   NavigateNext as NavigateNextIcon,
@@ -38,7 +40,10 @@ import {
   Add as AddIcon,
   AccessTime as AccessTimeIcon,
   ViewModule as ViewModuleIcon,
-  TableRows as TableRowsIcon
+  TableRows as TableRowsIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  MoreVert as MoreVertIcon
 } from '@mui/icons-material'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -76,15 +81,20 @@ const DirectoryPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('table')
   const [showCreatePostDialog, setShowCreatePostDialog] = useState(false)
   const [showCreateDirectoryDialog, setShowCreateDirectoryDialog] = useState(false)
+  const [showEditDirectoryDialog, setShowEditDirectoryDialog] = useState(false)
+  const [showDeleteDirectoryDialog, setShowDeleteDirectoryDialog] = useState(false)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   
   const {
-    permissions,
     isLoading,
     isCreating,
     error,
+    permissions,
     loadPermissions,
     createPost,
     createDirectory,
+    updateDirectory,
+    deleteDirectory,
     clearError
   } = useForumStore()
 
@@ -151,6 +161,42 @@ const DirectoryPage: React.FC = () => {
       setShowCreateDirectoryDialog(false)
       directoryForm.reset()
       loadDirectoryData() // Reload to show new subdirectory
+    }
+  }
+
+  const handleEditDirectory = async (data: DirectoryFormData) => {
+    if (!directory) return
+    
+    const directoryData = {
+      name: data.name,
+      description: data.description || '',
+      access_level: data.access_level,
+      highlight_style: data.highlight_style,
+      order: data.order
+    }
+
+    const success = await updateDirectory(directory.id, directoryData)
+    if (success) {
+      toast.success('Katalog został zaktualizowany pomyślnie')
+      setShowEditDirectoryDialog(false)
+      directoryForm.reset()
+      loadDirectoryData() // Reload to show updated directory
+    }
+  }
+
+  const handleDeleteDirectory = async () => {
+    if (!directory) return
+    
+    const success = await deleteDirectory(directory.id)
+    if (success) {
+      toast.success('Katalog został usunięty pomyślnie')
+      setShowDeleteDirectoryDialog(false)
+      // Navigate to parent directory or forum root
+      if (directory.parent) {
+        navigate(`/forum/directory/${directory.parent}`)
+      } else {
+        navigate('/forum')
+      }
     }
   }
 
@@ -374,10 +420,60 @@ const DirectoryPage: React.FC = () => {
                 }}
               />
             )}
+            
+            {/* Directory Actions Menu - Only for board members */}
+            {permissions?.can_create_directory && (
+              <Box sx={{ ml: 2 }}>
+                <Tooltip title="Akcje katalogu">
+                  <IconButton 
+                    size="small" 
+                    onClick={(e) => setAnchorEl(e.currentTarget)}
+                    sx={{ color: 'primary.main' }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                </Tooltip>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={() => setAnchorEl(null)}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                >
+                  <MenuItem 
+                    onClick={() => {
+                      setAnchorEl(null)
+                      // Populate form with current directory data
+                      directoryForm.reset({
+                        name: directory.name,
+                        description: directory.description || '',
+                        access_level: directory.access_level,
+                        highlight_style: directory.highlight_style,
+                        order: directory.order || 0
+                      })
+                      setShowEditDirectoryDialog(true)
+                    }}
+                  >
+                    <EditIcon sx={{ mr: 1 }} />
+                    Edytuj katalog
+                  </MenuItem>
+                  <MenuItem 
+                    onClick={() => {
+                      setAnchorEl(null)
+                      setShowDeleteDirectoryDialog(true)
+                    }}
+                    sx={{ color: 'error.main' }}
+                  >
+                    <DeleteIcon sx={{ mr: 1 }} />
+                    Usuń katalog
+                  </MenuItem>
+                </Menu>
+              </Box>
+            )}
           </Box>
           
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-            {/* Add Directory Button */}
+            {/* Add Directory Button - Only for board members */}
             {permissions?.can_create_directory && (
               <Button
                 variant="contained"
@@ -393,21 +489,19 @@ const DirectoryPage: React.FC = () => {
               </Button>
             )}
             
-            {/* Add Post Button */}
-            {permissions?.can_create_directory && (
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={() => setShowCreatePostDialog(true)}
-                sx={{ 
-                  minWidth: 'fit-content',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                Dodaj post
-              </Button>
-            )}
+            {/* Add Post Button - Available to all authenticated users */}
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => setShowCreatePostDialog(true)}
+              sx={{ 
+                minWidth: 'fit-content',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Dodaj post
+            </Button>
             
             {/* View Toggle */}
             <ButtonGroup size="small" aria-label="view mode toggle">
@@ -950,6 +1044,156 @@ const DirectoryPage: React.FC = () => {
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+
+      {/* Edit Directory Dialog */}
+      <Dialog
+        open={showEditDirectoryDialog}
+        onClose={() => setShowEditDirectoryDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            margin: { xs: 1, sm: 2 },
+            maxHeight: { xs: 'calc(100vh - 16px)', sm: 'calc(100vh - 64px)' }
+          }
+        }}
+      >
+        <DialogTitle>Edytuj katalog</DialogTitle>
+        <form onSubmit={directoryForm.handleSubmit(handleEditDirectory)}>
+          <DialogContent sx={{ pb: 1 }}>
+            <Box display="flex" flexDirection="column" gap={2}>
+              <Controller
+                name="name"
+                control={directoryForm.control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    label="Nazwa katalogu"
+                    variant="outlined"
+                    fullWidth
+                    required
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+              />
+
+              <Controller
+                name="description"
+                control={directoryForm.control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    label="Opis (opcjonalny)"
+                    variant="outlined"
+                    fullWidth
+                    multiline
+                    rows={3}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+              />
+
+              <Controller
+                name="access_level"
+                control={directoryForm.control}
+                render={({ field }) => (
+                  <FormControl fullWidth>
+                    <InputLabel>Poziom dostępu</InputLabel>
+                    <Select {...field} label="Poziom dostępu">
+                      <MenuItem value="all">Wszyscy</MenuItem>
+                      <MenuItem value="board">Tylko zarząd</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
+
+              <Controller
+                name="highlight_style"
+                control={directoryForm.control}
+                render={({ field }) => (
+                  <FormControl fullWidth>
+                    <InputLabel>Styl podświetlenia</InputLabel>
+                    <Select {...field} label="Styl podświetlenia">
+                      <MenuItem value="none">Brak</MenuItem>
+                      <MenuItem value="management">Zarządzanie (niebieski)</MenuItem>
+                      <MenuItem value="orchestra">Orkiestra (pomarańczowy)</MenuItem>
+                      <MenuItem value="entertainment">Rozrywka (zielony)</MenuItem>
+                      <MenuItem value="important">Ważne (czerwony)</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
+
+              <Controller
+                name="order"
+                control={directoryForm.control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                    label="Kolejność wyświetlania"
+                    variant="outlined"
+                    fullWidth
+                    type="number"
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message || 'Niższe wartości będą wyświetlane wyżej'}
+                  />
+                )}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={() => setShowEditDirectoryDialog(false)}>
+              Anuluj
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={isCreating}
+            >
+              {isCreating ? <CircularProgress size={20} /> : 'Zapisz'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Delete Directory Dialog */}
+      <Dialog
+        open={showDeleteDirectoryDialog}
+        onClose={() => setShowDeleteDirectoryDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Usuń katalog</DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            <Typography variant="body2">
+              <strong>Uwaga:</strong> Ta operacja jest nieodwracalna!
+            </Typography>
+          </Alert>
+          <Typography variant="body1">
+            Czy na pewno chcesz usunąć katalog <strong>"{directory?.name}"</strong>?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Wszystkie podkatalogi, posty i komentarze w tym katalogu zostaną również usunięte.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setShowDeleteDirectoryDialog(false)}>
+            Anuluj
+          </Button>
+          <Button
+            onClick={handleDeleteDirectory}
+            variant="contained"
+            color="error"
+            disabled={isCreating}
+          >
+            {isCreating ? <CircularProgress size={20} /> : 'Usuń'}
+          </Button>
+        </DialogActions>
       </Dialog>
 
     </Box>

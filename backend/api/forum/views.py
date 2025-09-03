@@ -96,12 +96,13 @@ class DirectoryListCreateView(generics.ListCreateAPIView):
         return context
     
     def perform_create(self, serializer):
-        """Set the author field when creating a directory."""
-        # Check if user can create directories
-        if not (self.request.user.groups.filter(name='board').exists() or
+        """Set the author field when creating a directory. Only board members can create directories."""
+        # Check if user is board member, staff, or superuser
+        if not (self.request.user.groups.filter(name='board').exists() or 
                 self.request.user.is_staff or self.request.user.is_superuser):
             from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("Nie masz uprawnień do tworzenia katalogów.")
+            raise PermissionDenied("Tylko członkowie zarządu mogą tworzyć katalogi.")
+        
         serializer.save(author=self.request.user)
 
 
@@ -139,16 +140,13 @@ class DirectoryDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
         serializer.save()
     
     def perform_destroy(self, instance):
-        """Check permissions before deleting."""
+        """Check permissions before deleting and perform cascade deletion."""
         if not instance.can_user_delete(self.request.user):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Nie masz uprawnień do usuwania tego katalogu.")
         
-        # Check if directory has posts or subdirectories
-        if instance.posts.exists() or instance.subdirectories.exists():
-            from rest_framework.exceptions import ValidationError
-            raise ValidationError("Nie można usunąć katalogu zawierającego posty lub podkatalogi.")
-        
+        # Cascade deletion is handled by the model's on_delete=CASCADE relationships
+        # This will automatically delete all subdirectories, posts, and comments
         instance.delete()
 
 
@@ -520,7 +518,7 @@ def forum_permissions(request):
     user = request.user
     
     permissions = {
-        'can_create_directory': (
+        'can_create_directory': (  # Only board members can create directories
             user.groups.filter(name='board').exists() or
             user.is_staff or user.is_superuser
         ),

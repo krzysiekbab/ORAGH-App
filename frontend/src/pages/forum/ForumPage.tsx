@@ -28,7 +28,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  IconButton
 } from '@mui/material'
 import {
   Folder as FolderIcon,
@@ -36,7 +37,8 @@ import {
   Add as AddIcon,
   NavigateNext as NavigateNextIcon,
   ViewModule as ViewModuleIcon,
-  TableRows as TableRowsIcon
+  TableRows as TableRowsIcon,
+  MoreVert as MoreVertIcon
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
@@ -204,6 +206,7 @@ const ForumPage: React.FC = () => {
             <TableCell align="center">Podkatalogi</TableCell>
             <TableCell align="center">Posty</TableCell>
             <TableCell>Ostatni post</TableCell>
+            {permissions?.can_create_directory && <TableCell align="center">Akcje</TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -253,6 +256,21 @@ const ForumPage: React.FC = () => {
                   -
                 </Typography>
               </TableCell>
+              {permissions?.can_create_directory && (
+                <TableCell align="center">
+                  <Tooltip title="Zarządzaj katalogiem">
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/forum/directory/${directory.id}`)
+                      }}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

@@ -72,12 +72,18 @@ class Command(BaseCommand):
         if perm: musician_permissions.append(perm)
         perm = get_permission_safe(comment_ct, 'view_comment')
         if perm: musician_permissions.append(perm)
-        # Musicians can create posts and comments but not directories
+        # Musicians can create posts, comments, and directories
+        perm = get_permission_safe(directory_ct, 'add_directory')
+        if perm: musician_permissions.append(perm)
         perm = get_permission_safe(post_ct, 'add_post')
         if perm: musician_permissions.append(perm)
         perm = get_permission_safe(comment_ct, 'add_comment')
         if perm: musician_permissions.append(perm)
-        # Musicians can edit/delete their own posts and comments
+        # Musicians can edit/delete their own posts, comments, and directories
+        perm = get_permission_safe(directory_ct, 'change_directory')
+        if perm: musician_permissions.append(perm)
+        perm = get_permission_safe(directory_ct, 'delete_directory')
+        if perm: musician_permissions.append(perm)
         perm = get_permission_safe(post_ct, 'change_post')
         if perm: musician_permissions.append(perm)
         perm = get_permission_safe(post_ct, 'delete_post')
@@ -170,10 +176,9 @@ class Command(BaseCommand):
         
         self.stdout.write('\n=== PERMISSION SUMMARY ===')
         self.stdout.write('musician: view concerts/attendance, register for concerts')
-        self.stdout.write('         view forum, create/edit/delete own posts and comments')
+        self.stdout.write('         view forum, create/edit/delete own posts, comments, and directories')
         self.stdout.write('board: all musician permissions + full management of concerts/seasons/events/attendance')
-        self.stdout.write('       + full forum directory management (create/edit/delete directories)')
-        self.stdout.write('       + moderate all forum content')
+        self.stdout.write('       + forum moderation capabilities (pin/lock posts, moderate content)')
         self.stdout.write('conductor: all board permissions (extensible for future admin features)')
         
         self.stdout.write(self.style.SUCCESS('\n✅ Groups and permissions set up successfully!'))
