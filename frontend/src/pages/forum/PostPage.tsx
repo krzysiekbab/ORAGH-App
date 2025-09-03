@@ -42,6 +42,7 @@ import { useForumStore } from '../../stores/forumStore'
 import { useAuthStore } from '../../stores/authStore'
 import { forumService, Post, Comment, CreateCommentData } from '../../services/forum'
 import UserAvatar from '../../components/common/UserAvatar'
+import apiClient from '../../services/api'
 
 // Comment form schema
 const commentSchema = z.object({
@@ -67,6 +68,9 @@ const PostPage: React.FC = () => {
   const [postPath, setPostPath] = useState<any[]>([])
   const [isNavigating, setIsNavigating] = useState(false)
   const [isLoadingComments, setIsLoadingComments] = useState(false)
+  const [postNotFound, setPostNotFound] = useState(false)
+  const [accessDenied, setAccessDenied] = useState(false)
+  const [userGroups, setUserGroups] = useState<string[]>([])
   const [showCreateCommentDialog, setShowCreateCommentDialog] = useState(false)
   const [showEditCommentDialog, setShowEditCommentDialog] = useState(false)
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState(false)
@@ -117,14 +121,33 @@ const PostPage: React.FC = () => {
     }
   })
 
+  const loadUserPermissions = async () => {
+    try {
+      const response = await apiClient.get('/users/permissions/')
+      setUserGroups(response.data.groups || [])
+    } catch (error) {
+      console.error('Failed to load user permissions:', error)
+      setUserGroups([])
+    }
+  }
+
   const loadPostData = async () => {
     if (!id) return
 
     try {
       setIsNavigating(true)
+      setPostNotFound(false)
+      setAccessDenied(false)
       
       // Load post data
       const postData = await forumService.getPost(parseInt(id))
+      
+      // Check access permissions for board posts
+      if (postData.directory?.access_level === 'board' && !userGroups.includes('board')) {
+        setAccessDenied(true)
+        return
+      }
+      
       setPost(postData)
       
       // Build post path for breadcrumbs
@@ -133,9 +156,23 @@ const PostPage: React.FC = () => {
       // Load comments
       await loadCommentsData(parseInt(id))
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load post data:', error)
-      toast.error('Nie udało się załadować danych postu')
+      
+      // Check if it's a 404 error (post not found)
+      if (error.response?.status === 404) {
+        setPostNotFound(true)
+      } else if (error.response?.status === 403) {
+        setAccessDenied(true)
+      } else {
+        // For other errors, show a generic error message
+        setPostNotFound(true)
+      }
+      
+      // Clear existing data
+      setPost(null)
+      setPostPath([])
+      setComments([])
     } finally {
       setIsNavigating(false)
     }
@@ -176,11 +213,18 @@ const PostPage: React.FC = () => {
   }
 
   useEffect(() => {
+    // Load user permissions on component mount
+    loadUserPermissions()
+  }, [])
+
+  useEffect(() => {
     // Clear previous state when post ID changes
     setIsNavigating(true)
     setPost(null)
     setComments([])
     setPostPath([])
+    setPostNotFound(false)
+    setAccessDenied(false)
     
     const initializeData = async () => {
       try {
@@ -410,6 +454,54 @@ const PostPage: React.FC = () => {
     )
   }
 
+  if (postNotFound) {
+    return (
+      <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
+        {renderBreadcrumbs()}
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <Typography variant="h6" component="div" sx={{ mb: 1 }}>
+            Post nie został znaleziony
+          </Typography>
+          <Typography variant="body2">
+            Żądany post nie istnieje lub został usunięty.
+          </Typography>
+        </Alert>
+        
+        <Button 
+          variant="contained" 
+          onClick={() => navigate('/forum')}
+          sx={{ mt: 2 }}
+        >
+          Powrót do forum
+        </Button>
+      </Box>
+    )
+  }
+
+  if (accessDenied) {
+    return (
+      <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
+        {renderBreadcrumbs()}
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          <Typography variant="h6" component="div" sx={{ mb: 1 }}>
+            Brak uprawnień
+          </Typography>
+          <Typography variant="body2">
+            Nie masz uprawnień do przeglądania tego postu. Ten post znajduje się w katalogu dostępnym tylko dla członków zarządu.
+          </Typography>
+        </Alert>
+        
+        <Button 
+          variant="contained" 
+          onClick={() => navigate('/forum')}
+          sx={{ mt: 2 }}
+        >
+          Powrót do forum
+        </Button>
+      </Box>
+    )
+  }
+
   if (!post) {
     return (
       <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
@@ -422,44 +514,78 @@ const PostPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
+    <Box sx={{ p: { xs: 1.5, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
       {/* Breadcrumbs */}
       {renderBreadcrumbs()}
 
       {/* Post Content */}
-      <Paper sx={{ p: 3, mb: 3 }}>
+      <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
         {/* Post Header */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <ArticleIcon color="primary" sx={{ fontSize: '2rem' }} />
-            <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
-              {post.title}
-            </Typography>
-            {post.is_pinned && (
-              <Chip
-                icon={<PushPinIcon />}
-                label="Przypięty"
-                color="primary"
-                size="small"
-              />
-            )}
-            {post.is_locked && (
-              <Chip
-                icon={<LockIcon />}
-                label="Zablokowany"
-                color="warning"
-                size="small"
-              />
-            )}
-            {(post.can_edit || post.can_delete) && (
-              <IconButton onClick={handlePostMenuClick}>
-                <MoreVertIcon />
-              </IconButton>
-            )}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: { xs: 'flex-start', sm: 'center' }, 
+            gap: 1, 
+            mb: 2,
+            flexDirection: { xs: 'column', sm: 'row' }
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
+              <ArticleIcon color="primary" sx={{ fontSize: '2rem', flexShrink: 0 }} />
+              <Typography 
+                variant="h4" 
+                component="h1" 
+                sx={{ 
+                  flexGrow: 1,
+                  fontSize: { xs: '1.5rem', sm: '2rem' },
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: { xs: 'nowrap', sm: 'normal' },
+                  minWidth: 0
+                }}
+              >
+                {post.title}
+              </Typography>
+            </Box>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 1, 
+              alignItems: 'center',
+              flexShrink: 0,
+              alignSelf: { xs: 'flex-start', sm: 'center' }
+            }}>
+              {post.is_pinned && (
+                <Chip
+                  icon={<PushPinIcon />}
+                  label="Przypięty"
+                  color="primary"
+                  size="small"
+                />
+              )}
+              {post.is_locked && (
+                <Chip
+                  icon={<LockIcon />}
+                  label="Zablokowany"
+                  color="warning"
+                  size="small"
+                />
+              )}
+              {(post.can_edit || post.can_delete) && (
+                <IconButton onClick={handlePostMenuClick}>
+                  <MoreVertIcon />
+                </IconButton>
+              )}
+            </Box>
           </Box>
           
           {/* Post Meta */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: { xs: 1, sm: 2 }, 
+            mb: 2, 
+            flexWrap: 'wrap',
+            fontSize: { xs: '0.875rem', sm: '1rem' }
+          }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <UserAvatar user={post.author} size="medium" />
               <Typography variant="body2" color="text.secondary">
@@ -513,8 +639,15 @@ const PostPage: React.FC = () => {
       </Paper>
 
       {/* Comments Section */}
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Paper sx={{ p: { xs: 2, sm: 3 } }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          mb: 3,
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 2, sm: 0 }
+        }}>
           <Typography variant="h5" component="h2">
             Komentarze ({comments.length})
           </Typography>
@@ -524,6 +657,7 @@ const PostPage: React.FC = () => {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => setShowCreateCommentDialog(true)}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               Dodaj komentarz
             </Button>
@@ -543,8 +677,15 @@ const PostPage: React.FC = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {comments.map((comment) => (
               <Card key={comment.id} variant="outlined">
-                <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'flex-start', 
+                      mb: 2,
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      gap: { xs: 1, sm: 0 }
+                    }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <UserAvatar user={comment.author} size="medium" />
                       <Box>

@@ -38,7 +38,6 @@ import {
   Folder as FolderIcon,
   Article as ArticleIcon,
   Add as AddIcon,
-  AccessTime as AccessTimeIcon,
   ViewModule as ViewModuleIcon,
   TableRows as TableRowsIcon,
   Edit as EditIcon,
@@ -53,6 +52,7 @@ import { useForumStore } from '../../stores/forumStore'
 import { CreatePostData, CreateDirectoryData, forumService } from '../../services/forum'
 import UserAvatar from '../../components/common/UserAvatar'
 import { useForumViewMode } from '../../hooks/useForumViewMode'
+import apiClient from '../../services/api'
 
 // Form schemas
 const postSchema = z.object({
@@ -79,12 +79,16 @@ const DirectoryPage: React.FC = () => {
   const [subdirectories, setSubdirectories] = useState<any[]>([])
   const [directoryPath, setDirectoryPath] = useState<any[]>([])
   const [isNavigating, setIsNavigating] = useState(false)
+  const [directoryNotFound, setDirectoryNotFound] = useState(false)
+  const [accessDenied, setAccessDenied] = useState(false)
+  const [userGroups, setUserGroups] = useState<string[]>([])
   const { viewMode, setViewMode } = useForumViewMode()
   const [showCreatePostDialog, setShowCreatePostDialog] = useState(false)
   const [showCreateDirectoryDialog, setShowCreateDirectoryDialog] = useState(false)
   const [showEditDirectoryDialog, setShowEditDirectoryDialog] = useState(false)
   const [showDeleteDirectoryDialog, setShowDeleteDirectoryDialog] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [selectedDirectory, setSelectedDirectory] = useState<any>(null)
   
   const {
     isLoading,
@@ -166,7 +170,7 @@ const DirectoryPage: React.FC = () => {
   }
 
   const handleEditDirectory = async (data: DirectoryFormData) => {
-    if (!directory) return
+    if (!selectedDirectory) return
     
     const directoryData = {
       name: data.name,
@@ -176,28 +180,35 @@ const DirectoryPage: React.FC = () => {
       order: data.order
     }
 
-    const success = await updateDirectory(directory.id, directoryData)
+    const success = await updateDirectory(selectedDirectory.id, directoryData)
     if (success) {
       toast.success('Katalog został zaktualizowany pomyślnie')
       setShowEditDirectoryDialog(false)
+      setSelectedDirectory(null)
       directoryForm.reset()
       loadDirectoryData() // Reload to show updated directory
     }
   }
 
   const handleDeleteDirectory = async () => {
-    if (!directory) return
+    if (!selectedDirectory) return
     
-    const success = await deleteDirectory(directory.id)
+    const success = await deleteDirectory(selectedDirectory.id)
     if (success) {
       toast.success('Katalog został usunięty pomyślnie')
       setShowDeleteDirectoryDialog(false)
-      // Navigate to parent directory or forum root
-      if (directory.parent) {
-        navigate(`/forum/directory/${directory.parent}`)
-      } else {
-        navigate('/forum')
-      }
+      setSelectedDirectory(null)
+      loadDirectoryData() // Reload to refresh the list
+    }
+  }
+
+  const loadUserPermissions = async () => {
+    try {
+      const response = await apiClient.get('/users/permissions/')
+      setUserGroups(response.data.groups || [])
+    } catch (error) {
+      console.error('Failed to load user permissions:', error)
+      setUserGroups([])
     }
   }
 
@@ -222,8 +233,18 @@ const DirectoryPage: React.FC = () => {
     if (!id) return
     
     try {
+      setDirectoryNotFound(false)
+      setAccessDenied(false)
+      
       // Load directory details
       const directoryData = await forumService.getDirectory(parseInt(id))
+      
+      // Check access permissions for board directories
+      if (directoryData.access_level === 'board' && !userGroups.includes('board')) {
+        setAccessDenied(true)
+        return
+      }
+      
       setDirectory(directoryData)
       
       // Build directory path for breadcrumbs
@@ -238,23 +259,31 @@ const DirectoryPage: React.FC = () => {
       const subdirectoriesResponse = await forumService.getDirectories({ parent: parseInt(id) })
       setSubdirectories(subdirectoriesResponse.results || [])
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load directory data:', error)
-      // Fallback to basic directory structure if API fails
-      setDirectory({
-        id: parseInt(id),
-        name: `Directory ${id}`,
-        description: 'Failed to load directory details',
-        highlight_style: 'none',
-        access_level: 'all',
-        order: 0,
-        author: { id: 1, username: 'unknown', first_name: 'Unknown', last_name: 'User', email: '' },
-        created_at: new Date().toISOString()
-      })
+      
+      // Check if it's a 404 error (directory not found)
+      if (error.response?.status === 404) {
+        setDirectoryNotFound(true)
+      } else if (error.response?.status === 403) {
+        setAccessDenied(true)
+      } else {
+        // For other errors, show a generic error message
+        setDirectoryNotFound(true)
+      }
+      
+      // Clear existing data
+      setDirectory(null)
       setSubdirectories([])
       setPosts([])
+      setDirectoryPath([])
     }
   }
+
+  useEffect(() => {
+    // Load user permissions on component mount
+    loadUserPermissions()
+  }, [])
 
   useEffect(() => {
     // Clear previous state immediately when directory ID changes
@@ -263,6 +292,8 @@ const DirectoryPage: React.FC = () => {
     setPosts([])
     setSubdirectories([])
     setDirectoryPath([])
+    setDirectoryNotFound(false)
+    setAccessDenied(false)
     
     const initializeData = async () => {
       try {
@@ -320,6 +351,94 @@ const DirectoryPage: React.FC = () => {
     )
   }
 
+  if (directoryNotFound) {
+    return (
+      <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
+        {/* Breadcrumbs */}
+        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 3 }}>
+          <Link 
+            underline="hover" 
+            color="inherit" 
+            onClick={() => navigate('/')}
+            sx={{ cursor: 'pointer' }}
+          >
+            Strona główna
+          </Link>
+          <Link 
+            underline="hover" 
+            color="inherit" 
+            onClick={() => navigate('/forum')}
+            sx={{ cursor: 'pointer' }}
+          >
+            Forum
+          </Link>
+          <Typography color="text.primary">Błąd</Typography>
+        </Breadcrumbs>
+
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <Typography variant="h6" component="div" sx={{ mb: 1 }}>
+            Katalog nie został znaleziony
+          </Typography>
+          <Typography variant="body2">
+            Żądany katalog nie istnieje lub został usunięty.
+          </Typography>
+        </Alert>
+        
+        <Button 
+          variant="contained" 
+          onClick={() => navigate('/forum')}
+          sx={{ mt: 2 }}
+        >
+          Powrót do forum
+        </Button>
+      </Box>
+    )
+  }
+
+  if (accessDenied) {
+    return (
+      <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
+        {/* Breadcrumbs */}
+        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 3 }}>
+          <Link 
+            underline="hover" 
+            color="inherit" 
+            onClick={() => navigate('/')}
+            sx={{ cursor: 'pointer' }}
+          >
+            Strona główna
+          </Link>
+          <Link 
+            underline="hover" 
+            color="inherit" 
+            onClick={() => navigate('/forum')}
+            sx={{ cursor: 'pointer' }}
+          >
+            Forum
+          </Link>
+          <Typography color="text.primary">Brak dostępu</Typography>
+        </Breadcrumbs>
+
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          <Typography variant="h6" component="div" sx={{ mb: 1 }}>
+            Brak uprawnień
+          </Typography>
+          <Typography variant="body2">
+            Nie masz uprawnień do przeglądania tego katalogu. Ten katalog jest dostępny tylko dla członków zarządu.
+          </Typography>
+        </Alert>
+        
+        <Button 
+          variant="contained" 
+          onClick={() => navigate('/forum')}
+          sx={{ mt: 2 }}
+        >
+          Powrót do forum
+        </Button>
+      </Box>
+    )
+  }
+
   if (!directory) {
     return (
       <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
@@ -357,14 +476,6 @@ const DirectoryPage: React.FC = () => {
         <Link 
           underline="hover" 
           color="inherit" 
-          onClick={() => navigate('/')}
-          sx={{ cursor: 'pointer' }}
-        >
-          Strona główna
-        </Link>
-        <Link 
-          underline="hover" 
-          color="inherit" 
           onClick={() => navigate('/forum')}
           sx={{ cursor: 'pointer' }}
         >
@@ -398,15 +509,32 @@ const DirectoryPage: React.FC = () => {
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
-      {/* Breadcrumbs */}
-      {renderBreadcrumbs()}
-
       {/* Directory Header */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <FolderIcon color="primary" sx={{ fontSize: '2rem' }} />
-            <Typography variant="h4" component="h1">
+        {/* Directory Title and Action Buttons */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          mb: 2, 
+          flexWrap: 'wrap', 
+          gap: 2,
+          flexDirection: { xs: 'column', md: 'row' }
+        }}>
+          {/* Left side - Directory Title and Actions Menu */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flex: 1 }}>
+            <FolderIcon color="primary" sx={{ fontSize: '2rem', flexShrink: 0 }} />
+            <Typography 
+              variant="h4" 
+              component="h1"
+              sx={{ 
+                fontSize: { xs: '1.5rem', sm: '2rem' },
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: { xs: 'nowrap', sm: 'normal' },
+                minWidth: 0
+              }}
+            >
               {directory.name}
             </Typography>
             {directory.highlight_style !== 'none' && (
@@ -417,63 +545,22 @@ const DirectoryPage: React.FC = () => {
                   backgroundColor: getHighlightColor(directory.highlight_style),
                   color: 'white',
                   fontWeight: 'bold',
-                  ml: 1
+                  ml: 1,
+                  flexShrink: 0
                 }}
               />
             )}
-            
-            {/* Directory Actions Menu - Only for board members */}
-            {permissions?.can_create_directory && (
-              <Box sx={{ ml: 2 }}>
-                <Tooltip title="Akcje katalogu">
-                  <IconButton 
-                    size="small" 
-                    onClick={(e) => setAnchorEl(e.currentTarget)}
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
-                </Tooltip>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={() => setAnchorEl(null)}
-                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                >
-                  <MenuItem 
-                    onClick={() => {
-                      setAnchorEl(null)
-                      // Populate form with current directory data
-                      directoryForm.reset({
-                        name: directory.name,
-                        description: directory.description || '',
-                        access_level: directory.access_level,
-                        highlight_style: directory.highlight_style,
-                        order: directory.order || 0
-                      })
-                      setShowEditDirectoryDialog(true)
-                    }}
-                  >
-                    <EditIcon sx={{ mr: 1 }} />
-                    Edytuj katalog
-                  </MenuItem>
-                  <MenuItem 
-                    onClick={() => {
-                      setAnchorEl(null)
-                      setShowDeleteDirectoryDialog(true)
-                    }}
-                    sx={{ color: 'error.main' }}
-                  >
-                    <DeleteIcon sx={{ mr: 1 }} />
-                    Usuń katalog
-                  </MenuItem>
-                </Menu>
-              </Box>
-            )}
           </Box>
           
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Right side - Action Buttons */}
+          <Box sx={{ 
+            display: 'flex', 
+            gap: { xs: 1, sm: 2 }, 
+            alignItems: 'center', 
+            flexWrap: 'wrap',
+            width: { xs: '100%', md: 'auto' },
+            flexDirection: { xs: 'column', sm: 'row' }
+          }}>
             {/* Add Directory Button - Only for board members */}
             {permissions?.can_create_directory && (
               <Button
@@ -483,7 +570,8 @@ const DirectoryPage: React.FC = () => {
                 onClick={() => setShowCreateDirectoryDialog(true)}
                 sx={{ 
                   minWidth: 'fit-content',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  width: { xs: '100%', sm: 'auto' }
                 }}
               >
                 Dodaj podkatalog
@@ -498,18 +586,24 @@ const DirectoryPage: React.FC = () => {
               onClick={() => setShowCreatePostDialog(true)}
               sx={{ 
                 minWidth: 'fit-content',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                width: { xs: '100%', sm: 'auto' }
               }}
             >
               Dodaj post
             </Button>
             
             {/* View Toggle */}
-            <ButtonGroup variant="outlined" size="small">
+            <ButtonGroup 
+              variant="outlined" 
+              size="small"
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
+            >
               <Tooltip title="Widok tabeli">
                 <Button
                   variant={viewMode === 'table' ? 'contained' : 'outlined'}
                   onClick={() => setViewMode('table')}
+                  sx={{ flex: { xs: 1, sm: 'none' } }}
                 >
                   <TableRowsIcon />
                 </Button>
@@ -518,6 +612,7 @@ const DirectoryPage: React.FC = () => {
                 <Button
                   variant={viewMode === 'cards' ? 'contained' : 'outlined'}
                   onClick={() => setViewMode('cards')}
+                  sx={{ flex: { xs: 1, sm: 'none' } }}
                 >
                   <ViewModuleIcon />
                 </Button>
@@ -539,6 +634,9 @@ const DirectoryPage: React.FC = () => {
           {error}
         </Alert>
       )}
+
+      {/* Breadcrumbs */}
+      {renderBreadcrumbs()}
 
       {/* Subdirectories Section */}
       {subdirectories.length > 0 ? (
@@ -633,6 +731,12 @@ const DirectoryPage: React.FC = () => {
                         flexWrap: 'wrap'
                       }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <FolderIcon fontSize="small" color="action" />
+                          <Typography variant="caption" color="text.secondary">
+                            {subdir.subdirectories_count} {subdir.subdirectories_count === 1 ? 'podkatalog' : 'podkatalogów'}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           <ArticleIcon fontSize="small" color="action" />
                           <Typography variant="caption" color="text.secondary">
                             {subdir.posts_count} {subdir.posts_count === 1 ? 'post' : 'postów'}
@@ -645,6 +749,21 @@ const DirectoryPage: React.FC = () => {
                           color={subdir.access_level === 'all' ? 'success' : 'warning'}
                           sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                         />
+                        {permissions?.can_create_directory && (
+                          <Tooltip title="Akcje katalogu">
+                            <IconButton 
+                              size="small" 
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedDirectory(subdir)
+                                setAnchorEl(e.currentTarget)
+                              }}
+                              sx={{ color: 'primary.main', ml: 'auto' }}
+                            >
+                              <MoreVertIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </Box>
                     </CardContent>
                   </Card>
@@ -658,11 +777,39 @@ const DirectoryPage: React.FC = () => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Nazwa katalogu</TableCell>
-                      <TableCell align="center">Posty</TableCell>
-                      <TableCell align="center">Podkatalogi</TableCell>
-                      <TableCell align="center">Dostęp</TableCell>
-                      <TableCell>Ostatnia aktywność</TableCell>
+                      <TableCell>Katalog</TableCell>
+                      <TableCell 
+                        align="center" 
+                        sx={{ 
+                          width: '90px',
+                          display: { xs: 'none', md: 'table-cell' }
+                        }}
+                      >
+                        Podkatalogi
+                      </TableCell>
+                      <TableCell align="center" sx={{ width: '80px' }}>
+                        Posty
+                      </TableCell>
+                      <TableCell 
+                        align="center" 
+                        sx={{ 
+                          width: '100px',
+                          display: { xs: 'none', sm: 'table-cell' }
+                        }}
+                      >
+                        Dostęp
+                      </TableCell>
+                      {permissions?.can_create_directory && (
+                        <TableCell 
+                          align="center" 
+                          sx={{ 
+                            width: '60px',
+                            display: { xs: 'none', lg: 'table-cell' }
+                          }}
+                        >
+                          Akcje
+                        </TableCell>
+                      )}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -675,10 +822,18 @@ const DirectoryPage: React.FC = () => {
                       >
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <FolderIcon color="primary" />
+                            <FolderIcon color="primary" sx={{ flexShrink: 0 }} />
                             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
+                                <Typography 
+                                  variant="subtitle2" 
+                                  sx={{ 
+                                    fontWeight: 'medium',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
                                   {subdir.name}
                                 </Typography>
                                 {subdir.highlight_style !== 'none' && (
@@ -688,46 +843,83 @@ const DirectoryPage: React.FC = () => {
                                     sx={{
                                       backgroundColor: getHighlightColor(subdir.highlight_style),
                                       color: 'white',
-                                      fontSize: '0.65rem'
+                                      fontSize: '0.65rem',
+                                      flexShrink: 0
                                     }}
                                   />
                                 )}
                               </Box>
                               {subdir.description && (
                                 <Typography 
-                                  variant="caption" 
-                                  color="text.secondary"
+                                  variant="body2" 
+                                  color="text.secondary" 
                                   sx={{ 
-                                    display: 'block',
                                     mt: 0.5,
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap'
+                                    whiteSpace: 'nowrap',
+                                    display: { xs: 'none', sm: 'block' }
                                   }}
                                 >
                                   {subdir.description}
                                 </Typography>
                               )}
+                              {/* Mobile access level and counts */}
+                              <Box sx={{ display: { xs: 'block', sm: 'none' }, mt: 0.5 }}>
+                                <Box sx={{ display: 'flex', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {subdir.subdirectories_count} podkat.
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    •
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {subdir.posts_count} postów
+                                  </Typography>
+                                </Box>
+                                <Chip
+                                  label={subdir.access_level === 'all' ? 'Publiczny' : 'Zarząd'}
+                                  size="small"
+                                  variant="outlined"
+                                  color={subdir.access_level === 'all' ? 'success' : 'warning'}
+                                  sx={{ fontSize: '0.7rem' }}
+                                />
+                                {permissions?.can_create_directory && (
+                                  <Tooltip title="Akcje katalogu">
+                                    <IconButton 
+                                      size="small" 
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setSelectedDirectory(subdir)
+                                        setAnchorEl(e.currentTarget)
+                                      }}
+                                      sx={{ color: 'primary.main', ml: 'auto' }}
+                                    >
+                                      <MoreVertIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                              </Box>
                             </Box>
                           </Box>
                         </TableCell>
-                        <TableCell align="center">
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                            <ArticleIcon fontSize="small" color="action" />
-                            <Typography variant="body2">
-                              {subdir.posts_count}
-                            </Typography>
-                          </Box>
+                        <TableCell 
+                          align="center"
+                          sx={{ display: { xs: 'none', md: 'table-cell' } }}
+                        >
+                          <Typography variant="body2">
+                            {subdir.subdirectories_count}
+                          </Typography>
                         </TableCell>
                         <TableCell align="center">
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                            <FolderIcon fontSize="small" color="action" />
-                            <Typography variant="body2">
-                              {subdir.subdirectories_count}
-                            </Typography>
-                          </Box>
+                          <Typography variant="body2">
+                            {subdir.posts_count}
+                          </Typography>
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell 
+                          align="center"
+                          sx={{ display: { xs: 'none', sm: 'table-cell' } }}
+                        >
                           <Chip
                             label={subdir.access_level === 'all' ? 'Publiczny' : 'Zarząd'}
                             size="small"
@@ -735,33 +927,26 @@ const DirectoryPage: React.FC = () => {
                             color={subdir.access_level === 'all' ? 'success' : 'warning'}
                           />
                         </TableCell>
-                        <TableCell>
-                          {subdir.last_post ? (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <AccessTimeIcon fontSize="small" color="action" />
-                              <Box>
-                                <Typography variant="caption" color="text.secondary">
-                                  {formatDate(subdir.last_post.updated_at)}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                  przez {subdir.last_post.author.first_name} {subdir.last_post.author.last_name}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          ) : (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <AccessTimeIcon fontSize="small" color="action" />
-                              <Box>
-                                <Typography variant="caption" color="text.secondary">
-                                  {formatDate(subdir.updated_at)}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                  przez {subdir.author.first_name} {subdir.author.last_name}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          )}
-                        </TableCell>
+                        {permissions?.can_create_directory && (
+                          <TableCell 
+                            align="center"
+                            sx={{ display: { xs: 'none', lg: 'table-cell' } }}
+                          >
+                            <Tooltip title="Akcje katalogu">
+                              <IconButton 
+                                size="small" 
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setSelectedDirectory(subdir)
+                                  setAnchorEl(e.currentTarget)
+                                }}
+                                sx={{ color: 'primary.main' }}
+                              >
+                                <MoreVertIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -877,8 +1062,8 @@ const DirectoryPage: React.FC = () => {
                       
                       <Box sx={{ 
                         display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between',
+                        flexDirection: 'column',
+                        gap: 0.5,
                         mt: 2,
                         pt: 2,
                         borderTop: '1px solid',
@@ -913,10 +1098,29 @@ const DirectoryPage: React.FC = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Tytuł</TableCell>
-                    <TableCell align="center">Odpowiedzi</TableCell>
-                    <TableCell>Autor</TableCell>
-                    <TableCell>Ostatnia odpowiedź</TableCell>
+                    <TableCell>Post</TableCell>
+                    <TableCell 
+                      align="center"
+                      sx={{ width: '80px' }}
+                    >
+                      Odpowiedzi
+                    </TableCell>
+                    <TableCell 
+                      sx={{ 
+                        width: '180px',
+                        display: { xs: 'none', lg: 'table-cell' } 
+                      }}
+                    >
+                      Autor
+                    </TableCell>
+                    <TableCell 
+                      sx={{ 
+                        width: '200px',
+                        display: { xs: 'none', xl: 'table-cell' } 
+                      }}
+                    >
+                      Ostatnia odpowiedź
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -929,20 +1133,75 @@ const DirectoryPage: React.FC = () => {
                         onClick={() => navigate(`/forum/post/${post.id}`)}
                       >
                         <TableCell>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
-                            {post.title}
-                          </Typography>
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography 
+                              variant="subtitle2" 
+                              sx={{ 
+                                fontWeight: 'medium',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                mb: 0.5
+                              }}
+                            >
+                              {post.title}
+                            </Typography>
+                            {post.content && (
+                              <Typography 
+                                variant="body2" 
+                                color="text.secondary" 
+                                sx={{ 
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  display: { xs: 'none', sm: 'block' }
+                                }}
+                              >
+                                {post.content.replace(/<[^>]*>/g, '').substring(0, 80)}
+                                {post.content.length > 80 ? '...' : ''}
+                              </Typography>
+                            )}
+                            {/* Mobile info - author and dates */}
+                            <Box 
+                              sx={{ 
+                                display: { xs: 'block', lg: 'none' }, 
+                                mt: 0.5
+                              }}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                                <UserAvatar user={post.author} size="small" />
+                                <Typography variant="caption" color="text.secondary">
+                                  {post.author.first_name} {post.author.last_name}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.2 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                  Utworzony: {formatDate(post.created_at)}
+                                </Typography>
+                                {post.last_comment && (
+                                  <Typography variant="caption" color="text.secondary">
+                                    Ostatnia odpowiedź: {formatDate(post.last_comment.created_at)}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          </Box>
                         </TableCell>
                         <TableCell align="center">
-                          <Typography variant="body2">
-                            {post.comments_count}
-                          </Typography>
+                          <Typography variant="body2">{post.comments_count}</Typography>
                         </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <UserAvatar user={post.author} size="small" />
-                            <Box>
-                              <Typography variant="body2">
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
                                 {post.author.first_name} {post.author.last_name}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
@@ -951,18 +1210,15 @@ const DirectoryPage: React.FC = () => {
                             </Box>
                           </Box>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ display: { xs: 'none', xl: 'table-cell' } }}>
                           {post.last_comment ? (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <AccessTimeIcon fontSize="small" color="action" />
-                              <Box>
-                                <Typography variant="caption" color="text.secondary">
-                                  {formatDate(post.last_comment.created_at)}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                  przez {post.last_comment.author.first_name} {post.last_comment.author.last_name}
-                                </Typography>
-                              </Box>
+                            <Box>
+                              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                {formatDate(post.last_comment.created_at)}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                przez {post.last_comment.author.first_name} {post.last_comment.author.last_name}
+                              </Typography>
                             </Box>
                           ) : (
                             <Typography variant="caption" color="text.secondary">
@@ -987,6 +1243,50 @@ const DirectoryPage: React.FC = () => {
           </Paper>
         )}
       </Box>
+
+      {/* Directory Actions Menu */}
+      {permissions?.can_create_directory && (
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => {
+            setAnchorEl(null)
+            setSelectedDirectory(null)
+          }}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <MenuItem 
+            onClick={() => {
+              setAnchorEl(null)
+              if (selectedDirectory) {
+                // Populate form with selected directory data
+                directoryForm.reset({
+                  name: selectedDirectory.name,
+                  description: selectedDirectory.description || '',
+                  access_level: selectedDirectory.access_level,
+                  highlight_style: selectedDirectory.highlight_style,
+                  order: selectedDirectory.order || 0
+                })
+                setShowEditDirectoryDialog(true)
+              }
+            }}
+          >
+            <EditIcon sx={{ mr: 1 }} />
+            Edytuj katalog
+          </MenuItem>
+          <MenuItem 
+            onClick={() => {
+              setAnchorEl(null)
+              setShowDeleteDirectoryDialog(true)
+            }}
+            sx={{ color: 'error.main' }}
+          >
+            <DeleteIcon sx={{ mr: 1 }} />
+            Usuń katalog
+          </MenuItem>
+        </Menu>
+      )}
 
       {/* Create Post Dialog */}
       <Dialog
@@ -1298,7 +1598,7 @@ const DirectoryPage: React.FC = () => {
             </Typography>
           </Alert>
           <Typography variant="body1">
-            Czy na pewno chcesz usunąć katalog <strong>"{directory?.name}"</strong>?
+            Czy na pewno chcesz usunąć katalog <strong>"{selectedDirectory?.name}"</strong>?
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             Wszystkie podkatalogi, posty i komentarze w tym katalogu zostaną również usunięte.
