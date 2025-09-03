@@ -40,6 +40,9 @@ class Command(BaseCommand):
             ('attendance', 'season'),
             ('attendance', 'event'),
             ('attendance', 'attendance'),
+            ('forum', 'directory'),
+            ('forum', 'post'),
+            ('forum', 'comment'),
         ]
         
         for app_label, model_name in required_content_types:
@@ -95,6 +98,31 @@ class Command(BaseCommand):
             perm = get_permission_safe(content_types['attendance_attendance'], 'view_attendance')
             if perm: musician_permissions.append(perm)
         
+        # Forum - basic permissions for musicians
+        if 'forum_directory' in content_types:
+            perm = get_permission_safe(content_types['forum_directory'], 'view_directory')
+            if perm: musician_permissions.append(perm)
+            
+        if 'forum_post' in content_types:
+            perm = get_permission_safe(content_types['forum_post'], 'view_post')
+            if perm: musician_permissions.append(perm)
+            perm = get_permission_safe(content_types['forum_post'], 'add_post')
+            if perm: musician_permissions.append(perm)
+            perm = get_permission_safe(content_types['forum_post'], 'change_post')
+            if perm: musician_permissions.append(perm)
+            perm = get_permission_safe(content_types['forum_post'], 'delete_post')
+            if perm: musician_permissions.append(perm)
+            
+        if 'forum_comment' in content_types:
+            perm = get_permission_safe(content_types['forum_comment'], 'view_comment')
+            if perm: musician_permissions.append(perm)
+            perm = get_permission_safe(content_types['forum_comment'], 'add_comment')
+            if perm: musician_permissions.append(perm)
+            perm = get_permission_safe(content_types['forum_comment'], 'change_comment')
+            if perm: musician_permissions.append(perm)
+            perm = get_permission_safe(content_types['forum_comment'], 'delete_comment')
+            if perm: musician_permissions.append(perm)
+        
         add_permissions_to_group(musician_group, musician_permissions, 'view access')
         
         # === BOARD GROUP PERMISSIONS ===
@@ -138,6 +166,30 @@ class Command(BaseCommand):
                 perm = get_permission_safe(content_types['attendance_attendance'], perm_name)
                 if perm: board_permissions.append(perm)
         
+        # FORUM SYSTEM - FULL MANAGEMENT PERMISSIONS
+        
+        # Directories - complete directory management (board only)
+        if 'forum_directory' in content_types:
+            directory_perms = ['add_directory', 'change_directory', 'delete_directory', 
+                             'can_create_directory', 'can_manage_directories']
+            for perm_name in directory_perms:
+                perm = get_permission_safe(content_types['forum_directory'], perm_name)
+                if perm: board_permissions.append(perm)
+        
+        # Posts - moderation permissions
+        if 'forum_post' in content_types:
+            post_perms = ['can_pin_posts', 'can_lock_posts', 'can_moderate_posts']
+            for perm_name in post_perms:
+                perm = get_permission_safe(content_types['forum_post'], perm_name)
+                if perm: board_permissions.append(perm)
+        
+        # Comments - moderation permissions
+        if 'forum_comment' in content_types:
+            comment_perms = ['can_moderate_comments']
+            for perm_name in comment_perms:
+                perm = get_permission_safe(content_types['forum_comment'], perm_name)
+                if perm: board_permissions.append(perm)
+        
         add_permissions_to_group(board_group, board_permissions, 'full management access')
         
         # === CONDUCTOR GROUP PERMISSIONS ===
@@ -154,6 +206,9 @@ class Command(BaseCommand):
         self.stdout.write('🎵 MUSICIAN GROUP:')
         self.stdout.write('   • View users, concerts, seasons, events, attendance')
         self.stdout.write('   • Read-only access to attendance system')
+        self.stdout.write('   • 💬 FORUM ACCESS:')
+        self.stdout.write('     - View forum directories and posts')
+        self.stdout.write('     - Create/edit/delete own posts and comments')
         
         self.stdout.write('\n🏛️  BOARD GROUP:')
         self.stdout.write('   • All musician permissions')
@@ -165,17 +220,22 @@ class Command(BaseCommand):
         self.stdout.write('     - Create/edit/delete events')
         self.stdout.write('     - Add/edit/delete attendance records')
         self.stdout.write('     - Full access to attendance data')
+        self.stdout.write('   • 🏛️  COMPLETE FORUM MANAGEMENT:')
+        self.stdout.write('     - Create/edit/delete forum directories')
+        self.stdout.write('     - Pin/lock posts and moderate content')
+        self.stdout.write('     - Full moderation of posts and comments')
         
         self.stdout.write('\n🎼 CONDUCTOR GROUP:')
         self.stdout.write('   • All board permissions')
+        self.stdout.write('   • Full forum and attendance management')
         self.stdout.write('   • Extensible for future admin features')
         
         self.stdout.write('\n' + '='*50)
         self.stdout.write(self.style.SUCCESS('✅ Groups and permissions configured successfully!'))
         self.stdout.write('\n💡 Next steps:')
         self.stdout.write('   1. Assign users to groups using Django Admin or manage.py assign_user_group')
-        self.stdout.write('   2. Board members can now fully manage the attendance system')
-        self.stdout.write('   3. Access Django admin at /admin to manage attendance models')
+        self.stdout.write('   2. Board members can now fully manage the attendance system and forum')
+        self.stdout.write('   3. Access Django admin at /admin to manage attendance and forum models')
         
         # Show group membership suggestions
         self.stdout.write('\n📝 Group Assignment Suggestions:')

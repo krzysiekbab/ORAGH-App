@@ -19,6 +19,9 @@ import MarkAttendancePage from './pages/attendance/MarkAttendancePage'
 import SeasonManagementPage from './pages/attendance/SeasonManagementPage'
 import SeasonMusiciansPage from './pages/attendance/SeasonMusiciansPage'
 import SeasonEventsPage from './pages/attendance/SeasonEventsPage'
+import ForumPage from './pages/forum/ForumPage'
+import DirectoryPage from './pages/forum/DirectoryPage'
+import PostPage from './pages/forum/PostPage'
 import HomePage from './pages/HomePage'
 
 // Redirect component for old attendance route
@@ -210,6 +213,20 @@ function App() {
             </PermissionProtectedRoute>
           </ProtectedRoute>
         } 
+      />
+      
+      {/* Forum routes */}
+      <Route 
+        path="/forum" 
+        element={<ProtectedRoute><ForumPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/forum/directory/:id" 
+        element={<ProtectedRoute><DirectoryPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/forum/post/:id" 
+        element={<ProtectedRoute><PostPage /></ProtectedRoute>} 
       />
       
       {/* Home route */}

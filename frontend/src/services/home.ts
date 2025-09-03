@@ -125,7 +125,7 @@ const homeService = {
           id: 1,
           type: 'announcement',
           title: 'Nowe repertuar na koncert letni',
-          author: 'Zarząd ORAGH',
+          author: 'Board ORAGH',
           created_at: '2025-08-18T10:30:00Z',
           description: 'Dodano nowe utwory do repertuaru'
         },

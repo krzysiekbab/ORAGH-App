@@ -80,7 +80,6 @@ const navigationItems: NavigationItem[] = [
     text: 'Forum',
     icon: <ForumIcon />,
     path: '/forum',
-    disabled: true,
   },
   {
     text: 'Statystyki',

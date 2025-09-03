@@ -48,8 +48,8 @@ urlpatterns = [
     # Phase 5: Attendance
     path('attendance/', include('api.attendance.urls')),
     
-    # TODO: Future phases will add:
-    # path('forum/', include('api.forum.urls')),            # Phase 6  
+    # Phase 6: Forum
+    path('forum/', include('api.forum.urls')),  
     
     # Health check
     path('health/', lambda request: HttpResponse('OK'), name='health_check'),

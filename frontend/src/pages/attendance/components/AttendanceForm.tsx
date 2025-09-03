@@ -209,6 +209,31 @@ const AttendanceForm: React.FC<AttendanceFormProps> = ({
           </Box>
         )}
 
+        {seasonMusicians.length > 0 && (
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="body2" color="text.secondary">
+              Widok: Sekcje instrumentalne
+            </Typography>
+            <ToggleButtonGroup
+              value={sectionalView ? 'sections' : 'list'}
+              exclusive
+              onChange={(_, newValue) => {
+                if (newValue !== null) {
+                  setSectionalView(newValue === 'sections')
+                }
+              }}
+              size="small"
+            >
+              <ToggleButton value="sections">
+                Sekcje
+              </ToggleButton>
+              <ToggleButton value="list">
+                Lista
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+        )}
+
         {seasonMusicians.length === 0 ? (
           <Alert severity="info">
             Brak muzyków w wybranym sezonie.

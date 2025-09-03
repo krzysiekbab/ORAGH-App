@@ -41,8 +41,8 @@ LOCAL_APPS = [
     # Phase 5: Attendance
     'api.attendance',
     
-    # TODO: Future phases will add:
-    # 'api.forum',         # Phase 6  
+    # Phase 6: Forum
+    'api.forum',  
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
