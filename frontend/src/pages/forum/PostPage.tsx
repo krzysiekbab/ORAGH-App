@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -20,7 +20,8 @@ import {
   DialogActions,
   IconButton,
   Menu,
-  MenuItem
+  MenuItem,
+  Pagination
 } from '@mui/material'
 import {
   NavigateNext as NavigateNextIcon,
@@ -65,9 +66,13 @@ const PostPage: React.FC = () => {
   // Local state
   const [post, setPost] = useState<Post | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
+  const [commentsCount, setCommentsCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [postPath, setPostPath] = useState<any[]>([])
   const [isNavigating, setIsNavigating] = useState(false)
   const [isLoadingComments, setIsLoadingComments] = useState(false)
+  const [isLoadingPage, setIsLoadingPage] = useState(false) // For pagination loading
   const [postNotFound, setPostNotFound] = useState(false)
   const [accessDenied, setAccessDenied] = useState(false)
   const [userGroups, setUserGroups] = useState<string[]>([])
@@ -81,6 +86,9 @@ const PostPage: React.FC = () => {
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null)
   const [editingComment, setEditingComment] = useState<Comment | null>(null)
   const [deletingComment, setDeletingComment] = useState<Comment | null>(null)
+
+  // Ref for scrolling to comments section
+  const commentsRef = useRef<HTMLDivElement>(null)
 
   // Store state
   const { 
@@ -153,8 +161,9 @@ const PostPage: React.FC = () => {
       // Build post path for breadcrumbs
       await buildPostPath(postData)
       
-      // Load comments
-      await loadCommentsData(parseInt(id))
+      // Load comments (reset to page 1)
+      setCurrentPage(1)
+      await loadCommentsData(parseInt(id), 1)
       
     } catch (error: any) {
       console.error('Failed to load post data:', error)
@@ -199,17 +208,44 @@ const PostPage: React.FC = () => {
     }
   }
 
-  const loadCommentsData = async (postId: number) => {
+  const loadCommentsData = async (postId: number, page: number = 1, isPageChange: boolean = false) => {
     try {
-      setIsLoadingComments(true)
-      const response = await forumService.getComments(postId)
+      if (isPageChange) {
+        setIsLoadingPage(true) // For pagination, keep existing comments visible
+      } else {
+        setIsLoadingComments(true) // For initial load, show loading spinner
+      }
+      
+      const response = await forumService.getComments(postId, { 
+        page, 
+        page_size: 20 
+      })
       setComments(response.results)
+      setCommentsCount(response.count)
+      setTotalPages(Math.ceil(response.count / 20))
     } catch (error) {
       console.error('Failed to load comments:', error)
       toast.error('Nie udało się załadować komentarzy')
     } finally {
       setIsLoadingComments(false)
+      setIsLoadingPage(false)
     }
+  }
+
+  const handlePageChange = async (_event: React.ChangeEvent<unknown>, page: number) => {
+    if (!post) return
+    setCurrentPage(page)
+    await loadCommentsData(post.id, page, true) // true indicates this is a page change
+    
+    // Scroll to comments section smoothly after a brief delay to ensure content is loaded
+    setTimeout(() => {
+      if (commentsRef.current) {
+        commentsRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        })
+      }
+    }, 100)
   }
 
   useEffect(() => {
@@ -225,6 +261,10 @@ const PostPage: React.FC = () => {
     setPostPath([])
     setPostNotFound(false)
     setAccessDenied(false)
+    setCurrentPage(1)
+    setTotalPages(1)
+    setCommentsCount(0)
+    setIsLoadingPage(false) // Reset page loading state
     
     const initializeData = async () => {
       try {
@@ -258,7 +298,7 @@ const PostPage: React.FC = () => {
       toast.success('Komentarz został dodany pomyślnie')
       setShowCreateCommentDialog(false)
       commentForm.reset()
-      await loadCommentsData(parseInt(id)) // Reload comments
+      await loadCommentsData(parseInt(id), currentPage, true) // Reload comments on current page
     }
   }
 
@@ -302,7 +342,7 @@ const PostPage: React.FC = () => {
       setShowEditCommentDialog(false)
       setEditingComment(null)
       editCommentForm.reset()
-      await loadCommentsData(parseInt(id!))
+      await loadCommentsData(parseInt(id!), currentPage, true)
     }
   }
 
@@ -322,7 +362,7 @@ const PostPage: React.FC = () => {
     const success = await deleteComment(deletingComment.id)
     if (success) {
       toast.success('Komentarz został usunięty')
-      await loadCommentsData(parseInt(id!))
+      await loadCommentsData(parseInt(id!), currentPage, true)
     }
     setShowDeleteCommentDialog(false)
     setDeletingComment(null)
@@ -639,7 +679,7 @@ const PostPage: React.FC = () => {
       </Paper>
 
       {/* Comments Section */}
-      <Paper sx={{ p: { xs: 2, sm: 3 } }}>
+      <Paper ref={commentsRef} sx={{ p: { xs: 2, sm: 3 } }}>
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -649,7 +689,7 @@ const PostPage: React.FC = () => {
           gap: { xs: 2, sm: 0 }
         }}>
           <Typography variant="h5" component="h2">
-            Komentarze ({comments.length})
+            Komentarze ({commentsCount})
           </Typography>
           
           {!post.is_locked && (
@@ -665,16 +705,42 @@ const PostPage: React.FC = () => {
         </Box>
 
         {/* Comments List */}
-        {isLoadingComments ? (
+        {isLoadingComments && comments.length === 0 ? (
           <Box display="flex" justifyContent="center" py={3}>
             <CircularProgress />
           </Box>
-        ) : comments.length === 0 ? (
+        ) : comments.length === 0 && !isLoadingComments ? (
           <Alert severity="info">
             Brak komentarzy. Dodaj pierwszy komentarz!
           </Alert>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: 2,
+            position: 'relative',
+            opacity: isLoadingPage ? 0.6 : 1,
+            transition: 'opacity 0.2s ease-in-out'
+          }}>
+            {/* Loading overlay for pagination */}
+            {isLoadingPage && (
+              <Box sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1,
+                borderRadius: 1
+              }}>
+                <CircularProgress size={40} />
+              </Box>
+            )}
+            
             {comments.map((comment) => (
               <Card key={comment.id} variant="outlined">
                 <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
@@ -731,6 +797,22 @@ const PostPage: React.FC = () => {
                 </CardContent>
               </Card>
             ))}
+          </Box>
+        )}
+
+        {/* Comments Pagination */}
+        {totalPages > 1 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+              showFirstButton
+              showLastButton
+              disabled={isLoadingPage}
+            />
           </Box>
         )}
       </Paper>
