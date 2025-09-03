@@ -98,14 +98,14 @@ const ForumPage: React.FC = () => {
   useEffect(() => {
     loadDirectoryTree()
     loadPermissions()
-  }, [loadDirectoryTree, loadPermissions])
+  }, [])
 
   useEffect(() => {
     if (error) {
       toast.error(error)
       clearError()
     }
-  }, [error, clearError])
+  }, [error])
 
   const handleCreateDirectory = async (data: DirectoryFormData) => {
     const directoryData: CreateDirectoryData = {
@@ -333,8 +333,7 @@ const ForumPage: React.FC = () => {
                 <TableCell 
                   align="center" 
                   sx={{ 
-                    width: '60px',
-                    display: { xs: 'none', xl: 'table-cell' }
+                    width: '60px'
                   }}
                 >
                   Akcje
@@ -388,8 +387,11 @@ const ForumPage: React.FC = () => {
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
-                          display: { xs: 'none', sm: 'block' }
+                          display: { xs: 'none', sm: 'block' },
+                          maxWidth: { sm: '300px', md: '250px', lg: '400px' },
+                          minWidth: 0 // Ensures truncation works properly
                         }}
+                        title={directory.description} // Show full text on hover
                       >
                         {directory.description}
                       </Typography>
@@ -441,7 +443,6 @@ const ForumPage: React.FC = () => {
               {permissions?.can_create_directory && (
                 <TableCell 
                   align="center"
-                  sx={{ display: { xs: 'none', xl: 'table-cell' } }}
                 >
                   <Tooltip title="Akcje katalogu">
                     <IconButton 

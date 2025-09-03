@@ -129,18 +129,24 @@ const PostPage: React.FC = () => {
     }
   })
 
-  const loadUserPermissions = async () => {
+  const loadUserPermissions = async (): Promise<string[]> => {
     try {
       const response = await apiClient.get('/users/permissions/')
-      setUserGroups(response.data.groups || [])
+      const groups = response.data.groups || []
+      setUserGroups(groups)
+      return groups
     } catch (error) {
       console.error('Failed to load user permissions:', error)
       setUserGroups([])
+      return []
     }
   }
 
-  const loadPostData = async () => {
+  const loadPostData = async (userGroupsParam?: string[]) => {
     if (!id) return
+
+    // Use passed groups or fall back to state
+    const currentUserGroups = userGroupsParam || userGroups
 
     try {
       setIsNavigating(true)
@@ -151,7 +157,7 @@ const PostPage: React.FC = () => {
       const postData = await forumService.getPost(parseInt(id))
       
       // Check access permissions for board posts
-      if (postData.directory?.access_level === 'board' && !userGroups.includes('board')) {
+      if (postData.directory?.access_level === 'board' && !currentUserGroups.includes('board')) {
         setAccessDenied(true)
         return
       }
@@ -249,8 +255,8 @@ const PostPage: React.FC = () => {
   }
 
   useEffect(() => {
-    // Load user permissions on component mount
-    loadUserPermissions()
+    // Load forum permissions once on mount
+    loadPermissions()
   }, [])
 
   useEffect(() => {
@@ -268,22 +274,23 @@ const PostPage: React.FC = () => {
     
     const initializeData = async () => {
       try {
-        await loadPermissions()
-        await loadPostData()
+        // Load user permissions first, then post data
+        const groups = await loadUserPermissions()
+        await loadPostData(groups)
       } catch (error) {
         console.error('Failed to load data:', error)
       }
     }
 
     initializeData()
-  }, [id, loadPermissions])
+  }, [id])
 
   useEffect(() => {
     if (error) {
       toast.error(error)
       clearError()
     }
-  }, [error, clearError])
+  }, [error])
 
   const handleCreateComment = async (data: CommentFormData) => {
     if (!id) return
@@ -432,7 +439,15 @@ const PostPage: React.FC = () => {
 
   const renderBreadcrumbs = () => {
     return (
-      <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 3 }}>
+      <Breadcrumbs 
+        separator={<NavigateNextIcon fontSize="small" />} 
+        sx={{ 
+          mb: 3,
+          '& .MuiBreadcrumbs-ol': {
+            flexWrap: 'wrap'
+          }
+        }}
+      >
         <Link 
           underline="hover" 
           color="inherit" 
@@ -478,7 +493,16 @@ const PostPage: React.FC = () => {
           }
         })}
         {post && (
-          <Typography color="text.primary">
+          <Typography 
+            color="text.primary"
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: { xs: '200px', sm: '300px' },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
+          >
             {post.title}
           </Typography>
         )}
@@ -567,25 +591,22 @@ const PostPage: React.FC = () => {
             alignItems: { xs: 'flex-start', sm: 'center' }, 
             gap: 1, 
             mb: 2,
-            flexDirection: { xs: 'column', sm: 'row' }
+            flexDirection: { xs: 'row', sm: 'row' }
           }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
-              <ArticleIcon color="primary" sx={{ fontSize: '2rem', flexShrink: 0 }} />
-              <Typography 
-                variant="h4" 
-                component="h1" 
-                sx={{ 
-                  flexGrow: 1,
-                  fontSize: { xs: '1.5rem', sm: '2rem' },
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: { xs: 'nowrap', sm: 'normal' },
-                  minWidth: 0
-                }}
-              >
-                {post.title}
-              </Typography>
-            </Box>
+            <ArticleIcon color="primary" sx={{ fontSize: '2rem', flexShrink: 0, mt: { xs: 0.5, sm: 0 } }} />
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              sx={{ 
+                flexGrow: 1,
+                fontSize: { xs: '1.25rem', sm: '2rem' },
+                wordBreak: 'break-word',
+                lineHeight: { xs: 1.3, sm: 1.2 },
+                minWidth: 0
+              }}
+            >
+              {post.title}
+            </Typography>
             <Box sx={{ 
               display: 'flex', 
               gap: 1, 
@@ -610,7 +631,7 @@ const PostPage: React.FC = () => {
                 />
               )}
               {(post.can_edit || post.can_delete) && (
-                <IconButton onClick={handlePostMenuClick}>
+                <IconButton onClick={handlePostMenuClick} sx={{ flexShrink: 0 }}>
                   <MoreVertIcon />
                 </IconButton>
               )}
@@ -744,17 +765,15 @@ const PostPage: React.FC = () => {
             {comments.map((comment) => (
               <Card key={comment.id} variant="outlined">
                 <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'flex-start', 
-                      mb: 2,
-                      flexDirection: { xs: 'column', sm: 'row' },
-                      gap: { xs: 1, sm: 0 }
-                    }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'flex-start', 
+                    mb: 2
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
                       <UserAvatar user={comment.author} size="medium" />
-                      <Box>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
                         <Typography variant="subtitle2">
                           <Link
                             component="button"
@@ -775,10 +794,12 @@ const PostPage: React.FC = () => {
                           {formatDate(comment.created_at)}
                         </Typography>
                       </Box>
-                    </Box>                    {currentUser && Number(comment.author.id) === Number(currentUser.id) && (comment.can_edit || comment.can_delete) && (
+                    </Box>
+                    {currentUser && Number(comment.author.id) === Number(currentUser.id) && (comment.can_edit || comment.can_delete) && (
                       <IconButton
                         size="small"
                         onClick={(e) => handleCommentMenuClick(e, comment)}
+                        sx={{ flexShrink: 0 }}
                       >
                         <MoreVertIcon />
                       </IconButton>

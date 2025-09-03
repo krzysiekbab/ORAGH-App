@@ -33,9 +33,13 @@ interface ForumState {
   error: string | null
   filters: ForumFilters
   
+  // Loading state for individual operations
+  isLoadingDirectoryTree: boolean
+  isLoadingPermissions: boolean
+  
   // Actions
   // Directory actions
-  loadDirectoryTree: () => Promise<void>
+  loadDirectoryTree: (force?: boolean) => Promise<void>
   loadDirectories: (filters?: ForumFilters) => Promise<void>
   createDirectory: (data: CreateDirectoryData) => Promise<boolean>
   updateDirectory: (id: number, data: Partial<CreateDirectoryData>) => Promise<boolean>
@@ -59,7 +63,7 @@ interface ForumState {
 
   // Utility actions
   loadStats: () => Promise<void>
-  loadPermissions: () => Promise<void>
+  loadPermissions: (force?: boolean) => Promise<void>
   clearError: () => void
   setFilters: (filters: ForumFilters) => void
   clearFilters: () => void
@@ -82,21 +86,30 @@ export const useForumStore = create<ForumState>()(
       isUpdating: false,
       error: null,
       filters: {},
+      isLoadingDirectoryTree: false,
+      isLoadingPermissions: false,
 
       // Directory actions
-      loadDirectoryTree: async () => {
+      loadDirectoryTree: async (force = false) => {
         try {
-          set({ isLoading: true, error: null })
-          console.log('Store: loadDirectoryTree started')
-          const tree = await forumService.getDirectoryTree()
-          console.log('Store: loadDirectoryTree received data:', tree)
-          console.log('Store: loadDirectoryTree data type:', typeof tree)
-          console.log('Store: loadDirectoryTree is array:', Array.isArray(tree))
-          console.log('Store: loadDirectoryTree length:', tree?.length)
-          set({ directoryTree: tree, isLoading: false })
+          // Check if already loading or loaded
+          const state = useForumStore.getState()
+          if (state.isLoadingDirectoryTree) {
+            return
+          }
+          if (!force && state.directoryTree.length > 0) {
+            return
+          }
+          
+          set({ isLoadingDirectoryTree: true })
+          const directoryTree = await forumService.getDirectoryTree()
+          set({ directoryTree, isLoadingDirectoryTree: false })
         } catch (error) {
           console.error('Store: loadDirectoryTree error:', error)
-          set({ error: error instanceof Error ? error.message : 'Failed to load directory tree', isLoading: false })
+          set({ 
+            error: error instanceof Error ? error.message : 'Failed to load directory tree',
+            isLoadingDirectoryTree: false 
+          })
         }
       },
 
@@ -356,15 +369,26 @@ export const useForumStore = create<ForumState>()(
         }
       },
 
-      loadPermissions: async () => {
+      loadPermissions: async (force = false) => {
         try {
-          console.log('Store: loadPermissions started')
+          // Check if already loading or loaded
+          const state = useForumStore.getState()
+          if (state.isLoadingPermissions) {
+            return
+          }
+          if (!force && state.permissions !== null) {
+            return
+          }
+          
+          set({ isLoadingPermissions: true })
           const permissions = await forumService.getForumPermissions()
-          console.log('Store: loadPermissions received data:', permissions)
-          set({ permissions })
+          set({ permissions, isLoadingPermissions: false })
         } catch (error) {
           console.error('Store: loadPermissions error:', error)
-          set({ error: error instanceof Error ? error.message : 'Failed to load permissions' })
+          set({ 
+            error: error instanceof Error ? error.message : 'Failed to load permissions',
+            isLoadingPermissions: false 
+          })
         }
       },
 

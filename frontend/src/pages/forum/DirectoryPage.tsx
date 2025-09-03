@@ -128,7 +128,7 @@ const DirectoryPage: React.FC = () => {
       toast.error(error)
       clearError()
     }
-  }, [error, clearError])
+  }, [error])
 
   const handleCreatePost = async (data: PostFormData) => {
     if (!id) return
@@ -202,13 +202,16 @@ const DirectoryPage: React.FC = () => {
     }
   }
 
-  const loadUserPermissions = async () => {
+  const loadUserPermissions = async (): Promise<string[]> => {
     try {
       const response = await apiClient.get('/users/permissions/')
-      setUserGroups(response.data.groups || [])
+      const groups = response.data.groups || []
+      setUserGroups(groups)
+      return groups
     } catch (error) {
       console.error('Failed to load user permissions:', error)
       setUserGroups([])
+      return []
     }
   }
 
@@ -229,8 +232,11 @@ const DirectoryPage: React.FC = () => {
     return path
   }
 
-  const loadDirectoryData = async () => {
+  const loadDirectoryData = async (userGroupsParam?: string[]) => {
     if (!id) return
+    
+    // Use passed groups or fall back to state
+    const currentUserGroups = userGroupsParam || userGroups
     
     try {
       setDirectoryNotFound(false)
@@ -240,7 +246,7 @@ const DirectoryPage: React.FC = () => {
       const directoryData = await forumService.getDirectory(parseInt(id))
       
       // Check access permissions for board directories
-      if (directoryData.access_level === 'board' && !userGroups.includes('board')) {
+      if (directoryData.access_level === 'board' && !currentUserGroups.includes('board')) {
         setAccessDenied(true)
         return
       }
@@ -281,8 +287,8 @@ const DirectoryPage: React.FC = () => {
   }
 
   useEffect(() => {
-    // Load user permissions on component mount
-    loadUserPermissions()
+    // Load forum permissions once on mount
+    loadPermissions()
   }, [])
 
   useEffect(() => {
@@ -297,8 +303,9 @@ const DirectoryPage: React.FC = () => {
     
     const initializeData = async () => {
       try {
-        await loadPermissions()
-        await loadDirectoryData()
+        // Load user permissions first, then directory data
+        const groups = await loadUserPermissions()
+        await loadDirectoryData(groups)
       } catch (error) {
         console.error('Failed to load data:', error)
       } finally {
@@ -307,7 +314,7 @@ const DirectoryPage: React.FC = () => {
     }
 
     initializeData()
-  }, [id, loadPermissions])
+  }, [id])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('pl-PL', {
@@ -515,11 +522,11 @@ const DirectoryPage: React.FC = () => {
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          alignItems: { xs: 'flex-start', lg: 'center' }, 
           mb: 2, 
           flexWrap: 'wrap', 
           gap: 2,
-          flexDirection: { xs: 'column', md: 'row' }
+          flexDirection: { xs: 'column', lg: 'row' }
         }}>
           {/* Left side - Directory Title and Actions Menu */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flex: 1 }}>
@@ -531,7 +538,7 @@ const DirectoryPage: React.FC = () => {
                 fontSize: { xs: '1.5rem', sm: '2rem' },
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: { xs: 'nowrap', sm: 'normal' },
+                whiteSpace: { xs: 'nowrap', lg: 'normal' },
                 minWidth: 0
               }}
             >
@@ -558,7 +565,7 @@ const DirectoryPage: React.FC = () => {
             gap: { xs: 1, sm: 2 }, 
             alignItems: 'center', 
             flexWrap: 'wrap',
-            width: { xs: '100%', md: 'auto' },
+            width: { xs: '100%', lg: 'auto' },
             flexDirection: { xs: 'column', sm: 'row' }
           }}>
             {/* Add Directory Button - Only for board members */}
@@ -671,10 +678,10 @@ const DirectoryPage: React.FC = () => {
                         display: 'flex', 
                         alignItems: 'center', 
                         mb: 2,
-                        flexWrap: 'wrap',
+                        flexWrap: { xs: 'nowrap', sm: 'wrap' },
                         gap: 1
                       }}>
-                        <FolderIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <FolderIcon sx={{ mr: 1, color: 'primary.main', flexShrink: 0 }} />
                         <Typography 
                           variant="h6" 
                           component="h2" 
@@ -698,9 +705,29 @@ const DirectoryPage: React.FC = () => {
                                 color: 'white',
                                 fontWeight: 'bold',
                                 fontSize: { xs: '0.6rem', sm: '0.65rem' },
-                                minWidth: 'auto'
+                                minWidth: 'auto',
+                                flexShrink: 0
                               }}
                             />
+                          </Tooltip>
+                        )}
+                        {permissions?.can_create_directory && (
+                          <Tooltip title="Akcje katalogu">
+                            <IconButton 
+                              size="small" 
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedDirectory(subdir)
+                                setAnchorEl(e.currentTarget)
+                              }}
+                              sx={{ 
+                                color: 'primary.main', 
+                                flexShrink: 0,
+                                display: { xs: 'inline-flex', sm: 'none' }
+                              }}
+                            >
+                              <MoreVertIcon />
+                            </IconButton>
                           </Tooltip>
                         )}
                       </Box>
@@ -758,7 +785,11 @@ const DirectoryPage: React.FC = () => {
                                 setSelectedDirectory(subdir)
                                 setAnchorEl(e.currentTarget)
                               }}
-                              sx={{ color: 'primary.main', ml: 'auto' }}
+                              sx={{ 
+                                color: 'primary.main', 
+                                ml: 'auto',
+                                display: { xs: 'none', sm: 'inline-flex' }
+                              }}
                             >
                               <MoreVertIcon />
                             </IconButton>
@@ -786,9 +817,6 @@ const DirectoryPage: React.FC = () => {
                         }}
                       >
                         Podkatalogi
-                      </TableCell>
-                      <TableCell align="center" sx={{ width: '80px' }}>
-                        Posty
                       </TableCell>
                       <TableCell 
                         align="center" 
@@ -820,70 +848,29 @@ const DirectoryPage: React.FC = () => {
                         sx={{ cursor: 'pointer' }}
                         onClick={() => handleDirectoryClick(subdir.id)}
                       >
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <FolderIcon color="primary" sx={{ flexShrink: 0 }} />
+                        <TableCell sx={{ py: 2 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <FolderIcon color="primary" sx={{ flexShrink: 0, fontSize: '1.5rem' }} />
                             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                              <Box sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'space-between',
+                                mb: 0.5
+                              }}>
                                 <Typography 
-                                  variant="subtitle2" 
+                                  variant="h6" 
                                   sx={{ 
                                     fontWeight: 'medium',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap'
+                                    fontSize: '1.1rem',
+                                    wordBreak: 'break-word',
+                                    lineHeight: 1.3,
+                                    flex: 1,
+                                    minWidth: 0
                                   }}
                                 >
                                   {subdir.name}
                                 </Typography>
-                                {subdir.highlight_style !== 'none' && (
-                                  <Chip
-                                    label={getHighlightLabel(subdir.highlight_style)}
-                                    size="small"
-                                    sx={{
-                                      backgroundColor: getHighlightColor(subdir.highlight_style),
-                                      color: 'white',
-                                      fontSize: '0.65rem',
-                                      flexShrink: 0
-                                    }}
-                                  />
-                                )}
-                              </Box>
-                              {subdir.description && (
-                                <Typography 
-                                  variant="body2" 
-                                  color="text.secondary" 
-                                  sx={{ 
-                                    mt: 0.5,
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                    display: { xs: 'none', sm: 'block' }
-                                  }}
-                                >
-                                  {subdir.description}
-                                </Typography>
-                              )}
-                              {/* Mobile access level and counts */}
-                              <Box sx={{ display: { xs: 'block', sm: 'none' }, mt: 0.5 }}>
-                                <Box sx={{ display: 'flex', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {subdir.subdirectories_count} podkat.
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    •
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {subdir.posts_count} postów
-                                  </Typography>
-                                </Box>
-                                <Chip
-                                  label={subdir.access_level === 'all' ? 'Publiczny' : 'Zarząd'}
-                                  size="small"
-                                  variant="outlined"
-                                  color={subdir.access_level === 'all' ? 'success' : 'warning'}
-                                  sx={{ fontSize: '0.7rem' }}
-                                />
                                 {permissions?.can_create_directory && (
                                   <Tooltip title="Akcje katalogu">
                                     <IconButton 
@@ -893,48 +880,117 @@ const DirectoryPage: React.FC = () => {
                                         setSelectedDirectory(subdir)
                                         setAnchorEl(e.currentTarget)
                                       }}
-                                      sx={{ color: 'primary.main', ml: 'auto' }}
+                                      sx={{ 
+                                        color: 'primary.main',
+                                        display: { xs: 'inline-flex', lg: 'none' },
+                                        flexShrink: 0
+                                      }}
                                     >
                                       <MoreVertIcon />
                                     </IconButton>
                                   </Tooltip>
                                 )}
                               </Box>
+                              
+                              {/* Counts row */}
+                              <Box sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 1, 
+                                mb: 0.5
+                              }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <FolderIcon fontSize="small" color="action" />
+                                  <Typography variant="caption" color="text.secondary">
+                                    {subdir.subdirectories_count} {subdir.subdirectories_count === 1 ? 'podkatalog' : 'podkatalogów'}
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <ArticleIcon fontSize="small" color="action" />
+                                  <Typography variant="caption" color="text.secondary">
+                                    {subdir.posts_count} {subdir.posts_count === 1 ? 'post' : 'postów'}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              
+                              {/* Chips row */}
+                              <Box sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 1, 
+                                mb: subdir.description ? 1 : 0,
+                                flexWrap: 'wrap'
+                              }}>
+                                {subdir.highlight_style !== 'none' && (
+                                  <Chip
+                                    label={getHighlightLabel(subdir.highlight_style)}
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: getHighlightColor(subdir.highlight_style),
+                                      color: 'white',
+                                      fontSize: '0.65rem',
+                                      fontWeight: 'bold'
+                                    }}
+                                  />
+                                )}
+                                <Chip
+                                  label={subdir.access_level === 'all' ? 'Publiczny' : 'Zarząd'}
+                                  size="small"
+                                  variant="outlined"
+                                  color={subdir.access_level === 'all' ? 'success' : 'warning'}
+                                  sx={{ 
+                                    fontSize: '0.75rem',
+                                    display: { xs: 'inline-flex', sm: 'none' }
+                                  }}
+                                />
+                              </Box>
+                              
+                              {subdir.description && (
+                                <Typography 
+                                  variant="body2" 
+                                  color="text.secondary" 
+                                  sx={{ 
+                                    lineHeight: 1.4,
+                                    display: { xs: 'none', sm: 'block' }
+                                  }}
+                                >
+                                  {subdir.description}
+                                </Typography>
+                              )}
                             </Box>
                           </Box>
                         </TableCell>
                         <TableCell 
                           align="center"
-                          sx={{ display: { xs: 'none', md: 'table-cell' } }}
+                          sx={{ display: { xs: 'none', md: 'table-cell' }, py: 2 }}
                         >
-                          <Typography variant="body2">
-                            {subdir.subdirectories_count}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body2">
-                            {subdir.posts_count}
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                            <FolderIcon fontSize="small" color="action" />
+                            <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                              {subdir.subdirectories_count}
+                            </Typography>
+                          </Box>
                         </TableCell>
                         <TableCell 
                           align="center"
-                          sx={{ display: { xs: 'none', sm: 'table-cell' } }}
+                          sx={{ display: { xs: 'none', sm: 'table-cell' }, py: 2 }}
                         >
                           <Chip
                             label={subdir.access_level === 'all' ? 'Publiczny' : 'Zarząd'}
                             size="small"
                             variant="outlined"
                             color={subdir.access_level === 'all' ? 'success' : 'warning'}
+                            sx={{ fontWeight: 'medium' }}
                           />
                         </TableCell>
                         {permissions?.can_create_directory && (
                           <TableCell 
                             align="center"
-                            sx={{ display: { xs: 'none', lg: 'table-cell' } }}
+                            sx={{ display: { xs: 'none', lg: 'table-cell' }, py: 2 }}
                           >
                             <Tooltip title="Akcje katalogu">
                               <IconButton 
-                                size="small" 
+                                size="medium" 
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   setSelectedDirectory(subdir)
@@ -1132,54 +1188,53 @@ const DirectoryPage: React.FC = () => {
                         sx={{ cursor: 'pointer' }}
                         onClick={() => navigate(`/forum/post/${post.id}`)}
                       >
-                        <TableCell>
-                          <Box sx={{ minWidth: 0 }}>
-                            <Typography 
-                              variant="subtitle2" 
-                              sx={{ 
-                                fontWeight: 'medium',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                mb: 0.5
-                              }}
-                            >
-                              {post.title}
-                            </Typography>
-                            {post.content && (
+                        <TableCell sx={{ py: 2 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <ArticleIcon color="primary" sx={{ flexShrink: 0, fontSize: '1.5rem' }} />
+                            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                               <Typography 
-                                variant="body2" 
-                                color="text.secondary" 
+                                variant="h6" 
                                 sx={{ 
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                  display: { xs: 'none', sm: 'block' }
+                                  fontWeight: 'medium',
+                                  fontSize: '1.1rem',
+                                  wordBreak: 'break-word',
+                                  lineHeight: 1.3,
+                                  mb: 0.5
                                 }}
                               >
-                                {post.content.replace(/<[^>]*>/g, '').substring(0, 80)}
-                                {post.content.length > 80 ? '...' : ''}
+                                {post.title}
                               </Typography>
-                            )}
-                            {/* Mobile info - author and dates */}
-                            <Box 
-                              sx={{ 
-                                display: { xs: 'block', lg: 'none' }, 
-                                mt: 0.5
-                              }}
-                            >
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-                                <UserAvatar user={post.author} size="small" />
-                                <Typography variant="caption" color="text.secondary">
-                                  {post.author.first_name} {post.author.last_name}
+                              {post.content && (
+                                <Typography 
+                                  variant="body2" 
+                                  color="text.secondary" 
+                                  sx={{ 
+                                    lineHeight: 1.4,
+                                    display: { xs: 'none', sm: 'block' }
+                                  }}
+                                >
+                                  {post.content.replace(/<[^>]*>/g, '').substring(0, 120)}
+                                  {post.content.length > 120 ? '...' : ''}
                                 </Typography>
-                              </Box>
-                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.2 }}>
-                                <Typography variant="caption" color="text.secondary">
+                              )}
+                              {/* Mobile info - author and dates */}
+                              <Box 
+                                sx={{ 
+                                  display: { xs: 'block', lg: 'none' }, 
+                                  mt: 1
+                                }}
+                              >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                  <UserAvatar user={post.author} size="small" />
+                                  <Typography variant="body2" color="text.secondary">
+                                    {post.author.first_name} {post.author.last_name}
+                                  </Typography>
+                                </Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                                   Utworzony: {formatDate(post.created_at)}
                                 </Typography>
                                 {post.last_comment && (
-                                  <Typography variant="caption" color="text.secondary">
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                                     Ostatnia odpowiedź: {formatDate(post.last_comment.created_at)}
                                   </Typography>
                                 )}
@@ -1187,19 +1242,24 @@ const DirectoryPage: React.FC = () => {
                             </Box>
                           </Box>
                         </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body2">{post.comments_count}</Typography>
+                        <TableCell align="center" sx={{ py: 2 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                            <ArticleIcon fontSize="small" color="action" />
+                            <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                              {post.comments_count}
+                            </Typography>
+                          </Box>
                         </TableCell>
-                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <UserAvatar user={post.author} size="small" />
+                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' }, py: 2 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <UserAvatar user={post.author} size="medium" />
                             <Box sx={{ minWidth: 0 }}>
                               <Typography 
                                 variant="body2" 
                                 sx={{ 
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap'
+                                  wordBreak: 'break-word',
+                                  lineHeight: 1.3,
+                                  fontWeight: 'medium'
                                 }}
                               >
                                 {post.author.first_name} {post.author.last_name}
@@ -1210,10 +1270,10 @@ const DirectoryPage: React.FC = () => {
                             </Box>
                           </Box>
                         </TableCell>
-                        <TableCell sx={{ display: { xs: 'none', xl: 'table-cell' } }}>
+                        <TableCell sx={{ display: { xs: 'none', xl: 'table-cell' }, py: 2 }}>
                           {post.last_comment ? (
                             <Box>
-                              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                              <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 0.5 }}>
                                 {formatDate(post.last_comment.created_at)}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
@@ -1221,7 +1281,7 @@ const DirectoryPage: React.FC = () => {
                               </Typography>
                             </Box>
                           ) : (
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
                               Brak odpowiedzi
                             </Typography>
                           )}
