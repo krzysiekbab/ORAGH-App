@@ -1,9 +1,0 @@
-<ul class="list-unstyled mb-0">
-    {% if section %}
-        {% for musician in section %}
-            <li>{{ forloop.counter }}. {{ musician.user.get_full_name|default:musician.user.username }}</li>
-        {% endfor %}
-    {% else %}
-        <li class="text-muted">Brak</li>
-    {% endif %}
-</ul>
