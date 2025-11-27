@@ -54,14 +54,13 @@ const LoginPage: React.FC = () => {
   }, [clearError])
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      const success = await login(data)
-      if (success) {
-        toast.success('Zalogowano pomyślnie!')
-        navigate(from, { replace: true })
-      }
-    } catch (err) {
-      toast.error('Wystąpił nieoczekiwany błąd')
+    const success = await login(data)
+    if (success) {
+      toast.success('Zalogowano pomyślnie!')
+      navigate(from, { replace: true })
+    } else {
+      // Show error toast when login fails
+      toast.error(error || 'Nieprawidłowa nazwa użytkownika lub hasło')
     }
   }
 
@@ -92,8 +91,7 @@ const LoginPage: React.FC = () => {
           
           <CardContent>
             {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                <strong>Błąd logowania:</strong><br />
+              <Alert severity="error" sx={{ mb: 2 }} onClose={clearError}>
                 {error}
               </Alert>
             )}

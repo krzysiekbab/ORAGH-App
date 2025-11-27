@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error: any) {
           const errorMessage = error.response?.data?.detail || 
                               error.response?.data?.non_field_errors?.[0] ||
-                              'Błąd logowania'
+                              'Nieprawidłowa nazwa użytkownika lub hasło'
           
           set({ 
             isLoading: false, 

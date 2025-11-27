@@ -36,19 +36,19 @@ urlpatterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - Phase 2: Registration & Profiles
+    # Registration & Profiles
     path('users/', include('api.users.urls')),
     
-    # Phase 3: Home Page  
+    # Home Page  
     path('home/', include('api.home.urls')),
     
-    # Phase 4: Concerts
+    # Concerts
     path('concerts/', include('api.concerts.urls')),
     
-    # Phase 5: Attendance
+    # Attendance
     path('attendance/', include('api.attendance.urls')),
     
-    # Phase 6: Forum
+    # Forum
     path('forum/', include('api.forum.urls')),  
     
     # Health check
