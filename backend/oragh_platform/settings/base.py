@@ -29,6 +29,9 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    # Core API app (for shared management commands)
+    'api',
+    
     # Phase 2: User Management & Profiles  
     'api.users',
     
