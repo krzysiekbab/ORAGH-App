@@ -18,7 +18,7 @@ from .serializers import (
     AttendanceSerializer, AttendanceMarkSerializer,
     SeasonAttendanceGridSerializer
 )
-from .permissions import IsBoardMemberOrReadOnly, IsConductorOrBoardMember
+from .permissions import IsBoardMemberOrReadOnly, IsBoardMember
 from api.users.models import MusicianProfile, INSTRUMENT_CHOICES
 
 
@@ -353,11 +353,11 @@ class EventViewSet(viewsets.ModelViewSet):
         """Mark attendance for this event."""
         event = self.get_object()
         
-        # Check permissions - only board or conductor members can mark attendance
+        # Check permissions - only board members can mark attendance
         if not (request.user.is_superuser or 
-                request.user.groups.filter(name__in=['board', 'conductor']).exists()):
+                request.user.groups.filter(name='board').exists()):
             return Response(
-                {'detail': 'Brak uprawnień do oznaczania obecności. Wymagane uprawnienia zarządu lub dyrygenta.'},
+                {'detail': 'Brak uprawnień do oznaczania obecności. Wymagane uprawnienia zarządu.'},
                 status=status.HTTP_403_FORBIDDEN
             )
         

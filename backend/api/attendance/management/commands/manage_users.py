@@ -15,9 +15,9 @@ class Command(BaseCommand):
         parser.add_argument('--list-groups', action='store_true',
                           help='List all groups and their permissions count')
         parser.add_argument('--user', type=str, help='Username to manage')
-        parser.add_argument('--add-to', type=str, choices=['musician', 'board', 'conductor'],
+        parser.add_argument('--add-to', type=str, choices=['musician', 'board'],
                           help='Add user to specified group')
-        parser.add_argument('--remove-from', type=str, choices=['musician', 'board', 'conductor'],
+        parser.add_argument('--remove-from', type=str, choices=['musician', 'board'],
                           help='Remove user from specified group')
 
     def handle(self, *args, **options):
@@ -112,7 +112,7 @@ class Command(BaseCommand):
             groups_display = ', '.join(groups) if groups else 'No groups'
             
             # Add access level indicator
-            access_level = '🎼' if 'conductor' in groups else '🏛️' if 'board' in groups else '🎵' if 'musician' in groups else '⚠️'
+            access_level = '🏛️' if 'board' in groups else '🎵' if 'musician' in groups else '⚠️'
             
             self.stdout.write(f'{access_level} {user.username:15} | {name_display:20} | {groups_display}')
     
@@ -136,7 +136,6 @@ class Command(BaseCommand):
         self.stdout.write('\n📋 Permission Details:')
         self.stdout.write('• musician: View-only access to attendance system')
         self.stdout.write('• board: Full CRUD access to seasons/events/attendance')
-        self.stdout.write('• conductor: All board permissions + extensible admin access')
     
     def list_available_users(self):
         """Show available users when username not found"""
@@ -182,9 +181,7 @@ class Command(BaseCommand):
             self.stdout.write('🎼 Attendance Permissions: None')
         
         # Show access level summary
-        if 'conductor' in current_groups:
-            self.stdout.write('🎼 Access Level: CONDUCTOR (Full system access)')
-        elif 'board' in current_groups:
+        if 'board' in current_groups:
             self.stdout.write('🏛️  Access Level: BOARD (Full attendance management)')
         elif 'musician' in current_groups:
             self.stdout.write('🎵 Access Level: MUSICIAN (View attendance only)')

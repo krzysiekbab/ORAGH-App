@@ -101,17 +101,13 @@ class PermissionsService {
     return await this.hasGroup('board')
   }
 
-  async isConductor(): Promise<boolean> {
-    return await this.hasGroup('conductor')
-  }
-
   async isMusician(): Promise<boolean> {
     return await this.hasGroup('musician')
   }
 
-  // Check if user can manage attendance (board or conductor)
+  // Check if user can manage attendance (board only)
   async canManageAttendance(): Promise<boolean> {
-    return await this.isBoardMember() || await this.isConductor()
+    return await this.isBoardMember()
   }
 
   // Clear cache (useful for logout)

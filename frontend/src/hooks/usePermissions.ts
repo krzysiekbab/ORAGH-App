@@ -69,16 +69,12 @@ export const usePermissions = () => {
     return hasGroup('board')
   }
 
-  const isConductor = (): boolean => {
-    return hasGroup('conductor')
-  }
-
   const isMusician = (): boolean => {
     return hasGroup('musician')
   }
 
   const canManageAttendance = (): boolean => {
-    return isBoardMember() || isConductor()
+    return isBoardMember()
   }
 
   return {
@@ -95,7 +91,6 @@ export const usePermissions = () => {
     canChangeSeason,
     canDeleteSeason,
     isBoardMember,
-    isConductor,
     isMusician,
     canManageAttendance,
   }

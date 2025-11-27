@@ -24,13 +24,11 @@ class Command(BaseCommand):
         # Create/get groups
         musician_group, created = Group.objects.get_or_create(name='musician')
         board_group, created = Group.objects.get_or_create(name='board')
-        conductor_group, created = Group.objects.get_or_create(name='conductor')
         
         if options['reset']:
             self.stdout.write('🔄 Resetting all group permissions...')
             musician_group.permissions.clear()
             board_group.permissions.clear()
-            conductor_group.permissions.clear()
         
         # Get content types
         content_types = {}
@@ -192,12 +190,6 @@ class Command(BaseCommand):
         
         add_permissions_to_group(board_group, board_permissions, 'full management access')
         
-        # === CONDUCTOR GROUP PERMISSIONS ===
-        # Conductor gets all board permissions + potential future admin features
-        conductor_permissions = board_permissions.copy()
-        
-        add_permissions_to_group(conductor_group, conductor_permissions, 'comprehensive access')
-        
         # Show detailed summary
         self.stdout.write('\n' + '='*50)
         self.stdout.write('📊 PERMISSION SUMMARY')
@@ -225,11 +217,6 @@ class Command(BaseCommand):
         self.stdout.write('     - Pin/lock posts and moderate content')
         self.stdout.write('     - Full moderation of posts and comments')
         
-        self.stdout.write('\n🎼 CONDUCTOR GROUP:')
-        self.stdout.write('   • All board permissions')
-        self.stdout.write('   • Full forum and attendance management')
-        self.stdout.write('   • Extensible for future admin features')
-        
         self.stdout.write('\n' + '='*50)
         self.stdout.write(self.style.SUCCESS('✅ Groups and permissions configured successfully!'))
         self.stdout.write('\n💡 Next steps:')
@@ -241,4 +228,3 @@ class Command(BaseCommand):
         self.stdout.write('\n📝 Group Assignment Suggestions:')
         self.stdout.write('   • musician: Regular orchestra members')
         self.stdout.write('   • board: Board members who manage attendance/events/seasons')
-        self.stdout.write('   • conductor: Conductors with full system access')

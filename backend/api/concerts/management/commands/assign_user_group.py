@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('username', type=str, help='Username to assign to group')
-        parser.add_argument('group', type=str, choices=['musician', 'board', 'conductor'], 
+        parser.add_argument('group', type=str, choices=['musician', 'board'], 
                           help='Group to assign user to')
         parser.add_argument('--remove', action='store_true', 
                           help='Remove user from group instead of adding')

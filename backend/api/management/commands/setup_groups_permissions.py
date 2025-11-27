@@ -16,12 +16,10 @@ class Command(BaseCommand):
         # Create/get groups
         musician_group, _ = Group.objects.get_or_create(name='musician')
         board_group, _ = Group.objects.get_or_create(name='board')
-        conductor_group, _ = Group.objects.get_or_create(name='conductor')
         
         # Clear existing permissions
         musician_group.permissions.clear()
         board_group.permissions.clear()
-        conductor_group.permissions.clear()
         
         # Get content types
         try:
@@ -167,19 +165,11 @@ class Command(BaseCommand):
         board_group.permissions.set(board_permissions)
         self.stdout.write(f'✅ board group: {len(board_permissions)} permissions')
         
-        # === CONDUCTOR GROUP PERMISSIONS ===
-        # Conductor gets all board permissions + additional admin permissions
-        conductor_permissions = board_permissions.copy()  # Conductors get same as board for now
-        
-        conductor_group.permissions.set(conductor_permissions)
-        self.stdout.write(f'✅ conductor group: {len(conductor_permissions)} permissions')
-        
         self.stdout.write('\n=== PERMISSION SUMMARY ===')
         self.stdout.write('musician: view concerts/attendance, register for concerts')
         self.stdout.write('         view forum, create/edit/delete own posts, comments, and directories')
         self.stdout.write('board: all musician permissions + full management of concerts/seasons/events/attendance')
         self.stdout.write('       + forum moderation capabilities (pin/lock posts, moderate content)')
-        self.stdout.write('conductor: all board permissions (extensible for future admin features)')
         
         self.stdout.write(self.style.SUCCESS('\n✅ Groups and permissions set up successfully!'))
         self.stdout.write('\n💡 Now you can assign users to groups in Django Admin')

@@ -35,19 +35,3 @@ class IsBoardMember(permissions.BasePermission):
             request.user.is_authenticated and 
             (request.user.is_superuser or request.user.groups.filter(name='board').exists())
         )
-
-
-class IsConductorOrBoardMember(permissions.BasePermission):
-    """
-    Custom permission that only allows conductors or board members to access the view.
-    """
-
-    def has_permission(self, request, view):
-        return (
-            request.user and 
-            request.user.is_authenticated and 
-            (
-                request.user.is_superuser or 
-                request.user.groups.filter(name__in=['board', 'conductor']).exists()
-            )
-        )

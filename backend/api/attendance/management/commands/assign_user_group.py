@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('username', type=str, nargs='?', help='Username to assign to group')
-        parser.add_argument('group', type=str, nargs='?', choices=['musician', 'board', 'conductor'], 
+        parser.add_argument('group', type=str, nargs='?', choices=['musician', 'board'], 
                           help='Group to assign user to')
         parser.add_argument('--remove', action='store_true', 
                           help='Remove user from group instead of adding')
@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 self.style.ERROR('❌ Both username and group are required when not using list options')
             )
             self.stdout.write('\nUsage examples:')
-            self.stdout.write('  python manage.py assign_user_group admin conductor')
+            self.stdout.write('  python manage.py assign_user_group admin board')
             self.stdout.write('  python manage.py assign_user_group --list-users')
             self.stdout.write('  python manage.py assign_user_group --list-groups')
             return
@@ -61,7 +61,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.ERROR(f'❌ Group "{group_name}" does not exist')
             )
-            self.stdout.write('Available groups: musician, board, conductor')
+            self.stdout.write('Available groups: musician, board')
             return
         
         if remove:
@@ -158,9 +158,7 @@ class Command(BaseCommand):
             self.stdout.write('Permissions: None')
         
         # Show access level
-        if 'conductor' in current_groups:
-            self.stdout.write('🎼 Access Level: CONDUCTOR (Full system access)')
-        elif 'board' in current_groups:
+        if 'board' in current_groups:
             self.stdout.write('🏛️  Access Level: BOARD (Management access)')
         elif 'musician' in current_groups:
             self.stdout.write('🎵 Access Level: MUSICIAN (View access)')
