@@ -98,7 +98,6 @@ const DeleteConcertModal: React.FC<DeleteConcertModalProps> = ({
             )}
             <Typography variant="body2" color="text.secondary">
               <strong>Uczestnicy:</strong> {concert.participants_count}
-              {concert.max_participants && ` / ${concert.max_participants}`}
             </Typography>
           </Box>
         </Box>

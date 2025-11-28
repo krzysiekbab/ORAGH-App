@@ -122,8 +122,6 @@ export const useConcertStore = create<ConcertState>()(
               errorMessage = `Data: ${errors.date[0]}`
             } else if (errors.location) {
               errorMessage = `Lokalizacja: ${errors.location[0]}`
-            } else if (errors.max_participants) {
-              errorMessage = `Maksymalna liczba uczestników: ${errors.max_participants[0]}`
             }
           }
           
@@ -168,8 +166,6 @@ export const useConcertStore = create<ConcertState>()(
               errorMessage = `Data: ${errors.date[0]}`
             } else if (errors.location) {
               errorMessage = `Lokalizacja: ${errors.location[0]}`
-            } else if (errors.max_participants) {
-              errorMessage = `Maksymalna liczba uczestników: ${errors.max_participants[0]}`
             }
           }
           
@@ -220,7 +216,6 @@ export const useConcertStore = create<ConcertState>()(
               ? { 
                   ...concert, 
                   participants_count: result.participants_count,
-                  can_register: result.can_register,
                   is_registered: result.is_registered
                 }
               : concert
@@ -284,7 +279,6 @@ export const useConcertStore = create<ConcertState>()(
               ? { 
                   ...concert, 
                   participants_count: result.participants_count,
-                  can_register: result.can_register,
                   is_registered: result.is_registered
                 }
               : concert

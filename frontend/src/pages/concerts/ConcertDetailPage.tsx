@@ -299,37 +299,6 @@ const ConcertDetailPage: React.FC = () => {
                   fontSize: { xs: '0.875rem', md: '1rem' } 
                 }}>
                   {currentConcert.participants_count}
-                  {currentConcert.max_participants && ` / ${currentConcert.max_participants}`}
-                </Typography>
-              </Box>
-              
-              <Box display="flex" alignItems="center" gap={1}>
-                {currentConcert.registration_open ? <LockOpenIcon fontSize="small" color="action" /> : <LockIcon fontSize="small" color="action" />}
-                <Typography variant="body1" component="span" fontWeight="medium" sx={{ 
-                  fontSize: { xs: '0.875rem', md: '1rem' } 
-                }}>
-                  Rejestracja:
-                </Typography>
-                <Typography 
-                  variant="body1" 
-                  color={currentConcert.registration_open ? 'success.main' : 'error.main'}
-                  sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}
-                >
-                  {currentConcert.registration_open ? 'Otwarta' : 'Zamknięta'}
-                </Typography>
-              </Box>
-              
-              <Box display="flex" alignItems="center" gap={1}>
-                {currentConcert.is_public ? <VisibilityIcon fontSize="small" color="action" /> : <VisibilityOffIcon fontSize="small" color="action" />}
-                <Typography variant="body1" component="span" fontWeight="medium" sx={{ 
-                  fontSize: { xs: '0.875rem', md: '1rem' } 
-                }}>
-                  Dostęp:
-                </Typography>
-                <Typography variant="body1" sx={{ 
-                  fontSize: { xs: '0.875rem', md: '1rem' } 
-                }}>
-                  {currentConcert.is_public ? 'Publiczny' : 'Prywatny'}
                 </Typography>
               </Box>
             </Box>
@@ -413,7 +382,7 @@ const ConcertDetailPage: React.FC = () => {
         )}
 
         {/* Registration Button */}
-        {user?.musician_profile && currentConcert.registration_open && currentConcert.status !== 'completed' && (
+        {user?.musician_profile && currentConcert.status !== 'completed' && (
           <Box sx={{ 
             borderTop: 1, 
             borderColor: 'divider', 
@@ -421,7 +390,7 @@ const ConcertDetailPage: React.FC = () => {
           }}>
             <Button
               onClick={handleRegistration}
-              disabled={registrationLoading.has(currentConcert.id) || (!currentConcert.can_register && !isUserRegistered())}
+              disabled={registrationLoading.has(currentConcert.id)}
               variant="contained"
               size="large"
               color={isUserRegistered() ? "error" : "success"}
@@ -436,9 +405,7 @@ const ConcertDetailPage: React.FC = () => {
             >
               {isUserRegistered()
                 ? 'Wypisz się z koncertu'
-                : currentConcert.can_register
-                ? 'Zapisz się na koncert'
-                : 'Koncert pełny'
+                : 'Zapisz się na koncert'
               }
             </Button>
           </Box>

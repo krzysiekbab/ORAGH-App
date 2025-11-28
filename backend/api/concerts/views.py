@@ -61,10 +61,6 @@ class ConcertListCreateView(generics.ListCreateAPIView):
         if search:
             queryset = queryset.filter(name__icontains=search)
         
-        # Show only public concerts for regular users (users without view permission for all concerts)
-        if not self.request.user.has_perm('concerts.change_concert'):
-            queryset = queryset.filter(is_public=True)
-        
         return queryset
     
     def get_serializer_class(self):
@@ -154,13 +150,6 @@ def concert_registration(request, pk):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # Check if concert allows registration
-    if not concert.is_public and not request.user.has_perm('concerts.change_concert'):
-        return Response(
-            {'error': 'Ten koncert nie jest publiczny.'},
-            status=status.HTTP_403_FORBIDDEN
-        )
-    
     # Use atomic transaction to prevent race conditions
     with transaction.atomic():
         # Get fresh concert instance to avoid stale data
@@ -200,7 +189,6 @@ def concert_registration(request, pk):
             return Response({
                 'message': message,
                 'participants_count': concert.participants_count,
-                'can_register': concert.can_register,
                 'is_registered': concert.is_user_registered(request.user)
             })
         
@@ -212,13 +200,6 @@ def concert_registration(request, pk):
 def concert_participants(request, pk):
     """Get list of concert participants."""
     concert = get_object_or_404(Concert, pk=pk)
-    
-    # Check if user can view participants
-    if not concert.is_public and not request.user.has_perm('concerts.change_concert'):
-        return Response(
-            {'error': 'Nie masz uprawnień do przeglądania uczestników tego koncertu.'},
-            status=status.HTTP_403_FORBIDDEN
-        )
     
     from api.users.serializers import MusicianProfileSerializer
     

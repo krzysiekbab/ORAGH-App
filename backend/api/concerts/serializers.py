@@ -31,17 +31,15 @@ class ConcertListSerializer(serializers.ModelSerializer):
     """Serializer for concert list view."""
     created_by = UserSerializer(read_only=True)
     participants_count = serializers.ReadOnlyField()
-    can_register = serializers.ReadOnlyField()
     is_registered = serializers.SerializerMethodField()
     
     class Meta:
         model = Concert
         fields = [
-            'id', 'name', 'date', 'location', 'status', 'is_public',
-            'registration_open', 'max_participants', 'participants_count',
-            'can_register', 'is_registered', 'created_by', 'date_created'
+            'id', 'name', 'date', 'location', 'status',
+            'participants_count', 'is_registered', 'created_by', 'date_created'
         ]
-        read_only_fields = ['id', 'created_by', 'date_created', 'participants_count', 'can_register', 'is_registered']
+        read_only_fields = ['id', 'created_by', 'date_created', 'participants_count', 'is_registered']
     
     def get_is_registered(self, obj):
         """Check if current user is registered for this concert."""
@@ -61,7 +59,6 @@ class ConcertDetailSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)
     participants = ConcertParticipantSerializer(many=True, read_only=True)
     participants_count = serializers.ReadOnlyField()
-    can_register = serializers.ReadOnlyField()
     is_registered = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
     can_delete = serializers.SerializerMethodField()
@@ -70,11 +67,10 @@ class ConcertDetailSerializer(serializers.ModelSerializer):
         model = Concert
         fields = [
             'id', 'name', 'date', 'location', 'description', 'setlist',
-            'status', 'is_public', 'registration_open', 'max_participants',
-            'participants', 'participants_count', 'can_register', 'is_registered', 
+            'status', 'participants', 'participants_count', 'is_registered', 
             'can_edit', 'can_delete', 'created_by', 'date_created', 'date_modified'
         ]
-        read_only_fields = ['id', 'created_by', 'date_created', 'date_modified', 'participants_count', 'can_register', 'is_registered', 'can_edit', 'can_delete']
+        read_only_fields = ['id', 'created_by', 'date_created', 'date_modified', 'participants_count', 'is_registered', 'can_edit', 'can_delete']
     
     def get_is_registered(self, obj):
         """Check if current user is registered for this concert."""
@@ -112,20 +108,12 @@ class ConcertCreateUpdateSerializer(serializers.ModelSerializer):
         model = Concert
         fields = [
             'name', 'date', 'location', 'description', 'setlist',
-            'status', 'is_public', 'registration_open', 'max_participants'
+            'status'
         ]
     
     def validate_date(self, value):
         """Validate concert date."""
-        from datetime import date
-        if value < date.today():
-            raise serializers.ValidationError("Data koncertu nie może być z przeszłości.")
-        return value
-    
-    def validate_max_participants(self, value):
-        """Validate max participants."""
-        if value is not None and value <= 0:
-            raise serializers.ValidationError("Maksymalna liczba uczestników musi być większa od 0.")
+        
         return value
 
 
@@ -140,8 +128,8 @@ class ConcertRegistrationSerializer(serializers.Serializer):
         action = attrs['action']
         
         if action == 'register':
-            # Check if user can register
-            if not concert.can_register:
+            # Check if concert status allows registration
+            if concert.status not in ['planned', 'confirmed']:
                 raise serializers.ValidationError("Rejestracja na ten koncert jest zamknięta.")
             
             # Check if user is already registered

@@ -9,11 +9,7 @@ export interface Concert {
   description?: string
   setlist?: string
   status: 'planned' | 'confirmed' | 'completed' | 'cancelled'
-  is_public: boolean
-  registration_open: boolean
-  max_participants?: number
   participants_count: number
-  can_register: boolean
   is_registered: boolean
   can_edit?: boolean
   can_delete?: boolean
@@ -50,9 +46,6 @@ export interface ConcertCreateData {
   description?: string
   setlist?: string
   status?: 'planned' | 'confirmed' | 'completed' | 'cancelled'
-  is_public?: boolean
-  registration_open?: boolean
-  max_participants?: number
 }
 
 export interface ConcertUpdateData extends Partial<ConcertCreateData> {}
@@ -138,7 +131,6 @@ class ConcertService {
   async registerForConcert(id: number): Promise<{ 
     message: string; 
     participants_count: number; 
-    can_register: boolean;
     is_registered: boolean;
   }> {
     const response = await apiClient.post(`${this.basePath}/${id}/register/`, {
@@ -151,7 +143,6 @@ class ConcertService {
   async unregisterFromConcert(id: number): Promise<{ 
     message: string; 
     participants_count: number; 
-    can_register: boolean;
     is_registered: boolean;
   }> {
     const response = await apiClient.post(`${this.basePath}/${id}/register/`, {

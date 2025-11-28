@@ -40,12 +40,6 @@ const concertSchema = z.object({
     .max(2000, 'Repertuar nie może przekraczać 2000 znaków')
     .optional(),
   status: z.enum(['planned', 'confirmed', 'completed', 'cancelled']),
-  is_public: z.boolean(),
-  registration_open: z.boolean(),
-  max_participants: z.number()
-    .min(1, 'Maksymalna liczba uczestników musi być większa od 0')
-    .optional()
-    .nullable(),
 })
 
 type ConcertFormData = z.infer<typeof concertSchema>
@@ -85,9 +79,6 @@ export default function EditConcertPage() {
       description: '',
       setlist: '',
       status: 'planned',
-      is_public: true,
-      registration_open: true,
-      max_participants: null,
     }
   })
 
@@ -128,9 +119,6 @@ export default function EditConcertPage() {
         description: currentConcert.description || '',
         setlist: currentConcert.setlist || '',
         status: currentConcert.status,
-        is_public: currentConcert.is_public,
-        registration_open: currentConcert.registration_open,
-        max_participants: currentConcert.max_participants,
       })
     }
   }, [currentConcert?.id, currentConcert?.name, currentConcert?.date, id, reset]) // Specific dependencies
@@ -147,9 +135,6 @@ export default function EditConcertPage() {
       description: data.description || undefined,
       setlist: data.setlist || undefined,
       status: data.status,
-      is_public: data.is_public,
-      registration_open: data.registration_open,
-      max_participants: data.max_participants || undefined,
     }
     
     const success = await updateConcert(parseInt(id), concertData)
@@ -295,66 +280,6 @@ export default function EditConcertPage() {
                 </FormControl>
               )}
             />
-
-            {/* Max Participants */}
-            <Controller
-              name="max_participants"
-              control={control}
-              render={({ field: { value, onChange, ...field } }) => (
-                <TextField
-                  {...field}
-                  value={value || ''}
-                  onChange={(e) => {
-                    const val = e.target.value
-                    onChange(val === '' ? null : parseInt(val, 10))
-                  }}
-                  label="Maksymalna liczba uczestników"
-                  type="number"
-                  fullWidth
-                  inputProps={{ min: 1 }}
-                  error={!!errors.max_participants}
-                  helperText={errors.max_participants?.message || 'Pozostaw puste dla braku limitu'}
-                  disabled={isLoading}
-                />
-              )}
-            />
-
-            {/* Checkboxes */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Controller
-                name="is_public"
-                control={control}
-                render={({ field }) => (
-                  <FormControlLabel
-                    control={
-                      <Checkbox 
-                        {...field} 
-                        checked={field.value}
-                        disabled={isLoading}
-                      />
-                    }
-                    label="Koncert publiczny (widoczny dla wszystkich)"
-                  />
-                )}
-              />
-
-              <Controller
-                name="registration_open"
-                control={control}
-                render={({ field }) => (
-                  <FormControlLabel
-                    control={
-                      <Checkbox 
-                        {...field} 
-                        checked={field.value}
-                        disabled={isLoading}
-                      />
-                    }
-                    label="Rejestracja otwarta"
-                  />
-                )}
-              />
-            </Box>
 
             {/* Description */}
             <Controller

@@ -36,10 +36,7 @@ const CreateConcertModal: React.FC<CreateConcertModalProps> = ({ isOpen, onClose
     location: '',
     description: '',
     setlist: '',
-    status: 'planned',
-    is_public: true,
-    registration_open: true,
-    max_participants: undefined
+    status: 'planned'
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,10 +51,7 @@ const CreateConcertModal: React.FC<CreateConcertModalProps> = ({ isOpen, onClose
         location: '',
         description: '',
         setlist: '',
-        status: 'planned',
-        is_public: true,
-        registration_open: true,
-        max_participants: undefined
+        status: 'planned'
       })
       onClose()
     }
@@ -66,17 +60,10 @@ const CreateConcertModal: React.FC<CreateConcertModalProps> = ({ isOpen, onClose
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     
-    if (name === 'max_participants') {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value ? parseInt(value) : undefined
-      }))
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }))
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
   }
 
   const handleClose = () => {
@@ -196,43 +183,6 @@ const CreateConcertModal: React.FC<CreateConcertModalProps> = ({ isOpen, onClose
                   <MenuItem value="cancelled">Odwołany</MenuItem>
                 </Select>
               </FormControl>
-            </Grid2>
-            
-            <Grid2 size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                type="number"
-                label="Maksymalna liczba uczestników"
-                name="max_participants"
-                value={formData.max_participants || ''}
-                onChange={handleChange}
-                inputProps={{ min: 1 }}
-                placeholder="Bez limitu"
-              />
-            </Grid2>
-            
-            <Grid2 size={{ xs: 12, md: 6 }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.is_public}
-                    onChange={(e) => setFormData(prev => ({ ...prev, is_public: e.target.checked }))}
-                  />
-                }
-                label="Koncert publiczny"
-              />
-            </Grid2>
-            
-            <Grid2 size={{ xs: 12, md: 6 }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.registration_open}
-                    onChange={(e) => setFormData(prev => ({ ...prev, registration_open: e.target.checked }))}
-                  />
-                }
-                label="Rejestracja otwarta"
-              />
             </Grid2>
           </Grid2>
         </DialogContent>

@@ -29,11 +29,6 @@ class Concert(models.Model):
         ('cancelled', 'Odwołany'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planned')
-    
-    # Public concert settings
-    is_public = models.BooleanField(default=True, help_text="Czy koncert jest publiczny")
-    registration_open = models.BooleanField(default=True, help_text="Czy rejestracja na koncert jest otwarta")
-    max_participants = models.PositiveIntegerField(null=True, blank=True, help_text="Maksymalna liczba uczestników")
 
     class Meta:
         db_table = 'concerts_concert'
@@ -41,14 +36,7 @@ class Concert(models.Model):
         indexes = [
             models.Index(fields=['date']),
             models.Index(fields=['status']),
-            models.Index(fields=['is_public', 'registration_open']),
             models.Index(fields=['created_by']),
-        ]
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(max_participants__isnull=True) | models.Q(max_participants__gt=0),
-                name='concerts_max_participants_positive'
-            ),
         ]
 
     def __str__(self):
@@ -58,17 +46,6 @@ class Concert(models.Model):
     def participants_count(self):
         """Return the number of participants."""
         return self.participants.count()
-
-    @property
-    def can_register(self):
-        """Check if registration is still possible."""
-        if not self.registration_open:
-            return False
-        if self.status not in ['planned', 'confirmed']:
-            return False
-        if self.max_participants and self.participants_count >= self.max_participants:
-            return False
-        return True
 
     def is_user_registered(self, user):
         """Check if a user is registered for this concert."""
@@ -99,13 +76,6 @@ class Concert(models.Model):
             return False
         # Check Django permission for adding concerts
         return user.has_perm('concerts.add_concert')
-
-    def get_participants_display(self):
-        """Get formatted participants count display."""
-        count = self.participants_count
-        if self.max_participants:
-            return f"{count}/{self.max_participants}"
-        return str(count)
 
 
 

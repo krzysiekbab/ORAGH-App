@@ -336,7 +336,6 @@ const ConcertsPage: React.FC = () => {
                           <PeopleIcon fontSize="small" color="action" />
                           <Typography variant="body2">
                             {concert.participants_count} uczestników
-                            {concert.max_participants && ` / ${concert.max_participants}`}
                           </Typography>
                         </Box>
                       </Grid2>
@@ -360,12 +359,12 @@ const ConcertsPage: React.FC = () => {
                   
                   <CardActions sx={{ px: 2, pb: 2 }}>
                     <Box display="flex" gap={1} ml="auto">
-                      {user?.musician_profile && concert.registration_open && concert.status !== 'completed' && (
+                      {user?.musician_profile && concert.status !== 'completed' && (
                         <Button
                           variant="contained"
                           color={concert.is_registered ? "error" : "success"}
                           onClick={() => handleRegistration(concert)}
-                          disabled={registrationLoading.has(concert.id) || (!concert.can_register && !concert.is_registered)}
+                          disabled={registrationLoading.has(concert.id)}
                           sx={{
                             transition: 'background-color 0.3s ease, color 0.3s ease',
                             minWidth: '120px', // Zmniejszona szerokość
@@ -374,9 +373,7 @@ const ConcertsPage: React.FC = () => {
                         >
                           {concert.is_registered 
                             ? 'Wypisz się' 
-                            : concert.can_register 
-                            ? 'Zapisz się' 
-                            : 'Pełny'
+                            : 'Zapisz się'
                           }
                         </Button>
                       )}
