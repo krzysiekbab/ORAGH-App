@@ -14,21 +14,16 @@ import UserProfilePage from './pages/profiles/UserProfilePage'
 import ConcertsPage from './pages/concerts/ConcertsPage'
 import ConcertDetailPage from './pages/concerts/ConcertDetailPage'
 import EditConcertPage from './pages/concerts/EditConcertPage'
+import SeasonsPage from './pages/seasons/SeasonsPage'
+import SeasonDetailPage from './pages/seasons/SeasonDetailPage'
+import SeasonMusiciansPage from './pages/seasons/SeasonMusiciansPage'
+import SeasonEventsPage from './pages/seasons/SeasonEventsPage'
 import AttendancePage from './pages/attendance/AttendancePage'
 import MarkAttendancePage from './pages/attendance/MarkAttendancePage'
-import SeasonManagementPage from './pages/attendance/SeasonManagementPage'
-import SeasonMusiciansPage from './pages/attendance/SeasonMusiciansPage'
-import SeasonEventsPage from './pages/attendance/SeasonEventsPage'
 import ForumPage from './pages/forum/ForumPage'
 import DirectoryPage from './pages/forum/DirectoryPage'
 import PostPage from './pages/forum/PostPage'
 import HomePage from './pages/HomePage'
-
-// Redirect component for old attendance route
-function AttendanceRedirect() {
-  const { eventId } = useParams<{ eventId: string }>()
-  return <Navigate to={`/attendance/mark/${eventId}`} replace />
-}
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -132,6 +127,30 @@ function App() {
         element={<ProtectedRoute><EditConcertPage /></ProtectedRoute>} 
       />
       
+      {/* Seasons routes */}
+      <Route 
+        path="/seasons" 
+        element={<ProtectedRoute><SeasonsPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/seasons/:seasonId" 
+        element={<ProtectedRoute><SeasonDetailPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/seasons/:seasonId/musicians" 
+        element={
+          <ProtectedRoute>
+            <PermissionProtectedRoute requiredGroups={['board']}>
+              <SeasonMusiciansPage />
+            </PermissionProtectedRoute>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/seasons/:seasonId/events" 
+        element={<ProtectedRoute><SeasonEventsPage /></ProtectedRoute>} 
+      />
+      
       {/* Attendance routes */}
       <Route 
         path="/attendance" 
@@ -158,58 +177,6 @@ function App() {
               requireAny={true}
             >
               <MarkAttendancePage />
-            </PermissionProtectedRoute>
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/attendance/seasons" 
-        element={
-          <ProtectedRoute>
-            <PermissionProtectedRoute 
-              requiredPermissions={['attendance.add_season', 'attendance.change_season', 'attendance.manage_seasons']}
-              requireAny={true}
-            >
-              <SeasonManagementPage />
-            </PermissionProtectedRoute>
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/attendance/seasons/:seasonId/musicians" 
-        element={
-          <ProtectedRoute>
-            <PermissionProtectedRoute 
-              requiredPermissions={['attendance.add_season', 'attendance.change_season', 'attendance.manage_seasons']}
-              requireAny={true}
-            >
-              <SeasonMusiciansPage />
-            </PermissionProtectedRoute>
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/attendance/seasons/:seasonId/events" 
-        element={
-          <ProtectedRoute>
-            <PermissionProtectedRoute 
-              requiredPermissions={['attendance.add_season', 'attendance.change_season', 'attendance.manage_seasons']}
-              requireAny={true}
-            >
-              <SeasonEventsPage />
-            </PermissionProtectedRoute>
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/attendance/seasons/:seasonId/events/:eventId/attendance" 
-        element={
-          <ProtectedRoute>
-            <PermissionProtectedRoute 
-              requiredPermissions={['attendance.add_attendance', 'attendance.change_attendance', 'attendance.manage_attendance']}
-              requireAny={true}
-            >
-              <AttendanceRedirect />
             </PermissionProtectedRoute>
           </ProtectedRoute>
         } 

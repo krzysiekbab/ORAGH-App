@@ -38,7 +38,7 @@ import EventActions from '../../components/attendance/EventActions'
 
 const AttendancePage: React.FC = () => {
   const navigate = useNavigate()
-  const { canAddEvent, canManageSeasons } = usePermissions()
+  const { canAddEvent } = usePermissions()
   const { user } = useAuthStore()
   
   const {
@@ -226,24 +226,6 @@ const AttendancePage: React.FC = () => {
         <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
           System Obecności
         </Typography>
-        <Box 
-          display="flex" 
-          flexDirection={{ xs: 'column', sm: 'row' }} 
-          gap={1}
-          width={{ xs: '100%', sm: 'auto' }}
-        >
-          {canManageSeasons() && (
-            <Button
-              variant="outlined"
-              startIcon={<PeopleIcon />}
-              onClick={() => navigate('/attendance/seasons')}
-              sx={{ width: { xs: '100%', sm: 'auto' } }}
-              size="small"
-            >
-              Sezony
-            </Button>
-          )}
-        </Box>
       </Box>
 
       {/* Error Alerts */}
@@ -266,7 +248,7 @@ const AttendancePage: React.FC = () => {
             section.user_rows.some(userRow => userRow.user.id === user.id)
           )
           
-          if (!userInSeason && !canManageSeasons()) {
+          if (!userInSeason) {
             return (
               <Alert severity="warning" sx={{ mb: 2 }}>
                 <Typography variant="body2">
@@ -283,36 +265,14 @@ const AttendancePage: React.FC = () => {
       {/* No current season info - show only if we have seasons but no current season */}
       {seasons.length > 0 && !currentSeason && !seasonsLoading && !seasonError && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Brak aktywnego sezonu. Wybierz sezon z listy poniżej{canManageSeasons() && (
-            <>
-              {' '}lub{' '}
-              <Button 
-                color="inherit" 
-                onClick={() => navigate('/attendance/seasons')}
-                sx={{ textDecoration: 'underline' }}
-              >
-                zarządzaj sezonami
-              </Button>
-            </>
-          )}
+          Brak aktywnego sezonu. Wybierz sezon z listy poniżej.
         </Alert>
       )}
 
       {/* No seasons message */}
       {!seasons.length && !seasonsLoading && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Brak dostępnych sezonów.{canManageSeasons() && (
-            <>
-              {' '}
-              <Button 
-                color="inherit" 
-                onClick={() => navigate('/attendance/seasons')}
-                sx={{ ml: 1 }}
-              >
-                Zarządzaj sezonami
-              </Button>
-            </>
-          )}
+          Brak dostępnych sezonów. Skontaktuj się z zarządem, aby uzyskać więcej informacji.
         </Alert>
       )}
 

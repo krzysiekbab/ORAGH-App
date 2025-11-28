@@ -44,6 +44,9 @@ LOCAL_APPS = [
     # Phase 5: Attendance
     'api.attendance',
     
+    # Phase 5.1: Seasons (extracted from Attendance)
+    'api.seasons',
+    
     # Phase 6: Forum
     'api.forum',  
 ]

@@ -45,6 +45,9 @@ urlpatterns = [
     # Concerts
     path('concerts/', include('api.concerts.urls')),
     
+    # Seasons
+    path('seasons/', include('api.seasons.urls')),
+    
     # Attendance
     path('attendance/', include('api.attendance.urls')),
     

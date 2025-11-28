@@ -28,6 +28,7 @@ import {
   MusicNote as MusicNoteIcon,
   Forum as ForumIcon,
   EventNote as EventNoteIcon,
+  CalendarToday as CalendarTodayIcon,
   BarChart as BarChartIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
@@ -70,6 +71,11 @@ const navigationItems: NavigationItem[] = [
     text: 'Koncerty',
     icon: <MusicNoteIcon />,
     path: '/concerts',
+  },
+  {
+    text: 'Sezony',
+    icon: <CalendarTodayIcon />,
+    path: '/seasons',
   },
   {
     text: 'Obecności',
@@ -227,6 +233,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       }
     }
 
+    // Seasons specific pages
+    if (pathSegments[0] === 'seasons') {
+      if (pathSegments[1]) {
+        breadcrumbs.push(
+          <Typography key="current" color="textPrimary">
+            Szczegóły sezonu
+          </Typography>
+        )
+      }
+    }
+
     // Attendance specific pages
     if (pathSegments[0] === 'attendance') {
       if (pathSegments[1] === 'mark') {
@@ -346,6 +363,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       // Profiles list pages
       if (pathSegments[0] === 'profiles' && pathSegments[1]) {
         return 'Profil'
+      }
+      
+      // Seasons pages
+      if (pathSegments[0] === 'seasons' && pathSegments[1]) {
+        return 'Sezon'
       }
       
       // Attendance pages
