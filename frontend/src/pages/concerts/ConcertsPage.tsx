@@ -27,7 +27,6 @@ import {
 } from '@mui/icons-material'
 import { useConcertStore } from '../../stores/concertStore'
 import { useAuthStore } from '../../stores/authStore'
-import { Concert } from '../../services/concert'
 import CreateConcertModal from './CreateConcertModal'
 
 const ConcertsPage: React.FC = () => {
@@ -50,7 +49,7 @@ const ConcertsPage: React.FC = () => {
 
   const { user } = useAuthStore()
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('planned')
   const [showCreateModal, setShowCreateModal] = useState(false)
 
   // Computed value to determine if we should show the add button
@@ -59,7 +58,7 @@ const ConcertsPage: React.FC = () => {
 
   useEffect(() => {
     // Fetch concerts and permissions concurrently for better performance
-    const promises = [fetchConcerts()]
+    const promises = [fetchConcerts({ status: 'planned' })]
     
     if (user) {
       promises.push(fetchUserPermissions())
@@ -212,6 +211,17 @@ const ConcertsPage: React.FC = () => {
                 label="Status"
                 onChange={(e) => setStatusFilter(e.target.value)}
                 fullWidth
+                displayEmpty
+                renderValue={(selected) => {
+                  if (selected === '') return 'Wszystkie statusy'
+                  const statusLabels: Record<string, string> = {
+                    planned: 'Planowany',
+                    confirmed: 'Potwierdzony',
+                    completed: 'Zakończony',
+                    cancelled: 'Odwołany'
+                  }
+                  return statusLabels[selected] || selected
+                }}
               >
                 <MenuItem value="">Wszystkie statusy</MenuItem>
                 <MenuItem value="planned">Planowany</MenuItem>
