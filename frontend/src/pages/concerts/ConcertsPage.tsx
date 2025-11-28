@@ -16,7 +16,6 @@ import {
   Container,
   Card,
   CardContent,
-  CardActions,
   InputAdornment,
 } from '@mui/material'
 import {
@@ -25,7 +24,6 @@ import {
   CalendarToday as CalendarIcon,
   LocationOn as LocationIcon,
   People as PeopleIcon,
-  Visibility as VisibilityIcon,
 } from '@mui/icons-material'
 import { useConcertStore } from '../../stores/concertStore'
 import { useAuthStore } from '../../stores/authStore'
@@ -41,15 +39,12 @@ const ConcertsPage: React.FC = () => {
     isLoading,
     error,
     filters,
-    registrationLoading,
     userPermissions,
     permissionsLoading,
     fetchConcerts,
     fetchUserPermissions,
     clearPermissions,
     setFilters,
-    registerForConcert,
-    unregisterFromConcert,
     clearError
   } = useConcertStore()
 
@@ -127,29 +122,6 @@ const ConcertsPage: React.FC = () => {
         variant="outlined"
       />
     )
-  }
-
-  const handleRegistration = async (concert: Concert) => {
-    if (!user?.musician_profile) {
-      alert('Musisz mieć profil muzyka aby zapisać się na koncert.')
-      return
-    }
-
-    // Prevent multiple clicks
-    if (registrationLoading.has(concert.id)) {
-      return
-    }
-
-    try {
-      if (concert.is_registered) {
-        await unregisterFromConcert(concert.id)
-      } else {
-        await registerForConcert(concert.id)
-      }
-    } catch (error) {
-      console.error('Registration error:', error)
-      // Error is already handled by the store
-    }
   }
 
   if (error) {
@@ -289,7 +261,17 @@ const ConcertsPage: React.FC = () => {
               .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
               .map((concert) => (
               <Grid2 key={`concert-${concert.id}-${concert.is_registered}`} size={{ xs: 12 }}>
-                <Card sx={{ transition: 'elevation 0.2s', '&:hover': { elevation: 4 } }}>
+                <Card 
+                  sx={{ 
+                    transition: 'elevation 0.2s, transform 0.2s', 
+                    cursor: 'pointer',
+                    '&:hover': { 
+                      elevation: 4,
+                      transform: 'translateY(-2px)'
+                    } 
+                  }}
+                  onClick={() => navigate(`/concerts/${concert.id}`)}
+                >
                   <CardContent>
                     <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
                       <Box>
@@ -356,37 +338,6 @@ const ConcertsPage: React.FC = () => {
                       </Typography>
                     )}
                   </CardContent>
-                  
-                  <CardActions sx={{ px: 2, pb: 2 }}>
-                    <Box display="flex" gap={1} ml="auto">
-                      {user?.musician_profile && concert.status !== 'completed' && (
-                        <Button
-                          variant="contained"
-                          color={concert.is_registered ? "error" : "success"}
-                          onClick={() => handleRegistration(concert)}
-                          disabled={registrationLoading.has(concert.id)}
-                          sx={{
-                            transition: 'background-color 0.3s ease, color 0.3s ease',
-                            minWidth: '120px', // Zmniejszona szerokość
-                            width: '120px', // Stała szerokość
-                          }}
-                        >
-                          {concert.is_registered 
-                            ? 'Wypisz się' 
-                            : 'Zapisz się'
-                          }
-                        </Button>
-                      )}
-                      
-                      <Button
-                        variant="outlined"
-                        startIcon={<VisibilityIcon />}
-                        onClick={() => navigate(`/concerts/${concert.id}`)}
-                      >
-                        Szczegóły
-                      </Button>
-                    </Box>
-                  </CardActions>
                 </Card>
               </Grid2>
             ))}
