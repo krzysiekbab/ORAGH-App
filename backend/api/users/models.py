@@ -32,6 +32,8 @@ class MusicianProfile(models.Model):
 
     class Meta:
         db_table = 'main_musicianprofile'  # Use the same database table as the old model
+        verbose_name = 'Profil muzyka'
+        verbose_name_plural = 'Profile muzyków'
 
     def __str__(self):
         return f"{self.user.username} - {self.instrument}"

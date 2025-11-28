@@ -32,6 +32,8 @@ class Concert(models.Model):
 
     class Meta:
         db_table = 'concerts_concert'
+        verbose_name = 'Koncert'
+        verbose_name_plural = 'Koncerty'
         ordering = ['date', 'date_created']
         indexes = [
             models.Index(fields=['date']),

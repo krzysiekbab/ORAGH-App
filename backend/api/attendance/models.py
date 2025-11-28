@@ -22,6 +22,8 @@ class Season(models.Model):
 
     class Meta:
         db_table = 'attendance_season'
+        verbose_name = 'Sezon'
+        verbose_name_plural = 'Sezony'
         ordering = ['-start_date']  # Most recent season first
         permissions = [
             ('manage_seasons', 'Can manage seasons'),
@@ -141,6 +143,8 @@ class Event(models.Model):
 
     class Meta:
         db_table = 'attendance_event'
+        verbose_name = 'Wydarzenie'
+        verbose_name_plural = 'Wydarzenia'
         ordering = ['date', 'created_at']
         indexes = [
             models.Index(fields=['date']),
@@ -218,6 +222,8 @@ class Attendance(models.Model):
 
     class Meta:
         db_table = 'attendance_attendance'
+        verbose_name = 'Obecność'
+        verbose_name_plural = 'Obecności'
         unique_together = ('user', 'event')
         indexes = [
             models.Index(fields=['user', 'event']),

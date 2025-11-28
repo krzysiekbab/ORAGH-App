@@ -19,6 +19,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+# Customize admin site header
+admin.site.site_header = "ORAGH - Panel Administracyjny"
+admin.site.site_title = "ORAGH Admin"
+admin.site.index_title = "Zarządzanie Orkiestrą ORAGH"
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     
