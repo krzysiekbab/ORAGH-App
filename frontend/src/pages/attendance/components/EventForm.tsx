@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import { ArrowBack as ArrowBackIcon, Event as EventIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import { useAttendanceStore } from '../../../stores/attendanceStore'
+import { useSeasonStore } from '../../../stores/seasonStore'
 
 interface EventFormProps {
   loading?: boolean
@@ -38,7 +38,7 @@ const EventForm: React.FC<EventFormProps> = ({
   showValidation = false
 }) => {
   const navigate = useNavigate()
-  const { seasons, fetchSeasons, fetchCurrentSeason, currentSeason } = useAttendanceStore()
+  const { seasons, fetchSeasons, fetchCurrentSeason, currentSeason } = useSeasonStore()
   const hasAutoSelectedSeason = useRef(false)
   
   const [eventData, setEventData] = useState({

@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAttendanceStore } from '../../stores/attendanceStore'
+import { useSeasonStore } from '../../stores/seasonStore'
 import { usePermissions } from '../../hooks/usePermissions'
 import { useAuthStore } from '../../stores/authStore'
 import EventActions from '../../components/attendance/EventActions'
@@ -42,18 +43,22 @@ const AttendancePage: React.FC = () => {
   const { user } = useAuthStore()
   
   const {
+    attendanceGrid,
+    attendanceLoading,
+    attendanceError,
+    fetchAttendanceGrid,
+    clearErrors: clearAttendanceErrors
+  } = useAttendanceStore()
+
+  const {
     currentSeason,
     seasons,
-    attendanceGrid,
-    seasonsLoading,
-    attendanceLoading,
-    seasonError,
-    attendanceError,
+    isLoading: seasonsLoading,
+    error: seasonError,
     fetchCurrentSeason,
     fetchSeasons,
-    fetchAttendanceGrid,
-    clearErrors
-  } = useAttendanceStore()
+    clearError: clearSeasonError
+  } = useSeasonStore()
 
   const [selectedSeasonId, setSelectedSeasonId] = useState<number | null>(null)
   const [eventTypeFilter, setEventTypeFilter] = useState<string>('all')
@@ -72,8 +77,11 @@ const AttendancePage: React.FC = () => {
     initializeSeasons()
     
     // Clear errors on unmount
-    return () => clearErrors()
-  }, [fetchCurrentSeason, fetchSeasons, clearErrors])
+    return () => {
+      clearSeasonError()
+      clearAttendanceErrors()
+    }
+  }, [fetchCurrentSeason, fetchSeasons, clearSeasonError, clearAttendanceErrors])
 
   useEffect(() => {
     // Only auto-select season once when both data sources are ready
@@ -230,12 +238,12 @@ const AttendancePage: React.FC = () => {
 
       {/* Error Alerts */}
       {seasonError && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={clearErrors}>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={clearSeasonError}>
           {seasonError}
         </Alert>
       )}
       {attendanceError && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={clearErrors}>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={clearAttendanceErrors}>
           {attendanceError}
         </Alert>
       )}

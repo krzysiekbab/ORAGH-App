@@ -10,6 +10,7 @@ import { ArrowBack as ArrowBackIcon } from '@mui/icons-material'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAttendanceStore } from '../../stores/attendanceStore'
 import attendanceService from '../../services/attendance'
+import seasonService from '../../services/season'
 import EventForm from './components/EventForm'
 import AttendanceForm from './components/AttendanceForm'
 
@@ -56,7 +57,7 @@ const MarkAttendancePage: React.FC = () => {
           console.log('Loading musicians for event season:', event.season)
           try {
             // Get the attendance grid to get the proper ordering of musicians
-            const attendanceGrid = await attendanceService.getSeasonAttendanceGrid(event.season)
+            const attendanceGrid = await seasonService.getSeasonAttendanceGrid(event.season)
             // Flatten the structured attendance grid to get musicians in the same order as AttendancePage
             const flattenedMusicians = attendanceGrid.attendance_grid.flatMap(section => 
               section.user_rows.map(userRow => ({
@@ -70,7 +71,7 @@ const MarkAttendancePage: React.FC = () => {
           } catch (err) {
             console.error('Error loading attendance grid, falling back to getSeason:', err)
             // Fallback to the old method if attendance grid fails
-            const seasonData = await attendanceService.getSeason(event.season)
+            const seasonData = await seasonService.getSeason(event.season)
             setSeasonMusicians(seasonData.musicians || [])
           }
         }
@@ -100,7 +101,7 @@ const MarkAttendancePage: React.FC = () => {
         console.log('Loading musicians for season:', data.season)
         try {
           // Get the attendance grid to get the proper ordering of musicians
-          const attendanceGrid = await attendanceService.getSeasonAttendanceGrid(data.season)
+          const attendanceGrid = await seasonService.getSeasonAttendanceGrid(data.season)
           // Flatten the structured attendance grid to get musicians in the same order as AttendancePage
           const flattenedMusicians = attendanceGrid.attendance_grid.flatMap(section => 
             section.user_rows.map(userRow => ({
@@ -114,7 +115,7 @@ const MarkAttendancePage: React.FC = () => {
         } catch (err) {
           console.error('Error loading attendance grid, falling back to getSeason:', err)
           // Fallback to the old method if attendance grid fails
-          const seasonData = await attendanceService.getSeason(data.season)
+          const seasonData = await seasonService.getSeason(data.season)
           setSeasonMusicians(seasonData.musicians || [])
           console.log('Loaded season musicians (fallback):', seasonData.musicians?.length || 0)
         }

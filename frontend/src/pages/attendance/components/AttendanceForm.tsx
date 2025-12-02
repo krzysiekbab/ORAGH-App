@@ -26,6 +26,7 @@ import {
   Remove as RemoveIcon
 } from '@mui/icons-material'
 import attendanceService from '../../../services/attendance'
+import seasonService from '../../../services/season'
 
 interface AttendanceFormProps {
   eventId: number
@@ -73,7 +74,7 @@ const AttendanceForm: React.FC<AttendanceFormProps> = ({
       // First get the event to know which season
       const event = await attendanceService.getEvent(eventId)
       if (event.season) {
-        const seasonData = await attendanceService.getSeason(event.season)
+        const seasonData = await seasonService.getSeason(event.season)
         const musiciansData = seasonData.musicians || []
         setSeasonMusicians(musiciansData)
         // Load existing attendance for editing
