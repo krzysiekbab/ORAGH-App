@@ -18,14 +18,8 @@ python-dotenv==1.0.1
 # Production server
 gunicorn==23.0.0
 
-# Background tasks and caching
-celery==5.4.0
-redis==5.1.1
-django-redis==5.4.0
-
 # API documentation
 drf-yasg==1.21.8
 
 # Additional useful packages for Django development
 python-decouple==3.8
-whitenoise==6.8.1

@@ -16,15 +16,6 @@ services:
     networks:
       - oragh_network_dev
 
-  # Redis for caching and sessions
-  redis:
-    image: redis:7-alpine
-    container_name: oragh_redis_dev
-    ports:
-      - "6379:6379"
-    networks:
-      - oragh_network_dev
-
   # Django Backend API (Development)
   backend:
     build: 
@@ -34,7 +25,6 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=oragh_platform.settings.development
       - DATABASE_URL=postgresql://oragh_user:oragh_password@db:5432/oragh_db_dev
-      - REDIS_URL=redis://redis:6379/0
       - DEBUG=True
     volumes:
       - ./backend:/app
@@ -43,7 +33,6 @@ services:
       - "8000:8000"
     depends_on:
       - db
-      - redis
     networks:
       - oragh_network_dev
     command: python manage.py runserver 0.0.0.0:8000

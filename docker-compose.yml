@@ -16,18 +16,6 @@ services:
       - oragh_network
     restart: unless-stopped
 
-  # Redis for caching and sessions
-  redis:
-    image: redis:7-alpine
-    container_name: oragh_redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - oragh_network
-    restart: unless-stopped
-
   # Django Backend API
   backend:
     build: 
@@ -37,7 +25,6 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=oragh_platform.settings.production
       - DATABASE_URL=postgresql://oragh_user:oragh_password@db:5432/oragh_db
-      - REDIS_URL=redis://redis:6379/0
     volumes:
       - ./backend:/app
       - ./backend/media:/app/media
@@ -46,7 +33,6 @@ services:
       - "8000:8000"
     depends_on:
       - db
-      - redis
     networks:
       - oragh_network
     restart: unless-stopped
@@ -97,7 +83,6 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
   static_files:
 
 networks:

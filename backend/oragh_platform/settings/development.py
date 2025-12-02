@@ -61,14 +61,13 @@ LOGGING = {
     },
 }
 
-# Cache configuration (using Redis if available, fallback to local memory)
+# Cache configuration - using local memory for development
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.getenv('REDIS_URL', 'redis://redis:6379/0'),
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
     }
 }
 
-# Session configuration
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+# Session configuration - using database backend
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
