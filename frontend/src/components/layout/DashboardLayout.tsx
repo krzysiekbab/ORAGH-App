@@ -86,13 +86,7 @@ const navigationItems: NavigationItem[] = [
     text: 'Forum',
     icon: <ForumIcon />,
     path: '/forum',
-  },
-  {
-    text: 'Statystyki',
-    icon: <BarChartIcon />,
-    path: '/stats',
-    disabled: true,
-  },
+  }
 ]
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {

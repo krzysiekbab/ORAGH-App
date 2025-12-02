@@ -30,6 +30,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom'
 import seasonService from '../../services/season'
 import { useSeasonStore } from '../../stores/seasonStore'
+import { usePermissions } from '../../hooks/usePermissions'
 
 interface Event {
   id: number
@@ -55,6 +56,7 @@ const SeasonEventsPage: React.FC = () => {
   const { seasonId } = useParams<{ seasonId: string }>()
   const navigate = useNavigate()
   const { selectedSeason, fetchSeason } = useSeasonStore()
+  const { isBoardMember } = usePermissions()
   
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(false)
@@ -125,9 +127,11 @@ const SeasonEventsPage: React.FC = () => {
         return type
     }
   }
-
   const handleNavigateToAttendance = (eventId: number) => {
-    navigate(`/attendance/mark/${eventId}`)
+    // Only board members can navigate to attendance marking
+    if (isBoardMember()) {
+      navigate(`/attendance/mark/${eventId}`)
+    }
   }
 
   const monthOptions = [
@@ -241,16 +245,16 @@ const SeasonEventsPage: React.FC = () => {
                       <TableCell>Typ</TableCell>
                       <TableCell align="center" sx={{ display: { xs: 'none', md: 'table-cell' } }}>Obecni</TableCell>
                       <TableCell align="center" sx={{ display: { xs: 'none', md: 'table-cell' } }}>Frekwencja</TableCell>
-                      <TableCell align="right">Akcje</TableCell>
+                      {isBoardMember() && <TableCell align="right">Akcje</TableCell>}
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {events.map((event) => (
                       <TableRow
                         key={event.id}
-                        hover
-                        sx={{ cursor: 'pointer' }}
-                        onClick={() => handleNavigateToAttendance(event.id)}
+                        hover={isBoardMember()}
+                        sx={{ cursor: isBoardMember() ? 'pointer' : 'default' }}
+                        onClick={() => isBoardMember() && handleNavigateToAttendance(event.id)}
                       >
                         <TableCell>
                           <Typography variant="body1" fontWeight="medium">
@@ -288,20 +292,22 @@ const SeasonEventsPage: React.FC = () => {
                             </Typography>
                           )}
                         </TableCell>
-                        <TableCell align="right">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleNavigateToAttendance(event.id)
-                            }}
-                            sx={{ minWidth: { xs: 'auto', sm: '100px' }, px: { xs: 1, sm: 2 } }}
-                          >
-                            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Szczegóły</Box>
-                            <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>→</Box>
-                          </Button>
-                        </TableCell>
+                        {isBoardMember() && (
+                          <TableCell align="right">
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleNavigateToAttendance(event.id)
+                              }}
+                              sx={{ minWidth: { xs: 'auto', sm: '100px' }, px: { xs: 1, sm: 2 } }}
+                            >
+                              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Szczegóły</Box>
+                              <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>→</Box>
+                            </Button>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>

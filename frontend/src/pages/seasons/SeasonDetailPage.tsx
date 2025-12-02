@@ -271,16 +271,6 @@ const SeasonDetailPage: React.FC = () => {
                   Zobacz wydarzenia
                 </Button>
               </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  startIcon={<CalendarIcon />}
-                  onClick={() => navigate(`/attendance`)}
-                >
-                  Siatka obecności
-                </Button>
-              </Grid2>
             </Grid2>
           </CardContent>
         </Card>
