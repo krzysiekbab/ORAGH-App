@@ -1,26 +1,8 @@
 import apiClient from './api'
+import type { UserPermissions, UserProfile } from '../types/common'
 
-export interface UserPermissions {
-  groups: string[]
-  permissions: string[]
-}
-
-export interface UserProfile {
-  id: number
-  username: string
-  email: string
-  first_name: string
-  last_name: string
-  groups: string[]
-  user_permissions: string[]
-  musician_profile?: {
-    id: number
-    instrument: string
-    birthday: string | null
-    photo: string | null
-    active: boolean
-  }
-}
+// Re-export common types for convenience
+export type { UserPermissions, UserProfile } from '../types/common'
 
 class PermissionsService {
   private cachedPermissions: UserPermissions | null = null

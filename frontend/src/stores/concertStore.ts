@@ -6,7 +6,7 @@ import concertService, {
   ConcertCreateData, 
   ConcertUpdateData, 
   ConcertFilters,
-  UserPermissions
+  ConcertUserPermissions
 } from '../services/concert'
 
 interface ConcertState {
@@ -21,7 +21,7 @@ interface ConcertState {
   error: string | null
   filters: ConcertFilters
   registrationLoading: Set<number> // Track which concerts are being processed
-  userPermissions: UserPermissions | null
+  userPermissions: ConcertUserPermissions | null
   permissionsLoading: boolean // Track permissions loading state
 
   // Actions

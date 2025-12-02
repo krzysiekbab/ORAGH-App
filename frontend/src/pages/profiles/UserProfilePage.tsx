@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { formatDateOnly } from '../../utils/date'
 import { 
   Container, 
   Typography, 
@@ -98,15 +99,6 @@ export default function UserProfilePage() {
     )
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('pl-PL', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    })
-  }
-
   const instrumentLabel = instrumentChoices.find(
     choice => choice.value === user.musician_profile.instrument
   )?.label || user.musician_profile.instrument
@@ -188,7 +180,7 @@ export default function UserProfilePage() {
                   </Box>
                   <Typography variant="body1" color="textSecondary">
                     {user.musician_profile.birthday 
-                      ? formatDate(user.musician_profile.birthday)
+                      ? formatDateOnly(user.musician_profile.birthday)
                       : 'Nie podano'
                     }
                   </Typography>
@@ -197,7 +189,7 @@ export default function UserProfilePage() {
             </Grid2>
 
             {/* Membership Info */}
-            <Grid2 size={{ xs: 12 }}>
+            <Grid2 size={{ xs: 12, sm: 6 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -207,7 +199,7 @@ export default function UserProfilePage() {
                     </Typography>
                   </Box>
                   <Typography variant="body1" color="textSecondary">
-                    Członek orkiestry od {formatDate(user.date_joined)}
+                    Członek orkiestry od {formatDateOnly(user.date_joined)}
                   </Typography>
                 </CardContent>
               </Card>

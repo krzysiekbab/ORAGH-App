@@ -37,6 +37,7 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material'
 import { useNavigate, useParams } from 'react-router-dom'
+import { formatDateOnly } from '../../utils/date'
 import { useSeasonStore } from '../../stores/seasonStore'
 import { usePermissions } from '../../hooks/usePermissions'
 import EditSeasonModal from './components/EditSeasonModal'
@@ -177,14 +178,6 @@ const SeasonDetailPage: React.FC = () => {
     (musician.instrument?.toLowerCase().includes(searchTermRemove.toLowerCase()))
   ) || []
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pl-PL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
   if (isLoading) {
     return (
       <Container maxWidth="lg">
@@ -230,7 +223,7 @@ const SeasonDetailPage: React.FC = () => {
               )}
             </Box>
             <Typography variant="body2" color="text.secondary">
-              {formatDate(selectedSeason.start_date)} - {formatDate(selectedSeason.end_date)}
+              {formatDateOnly(selectedSeason.start_date)} - {formatDateOnly(selectedSeason.end_date)}
             </Typography>
           </Box>
           

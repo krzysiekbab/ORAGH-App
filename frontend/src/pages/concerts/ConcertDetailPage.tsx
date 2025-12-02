@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { formatDate, formatDateOnly } from '../../utils/date'
 import {
   Box,
   Typography,
@@ -50,24 +51,6 @@ const ConcertDetailPage: React.FC = () => {
       clearCurrentConcert()
     }
   }, [id])
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pl-PL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pl-PL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   const getStatusChip = (status: string) => {
     const statusConfig = {
@@ -258,7 +241,7 @@ const ConcertDetailPage: React.FC = () => {
                 <Typography variant="body1" sx={{ 
                   fontSize: { xs: '0.875rem', md: '1rem' } 
                 }}>
-                  {formatDate(currentConcert.date)}
+                  {formatDateOnly(currentConcert.date)}
                 </Typography>
               </Box>
               
@@ -310,13 +293,13 @@ const ConcertDetailPage: React.FC = () => {
               <Typography variant="caption" color="text.secondary" sx={{ 
                 fontSize: { xs: '0.7rem', md: '0.75rem' } 
               }}>
-                Utworzono: {formatDateTime(currentConcert.date_created)}
+                Utworzono: {formatDate(currentConcert.date_created)}
               </Typography>
               {currentConcert.date_modified !== currentConcert.date_created && (
                 <Typography variant="caption" color="text.secondary" sx={{ 
                   fontSize: { xs: '0.7rem', md: '0.75rem' } 
                 }}>
-                  Zaktualizowano: {formatDateTime(currentConcert.date_modified)}
+                  Zaktualizowano: {formatDate(currentConcert.date_modified)}
                 </Typography>
               )}
             </Box>

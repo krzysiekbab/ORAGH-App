@@ -1,10 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-
-interface User {
-  id: number
-  username: string
-  email: string
-}
+import type { User } from '../types/common'
 
 interface AuthContextType {
   user: User | null
@@ -71,6 +66,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         id: payload.user_id,
         username: 'user', // You'd get this from the API
         email: 'user@example.com', // You'd get this from the API
+        first_name: '',
+        last_name: '',
       })
     } catch (error) {}
   }

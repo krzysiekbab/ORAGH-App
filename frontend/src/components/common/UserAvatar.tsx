@@ -1,20 +1,6 @@
 import React from 'react'
 import { Avatar, AvatarProps } from '@mui/material'
-
-interface User {
-  id: number
-  username: string
-  first_name: string
-  last_name: string
-  email: string
-  musician_profile?: {
-    id: number
-    instrument: string
-    birthday: string
-    photo: string | null
-    active: boolean
-  }
-}
+import type { User } from '../../types/common'
 
 interface UserAvatarProps extends Omit<AvatarProps, 'src' | 'alt' | 'children'> {
   user: User

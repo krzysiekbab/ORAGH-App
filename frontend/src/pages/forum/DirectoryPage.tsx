@@ -48,6 +48,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
+import { formatDate } from '../../utils/date'
 import { useForumStore } from '../../stores/forumStore'
 import { CreatePostData, CreateDirectoryData, forumService } from '../../services/forum'
 import UserAvatar from '../../components/common/UserAvatar'
@@ -309,16 +310,6 @@ const DirectoryPage: React.FC = () => {
 
     initializeData()
   }, [id])
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pl-PL', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   const getHighlightColor = (style: string) => {
     switch (style) {

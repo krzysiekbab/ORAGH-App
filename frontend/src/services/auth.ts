@@ -1,4 +1,8 @@
 import apiClient from './api'
+import type { User } from '../types/common'
+
+// Re-export common types for convenience
+export type { User } from '../types/common'
 
 // Types for authentication
 export interface LoginCredentials {
@@ -21,21 +25,6 @@ export interface AuthResponse {
   access: string
   refresh: string
   user?: User
-}
-
-export interface User {
-  id: number
-  username: string
-  email: string
-  first_name: string
-  last_name: string
-  musician_profile?: {
-    id: number
-    instrument: string
-    birthday: string | null
-    photo: string | null
-    active: boolean
-  }
 }
 
 export interface AuthError {

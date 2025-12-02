@@ -1,21 +1,10 @@
 import { apiClient } from './api'
+import type { User, PaginatedResponse } from '../types/common'
+
+// Re-export common types for convenience
+export type { User } from '../types/common'
 
 // Type definitions
-export interface User {
-  id: number
-  username: string
-  first_name: string
-  last_name: string
-  email: string
-  musician_profile?: {
-    id: number
-    instrument: string
-    birthday: string
-    photo: string | null
-    active: boolean
-  }
-}
-
 export interface Directory {
   id: number
   name: string
@@ -122,13 +111,6 @@ export interface CreateCommentData {
 
 export interface UpdateCommentData {
   content: string
-}
-
-export interface PaginatedResponse<T> {
-  count: number
-  next: string | null
-  previous: string | null
-  results: T[]
 }
 
 export interface ForumFilters {

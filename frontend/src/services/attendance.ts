@@ -1,5 +1,6 @@
 import { apiClient } from './api'
 import type { Season } from './season'
+import type { PaginatedResponse } from '../types/common'
 
 // Type definitions
 export interface Event {
@@ -121,13 +122,6 @@ export interface AttendanceFilters {
   type?: 'present' | 'absent' | 'half' | 'full'
   page?: number
   page_size?: number
-}
-
-export interface PaginatedResponse<T> {
-  count: number
-  next?: string
-  previous?: string
-  results: T[]
 }
 
 class AttendanceService {

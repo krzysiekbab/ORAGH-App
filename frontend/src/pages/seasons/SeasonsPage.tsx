@@ -10,7 +10,6 @@ import {
   CircularProgress,
   Alert,
   Container,
-  CardActions,
 } from '@mui/material'
 import {
   Add as AddIcon,
@@ -20,6 +19,7 @@ import {
   Edit as EditIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { formatDateOnly } from '../../utils/date'
 import { useSeasonStore } from '../../stores/seasonStore'
 import { usePermissions } from '../../hooks/usePermissions'
 import CreateSeasonModal from './components/CreateSeasonModal'
@@ -36,10 +36,6 @@ const SeasonsPage: React.FC = () => {
 
   const handleSeasonClick = (seasonId: number) => {
     navigate(`/seasons/${seasonId}`)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pl-PL')
   }
 
   if (isLoading && seasons.length === 0) {
@@ -148,7 +144,7 @@ const SeasonsPage: React.FC = () => {
                     <Box display="flex" alignItems="center" gap={1} mb={1}>
                       <CalendarIcon fontSize="small" color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        {formatDate(season.start_date)} - {formatDate(season.end_date)}
+                        {formatDateOnly(season.start_date)} - {formatDateOnly(season.end_date)}
                       </Typography>
                     </Box>
 

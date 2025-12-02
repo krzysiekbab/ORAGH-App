@@ -1,4 +1,5 @@
 import { apiClient } from './api'
+import type { PaginatedResponse } from '../types/common'
 
 // Type definitions
 export interface Season {
@@ -59,13 +60,6 @@ export interface AvailableMusician {
   email: string
   instrument: string | null
   profile_photo: string | null
-}
-
-export interface PaginatedResponse<T> {
-  count: number
-  next?: string
-  previous?: string
-  results: T[]
 }
 
 class SeasonService {

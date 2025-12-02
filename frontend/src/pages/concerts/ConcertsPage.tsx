@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { formatDateOnly } from '../../utils/date'
 import {
   Box,
   Typography,
@@ -94,14 +95,6 @@ const ConcertsPage: React.FC = () => {
       const nextPage = (filters.page || 1) + 1
       fetchConcerts({ ...filters, page: nextPage }, true)
     }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pl-PL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
   }
 
   const getStatusChip = (status: string) => {
@@ -307,7 +300,7 @@ const ConcertsPage: React.FC = () => {
                         <Box display="flex" alignItems="center" gap={1}>
                           <CalendarIcon fontSize="small" color="action" />
                           <Typography variant="body2">
-                            {formatDate(concert.date)}
+                            {formatDateOnly(concert.date)}
                           </Typography>
                         </Box>
                       </Grid2>

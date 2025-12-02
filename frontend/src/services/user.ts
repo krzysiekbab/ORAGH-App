@@ -1,13 +1,7 @@
 import apiClient from './api'
+import type { MusicianProfile, PaginatedResponse } from '../types/common'
 
 // Extended user interface with musician profile
-export interface MusicianProfile {
-  instrument: string
-  birthday: string | null
-  photo: string | null
-  active: boolean
-}
-
 export interface UserWithProfile {
   id: number
   username: string
@@ -32,14 +26,6 @@ export interface ChangePasswordData {
   old_password: string
   new_password1: string
   new_password2: string
-}
-
-// Paginated response interface
-export interface PaginatedResponse<T> {
-  count: number
-  next: string | null
-  previous: string | null
-  results: T[]
 }
 
 // User service class

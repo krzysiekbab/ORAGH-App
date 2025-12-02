@@ -82,7 +82,7 @@ export interface ParticipantsResponse {
   count: number
 }
 
-export interface UserPermissions {
+export interface ConcertUserPermissions {
   can_create: boolean
 }
 
@@ -158,7 +158,7 @@ class ConcertService {
   }
 
   // Get user permissions
-  async getUserPermissions(): Promise<UserPermissions> {
+  async getUserPermissions(): Promise<ConcertUserPermissions> {
     const response = await apiClient.get(`${this.basePath}/permissions/`)
     return response.data
   }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
+import { formatDateOnly } from '../../utils/date'
 import {
   Box,
   Card,
@@ -30,27 +31,8 @@ import {
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import seasonService from '../../services/season'
+import { Event } from '../../services/attendance'
 import { usePermissions } from '../../hooks/usePermissions'
-
-interface Event {
-  id: number
-  name: string
-  date: string
-  type: string
-  season: number
-  season_name: string | null
-  attendance_count: number
-  present_count: number
-  attendance_stats?: {
-    total: number
-    present: number
-    absent: number
-    half: number
-    full: number
-    attendance_rate: number
-  }
-  created_at: string
-}
 
 interface SeasonEventsSectionProps {
   seasonId: number
@@ -90,14 +72,6 @@ const SeasonEventsSection: React.FC<SeasonEventsSectionProps> = ({ seasonId }) =
       loadEvents()
     }
   }, [loadEvents, expanded])
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pl-PL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
 
   const getEventTypeColor = (type: string) => {
     switch (type) {
@@ -249,12 +223,12 @@ const SeasonEventsSection: React.FC<SeasonEventsSectionProps> = ({ seasonId }) =
                             {event.name}
                           </Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'block', sm: 'none' } }}>
-                            {formatDate(event.date)}
+                            {formatDateOnly(event.date)}
                           </Typography>
                         </TableCell>
                         <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                           <Typography variant="body2">
-                            {formatDate(event.date)}
+                            {formatDateOnly(event.date)}
                           </Typography>
                         </TableCell>
                         <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
