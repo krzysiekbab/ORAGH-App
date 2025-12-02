@@ -539,7 +539,7 @@ const SeasonDetailPage: React.FC = () => {
                       />
                       <ListItemAvatar>
                         <Avatar
-                          src={musician.photo ? (musician.photo.startsWith('http') ? musician.photo : getMediaUrl(musician.photo)) : undefined}
+                          src={musician.profile_photo ? (musician.profile_photo.startsWith('http') ? musician.profile_photo : getMediaUrl(musician.profile_photo)) : undefined}
                         >
                           {musician.user.first_name.charAt(0)}{musician.user.last_name.charAt(0)}
                         </Avatar>

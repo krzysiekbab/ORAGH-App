@@ -28,11 +28,11 @@ class MusicianProfileSerializer(serializers.ModelSerializer):
 class MusicianProfileDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for MusicianProfile with user information."""
     user = serializers.SerializerMethodField()
-    photo = serializers.SerializerMethodField()
+    profile_photo = serializers.SerializerMethodField()
     
     class Meta:
         model = MusicianProfile
-        fields = ['id', 'user', 'instrument', 'birthday', 'photo', 'active']
+        fields = ['id', 'user', 'instrument', 'birthday', 'profile_photo', 'active']
     
     def get_user(self, obj):
         """Return user information."""
@@ -44,7 +44,7 @@ class MusicianProfileDetailSerializer(serializers.ModelSerializer):
             'last_name': obj.user.last_name,
         }
     
-    def get_photo(self, obj):
+    def get_profile_photo(self, obj):
         """Return the full URL for the photo."""
         if obj.photo:
             request = self.context.get('request')

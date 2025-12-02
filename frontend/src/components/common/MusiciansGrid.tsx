@@ -27,7 +27,6 @@ interface Musician {
   last_name?: string
   instrument: string
   profile_photo?: string | null
-  photo?: string | null  // For season musicians
 }
 
 interface MusiciansGridProps {
@@ -80,16 +79,15 @@ const MusiciansGrid: React.FC<MusiciansGridProps> = ({
 
   // Get photo URL for a musician
   const getMusicianPhotoUrl = (musician: Musician): string | null => {
-    const photoPath = musician.photo || musician.profile_photo
-    if (!photoPath) return null
+    if (!musician.profile_photo) return null
     
     // If it's already a full URL (from backend), return it
-    if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
-      return photoPath
+    if (musician.profile_photo.startsWith('http://') || musician.profile_photo.startsWith('https://')) {
+      return musician.profile_photo
     }
     
     // Otherwise, use getMediaUrl
-    return getMediaUrl(photoPath)
+    return getMediaUrl(musician.profile_photo)
   }
 
   return (

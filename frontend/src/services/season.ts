@@ -29,7 +29,7 @@ export interface SeasonDetail extends Season {
       email: string
     }
     instrument: string
-    photo?: string | null  // Backend returns 'photo', not 'profile_photo'
+    profile_photo?: string | null
     active: boolean
   }>
   updated_at: string
