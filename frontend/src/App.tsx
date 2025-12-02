@@ -16,7 +16,6 @@ import ConcertDetailPage from './pages/concerts/ConcertDetailPage'
 import EditConcertPage from './pages/concerts/EditConcertPage'
 import SeasonsPage from './pages/seasons/SeasonsPage'
 import SeasonDetailPage from './pages/seasons/SeasonDetailPage'
-import SeasonMusiciansPage from './pages/seasons/SeasonMusiciansPage'
 import SeasonEventsPage from './pages/seasons/SeasonEventsPage'
 import AttendancePage from './pages/attendance/AttendancePage'
 import MarkAttendancePage from './pages/attendance/MarkAttendancePage'
@@ -135,16 +134,6 @@ function App() {
       <Route 
         path="/seasons/:seasonId" 
         element={<ProtectedRoute><SeasonDetailPage /></ProtectedRoute>} 
-      />
-      <Route 
-        path="/seasons/:seasonId/musicians" 
-        element={
-          <ProtectedRoute>
-            <PermissionProtectedRoute requiredGroups={['board']}>
-              <SeasonMusiciansPage />
-            </PermissionProtectedRoute>
-          </ProtectedRoute>
-        } 
       />
       <Route 
         path="/seasons/:seasonId/events" 
