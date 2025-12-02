@@ -235,8 +235,10 @@ const AttendanceForm: React.FC<AttendanceFormProps> = ({
         )}
 
         {seasonMusicians.length === 0 ? (
-          <Alert severity="info">
-            Brak muzyków w wybranym sezonie.
+          <Alert severity="warning">
+            <strong>Nie można sprawdzić obecności</strong>
+            <br />
+            Wybrany sezon nie ma dodanych muzyków. Aby móc sprawdzić obecność, najpierw dodaj muzyków do sezonu.
           </Alert>
         ) : (
           <TableContainer component={Paper} sx={{ mt: 2 }}>

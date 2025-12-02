@@ -279,18 +279,26 @@ const MarkAttendancePage: React.FC = () => {
         </Box>
       ) : (
         <Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-            {!eventData.name || eventData.name.trim() === '' ? 
-              'Wprowadź nazwę wydarzenia, aby kontynuować' :
-              !eventData.date ?
-              'Wybierz datę wydarzenia, aby kontynuować' :
-              !eventData.season ? 
-              'Wybierz sezon, aby zobaczyć listę muzyków' :
-              eventData.season ? 
-              'Ładowanie muzyków...' : 
-              'Wypełnij wszystkie wymagane pola, aby kontynuować'
-            }
-          </Typography>
+          {eventData.season && !loading && seasonMusicians.length === 0 ? (
+            <Alert severity="warning" sx={{ mt: 2, mb: 3 }}>
+              <strong>Nie można sprawdzić obecności</strong>
+              <br />
+              Wybrany sezon nie ma dodanych muzyków. Aby móc sprawdzić obecność, najpierw dodaj muzyków do sezonu.
+            </Alert>
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
+              {!eventData.name || eventData.name.trim() === '' ? 
+                'Wprowadź nazwę wydarzenia, aby kontynuować' :
+                !eventData.date ?
+                'Wybierz datę wydarzenia, aby kontynuować' :
+                !eventData.season ? 
+                'Wybierz sezon, aby zobaczyć listę muzyków' :
+                eventData.season ? 
+                'Ładowanie muzyków...' : 
+                'Wypełnij wszystkie wymagane pola, aby kontynuować'
+              }
+            </Typography>
+          )}
           
           {/* Cancel button when musicians haven't loaded */}
           <Box display="flex" justifyContent="flex-start">
