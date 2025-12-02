@@ -67,7 +67,6 @@ const EventActions: React.FC<EventActionsProps> = ({ event, onRefreshNeeded }) =
         }
       }
     } catch (error) {
-      console.error('Error deleting event:', error)
     } finally {
       setDeleting(false)
     }

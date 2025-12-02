@@ -14,7 +14,6 @@ export const usePermissions = () => {
         const userPermissions = await permissionsService.getUserPermissions()
         setPermissions(userPermissions)
       } catch (err) {
-        console.error('usePermissions: Error fetching permissions:', err)
         setError('Failed to fetch permissions')
         // Set empty permissions on error to be safe
         setPermissions({ groups: [], permissions: [] })

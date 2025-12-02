@@ -47,7 +47,6 @@ export default function UserProfilePage() {
         const userData = await userService.getUserById(parseInt(userId))
         setUser(userData)
       } catch (error: any) {
-        console.error('Error fetching user:', error)
         setError(error.response?.data?.detail || 'Błąd podczas pobierania profilu użytkownika')
       } finally {
         setIsLoading(false)

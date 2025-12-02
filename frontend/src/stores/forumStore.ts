@@ -105,7 +105,6 @@ export const useForumStore = create<ForumState>()(
           const directoryTree = await forumService.getDirectoryTree()
           set({ directoryTree, isLoadingDirectoryTree: false })
         } catch (error) {
-          console.error('Store: loadDirectoryTree error:', error)
           set({ 
             error: error instanceof Error ? error.message : 'Failed to load directory tree',
             isLoadingDirectoryTree: false 
@@ -384,7 +383,6 @@ export const useForumStore = create<ForumState>()(
           const permissions = await forumService.getForumPermissions()
           set({ permissions, isLoadingPermissions: false })
         } catch (error) {
-          console.error('Store: loadPermissions error:', error)
           set({ 
             error: error instanceof Error ? error.message : 'Failed to load permissions',
             isLoadingPermissions: false 

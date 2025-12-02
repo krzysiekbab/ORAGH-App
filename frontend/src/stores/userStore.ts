@@ -117,7 +117,6 @@ export const useUserStore = create<UserState>()(
           
           return true
         } catch (error: any) {
-          console.error('Photo upload error:', error)
           let errorMessage = 'Błąd podczas przesyłania zdjęcia'
           
           if (error.response?.data?.error) {

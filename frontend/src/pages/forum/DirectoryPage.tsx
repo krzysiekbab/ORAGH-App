@@ -209,7 +209,6 @@ const DirectoryPage: React.FC = () => {
       setUserGroups(groups)
       return groups
     } catch (error) {
-      console.error('Failed to load user permissions:', error)
       setUserGroups([])
       return []
     }
@@ -225,9 +224,7 @@ const DirectoryPage: React.FC = () => {
         path.unshift(currentDirectory) // Add to beginning of array
         currentId = currentDirectory.parent || null
       }
-    } catch (error) {
-      console.error('Failed to build directory path:', error)
-    }
+    } catch (error) {}
     
     return path
   }
@@ -266,8 +263,6 @@ const DirectoryPage: React.FC = () => {
       setSubdirectories(subdirectoriesResponse.results || [])
       
     } catch (error: any) {
-      console.error('Failed to load directory data:', error)
-      
       // Check if it's a 404 error (directory not found)
       if (error.response?.status === 404) {
         setDirectoryNotFound(true)
@@ -307,7 +302,6 @@ const DirectoryPage: React.FC = () => {
         const groups = await loadUserPermissions()
         await loadDirectoryData(groups)
       } catch (error) {
-        console.error('Failed to load data:', error)
       } finally {
         setIsNavigating(false)
       }

@@ -333,7 +333,6 @@ export const useConcertStore = create<ConcertState>()(
           const permissions = await concertService.getUserPermissions()
           set({ userPermissions: permissions, permissionsLoading: false })
         } catch (error) {
-          console.error('Failed to fetch user permissions:', error)
           set({ userPermissions: { can_create: false }, permissionsLoading: false })
         }
       },

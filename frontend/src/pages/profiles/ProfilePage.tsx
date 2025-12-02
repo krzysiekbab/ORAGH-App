@@ -257,12 +257,10 @@ export default function ProfilePage() {
                         try {
                           const date = new Date(profile.date_joined)
                           if (isNaN(date.getTime())) {
-                            console.error('Invalid date_joined:', profile.date_joined)
-                            return 'Nieprawidłowa data'
+                            return 'Nieprawiłowa data'
                           }
                           return date.toLocaleDateString('pl-PL')
                         } catch (error) {
-                          console.error('Error parsing date_joined:', profile.date_joined, error)
                           return 'Błąd parsowania daty'
                         }
                       })()}

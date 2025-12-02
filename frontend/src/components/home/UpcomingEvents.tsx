@@ -208,7 +208,6 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, isLoading }) =>
             endIcon={<ArrowForwardIcon />}
             onClick={() => {
               // TODO: Navigate to events page when implemented
-              console.log('Navigate to events page')
             }}
           >
             Zobacz wszystkie ({events.length})

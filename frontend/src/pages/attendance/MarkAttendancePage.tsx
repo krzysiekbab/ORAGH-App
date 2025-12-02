@@ -27,8 +27,6 @@ const MarkAttendancePage: React.FC = () => {
 
   const isEditing = !!eventId
   const isEditingFromAttendancePage = isEditing && !seasonId
-  
-  console.log('MarkAttendancePage - eventId:', eventId, 'seasonId:', seasonId, 'isEditing:', isEditing, 'isEditingFromAttendancePage:', isEditingFromAttendancePage)
 
   // Handle cancel/back navigation
   const handleCancel = () => {
@@ -47,14 +45,11 @@ const MarkAttendancePage: React.FC = () => {
       
       try {
         setInitialLoading(true)
-        console.log('Loading event with ID:', eventId)
         const event = await attendanceService.getEvent(Number(eventId))
-        console.log('Loaded event:', event)
         setEventData(event)
         
         // For editing mode, also load the musicians from the event's season
         if (event.season) {
-          console.log('Loading musicians for event season:', event.season)
           try {
             // Get the attendance grid to get the proper ordering of musicians
             const attendanceGrid = await seasonService.getSeasonAttendanceGrid(event.season)
@@ -67,16 +62,13 @@ const MarkAttendancePage: React.FC = () => {
               }))
             )
             setSeasonMusicians(flattenedMusicians)
-            console.log('Loaded season musicians for editing:', flattenedMusicians.length)
           } catch (err) {
-            console.error('Error loading attendance grid, falling back to getSeason:', err)
             // Fallback to the old method if attendance grid fails
             const seasonData = await seasonService.getSeason(event.season)
             setSeasonMusicians(seasonData.musicians || [])
           }
         }
       } catch (err: any) {
-        console.error('Error loading event:', err)
         if (err.response?.status === 404) {
           setError(`Wydarzenie o ID ${eventId} nie istnieje.`)
         } else {
@@ -92,13 +84,11 @@ const MarkAttendancePage: React.FC = () => {
 
   // Handle event form changes - load musicians when season changes
   const handleEventFormChange = async (data: any) => {
-    console.log('Event form changed:', data)
     setEventData(data)
     
     // Load musicians for the selected season
     if (data.season) {
       try {
-        console.log('Loading musicians for season:', data.season)
         try {
           // Get the attendance grid to get the proper ordering of musicians
           const attendanceGrid = await seasonService.getSeasonAttendanceGrid(data.season)
@@ -111,16 +101,12 @@ const MarkAttendancePage: React.FC = () => {
             }))
           )
           setSeasonMusicians(flattenedMusicians)
-          console.log('Loaded season musicians:', flattenedMusicians.length)
         } catch (err) {
-          console.error('Error loading attendance grid, falling back to getSeason:', err)
           // Fallback to the old method if attendance grid fails
           const seasonData = await seasonService.getSeason(data.season)
           setSeasonMusicians(seasonData.musicians || [])
-          console.log('Loaded season musicians (fallback):', seasonData.musicians?.length || 0)
         }
       } catch (err) {
-        console.error('Error loading musicians for season:', err)
         setSeasonMusicians([]) // Clear musicians if error
       }
     } else {
@@ -164,7 +150,6 @@ const MarkAttendancePage: React.FC = () => {
 
       if (isEditing) {
         // Update existing event first
-        console.log('Updating event with data:', eventData)
         const success = await updateEvent(Number(eventId), eventData)
         if (!success) {
           setError('Nie udało się zaktualizować wydarzenia.')
@@ -173,7 +158,6 @@ const MarkAttendancePage: React.FC = () => {
         targetEventId = Number(eventId)
       } else {
         // Create new event first
-        console.log('Creating event with data:', eventData)
         const eventCreated = await createEvent(eventData)
         
         if (!eventCreated) {
@@ -189,8 +173,6 @@ const MarkAttendancePage: React.FC = () => {
         }
         targetEventId = currentEvent.id
       }
-
-      console.log('Marking attendance for event ID:', targetEventId, 'with data:', attendanceData)
 
       // Mark attendance for the event
       const attendanceMarked = await markAttendance(targetEventId, attendanceData)
@@ -208,7 +190,6 @@ const MarkAttendancePage: React.FC = () => {
         setError('Nie udało się zapisać obecności.')
       }
     } catch (err: any) {
-      console.error('Error in form submit:', err)
       setError('Nie udało się zapisać danych.')
     } finally {
       setLoading(false)
@@ -224,7 +205,6 @@ const MarkAttendancePage: React.FC = () => {
   }
 
   if (isEditing && !initialLoading && (!eventData || error)) {
-    console.log('Event not found - eventData:', eventData, 'error:', error)
     return (
       <Box maxWidth={800} mx="auto" mt={4} px={2}>
         <Alert severity="error">

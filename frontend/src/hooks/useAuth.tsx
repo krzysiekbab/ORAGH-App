@@ -56,7 +56,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.removeItem('refreshToken')
       }
     } catch (error) {
-      console.error('Token validation error:', error)
       localStorage.removeItem('accessToken')
       localStorage.removeItem('refreshToken')
     }
@@ -73,9 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         username: 'user', // You'd get this from the API
         email: 'user@example.com', // You'd get this from the API
       })
-    } catch (error) {
-      console.error('Error getting user info:', error)
-    }
+    } catch (error) {}
   }
 
   const login = async (username: string, password: string): Promise<boolean> => {
@@ -98,7 +95,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false
       }
     } catch (error) {
-      console.error('Login error:', error)
       return false
     }
   }

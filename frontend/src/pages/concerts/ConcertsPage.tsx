@@ -68,7 +68,7 @@ const ConcertsPage: React.FC = () => {
     }
     
     // Execute promises concurrently for faster loading
-    Promise.all(promises).catch(console.error)
+    Promise.all(promises).catch(() => {})
   }, [user])
 
   // Auto-filter when search term or status changes

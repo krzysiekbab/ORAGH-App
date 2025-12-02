@@ -66,7 +66,6 @@ const homeService = {
       return response.data
     } catch (error) {
       // If home API doesn't exist yet, return mock data
-      console.warn('Home stats API not implemented, using mock data')
       return {
         totalMusicians: 45,
         activeMusicians: 42,
@@ -85,7 +84,6 @@ const homeService = {
       return response.data
     } catch (error) {
       // If home API doesn't exist yet, return mock data
-      console.warn('Upcoming events API not implemented, using mock data')
       return [
         {
           id: 1,
@@ -119,7 +117,6 @@ const homeService = {
       return response.data
     } catch (error) {
       // If home API doesn't exist yet, return mock data
-      console.warn('Recent activity API not implemented, using mock data')
       return [
         {
           id: 1,

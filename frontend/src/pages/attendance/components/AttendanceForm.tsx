@@ -81,7 +81,6 @@ const AttendanceForm: React.FC<AttendanceFormProps> = ({
         loadExistingAttendance(musiciansData)
       }
     } catch (error) {
-      console.error('Error loading season musicians:', error)
     } finally {
       setLoadingMusicians(false)
     }
@@ -97,7 +96,6 @@ const AttendanceForm: React.FC<AttendanceFormProps> = ({
     try {
       // Load existing attendance data for this event
       const existingAttendances = await attendanceService.getEventAttendances(eventId)
-      console.log('Loaded existing attendances:', existingAttendances)
       
       const attendanceMap: Record<number, number> = {}
       
@@ -112,9 +110,7 @@ const AttendanceForm: React.FC<AttendanceFormProps> = ({
       })
       
       setAttendanceData(attendanceMap)
-      console.log('Set attendance data:', attendanceMap)
     } catch (error) {
-      console.error('Error loading existing attendance:', error)
       // Fall back to initializing with all absent
       initializeAttendanceData(musiciansData)
     }

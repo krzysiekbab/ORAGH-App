@@ -136,7 +136,6 @@ const PostPage: React.FC = () => {
       setUserGroups(groups)
       return groups
     } catch (error) {
-      console.error('Failed to load user permissions:', error)
       setUserGroups([])
       return []
     }
@@ -172,8 +171,6 @@ const PostPage: React.FC = () => {
       await loadCommentsData(parseInt(id), 1)
       
     } catch (error: any) {
-      console.error('Failed to load post data:', error)
-      
       // Check if it's a 404 error (post not found)
       if (error.response?.status === 404) {
         setPostNotFound(true)
@@ -209,7 +206,6 @@ const PostPage: React.FC = () => {
       
       setPostPath(path)
     } catch (error) {
-      console.error('Failed to build post path:', error)
       setPostPath([])
     }
   }
@@ -230,7 +226,6 @@ const PostPage: React.FC = () => {
       setCommentsCount(response.count)
       setTotalPages(Math.ceil(response.count / 20))
     } catch (error) {
-      console.error('Failed to load comments:', error)
       toast.error('Nie udało się załadować komentarzy')
     } finally {
       setIsLoadingComments(false)
@@ -277,9 +272,7 @@ const PostPage: React.FC = () => {
         // Load user permissions first, then post data
         const groups = await loadUserPermissions()
         await loadPostData(groups)
-      } catch (error) {
-        console.error('Failed to load data:', error)
-      }
+      } catch (error) {}
     }
 
     initializeData()
@@ -312,16 +305,6 @@ const PostPage: React.FC = () => {
   const handleCommentMenuClick = (event: React.MouseEvent<HTMLElement>, comment: Comment) => {
     setCommentMenuAnchor(event.currentTarget)
     setSelectedComment(comment)
-    
-    // Debug logging
-    console.log('Comment menu clicked:', {
-      commentId: comment.id,
-      commentAuthorId: comment.author.id,
-      currentUserId: currentUser?.id,
-      canEdit: comment.can_edit,
-      canDelete: comment.can_delete,
-      isOwner: Number(currentUser?.id) === Number(comment.author.id)
-    })
   }
 
   const handleCommentMenuClose = () => {
@@ -330,7 +313,6 @@ const PostPage: React.FC = () => {
   }
 
   const handleEditComment = () => {
-    console.log('handleEditComment called', { selectedComment })
     if (!selectedComment) return
     
     setEditingComment(selectedComment)
@@ -340,7 +322,6 @@ const PostPage: React.FC = () => {
   }
 
   const handleEditCommentSubmit = async (data: CommentFormData) => {
-    console.log('handleEditCommentSubmit called', { editingComment, data })
     if (!editingComment) return
     
     const success = await updateComment(editingComment.id, { content: data.content })
@@ -354,7 +335,6 @@ const PostPage: React.FC = () => {
   }
 
   const handleDeleteCommentConfirm = () => {
-    console.log('handleDeleteCommentConfirm called', { selectedComment })
     if (!selectedComment) return
     
     setDeletingComment(selectedComment)
@@ -363,7 +343,6 @@ const PostPage: React.FC = () => {
   }
 
   const handleDeleteComment = async () => {
-    console.log('handleDeleteComment called', { deletingComment })
     if (!deletingComment) return
     
     const success = await deleteComment(deletingComment.id)

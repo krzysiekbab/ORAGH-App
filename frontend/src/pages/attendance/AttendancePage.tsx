@@ -25,7 +25,6 @@ import {
 } from '@mui/material'
 import {
   Add as AddIcon,
-  People as PeopleIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Remove as RemoveIcon

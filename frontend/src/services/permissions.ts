@@ -36,7 +36,6 @@ class PermissionsService {
       this.cachedPermissions = response.data
       return response.data
     } catch (error) {
-      console.error('Failed to fetch user permissions:', error)
       throw error // Throw instead of returning empty permissions
     }
   }
@@ -51,7 +50,6 @@ class PermissionsService {
       this.cachedProfile = response.data
       return response.data
     } catch (error) {
-      console.error('Failed to fetch user profile:', error)
       throw error
     }
   }

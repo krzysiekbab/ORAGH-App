@@ -72,7 +72,6 @@ const EventForm: React.FC<EventFormProps> = ({
       
       // Call onChange callback if provided
       if (onChange) {
-        console.log('EventForm: Auto-selecting current season:', currentSeason.id)
         onChange(newData)
       }
     }

@@ -136,27 +136,21 @@ export const useAuthStore = create<AuthState>()(
         // Clear user profile cache when logging out
         try {
           useUserStore.getState().clearProfile()
-        } catch (error) {
-          console.warn('Failed to clear user profile cache:', error)
-        }
+        } catch (error) {}
         
         // Clear permissions cache when logging out
         try {
           import('../services/permissions').then(({ permissionsService }) => {
             permissionsService.clearCache()
           })
-        } catch (error) {
-          console.warn('Failed to clear permissions cache:', error)
-        }
+        } catch (error) {}
         
         // Clear concert permissions cache when logging out
         try {
           import('./concertStore').then(({ useConcertStore }) => {
             useConcertStore.getState().clearPermissions()
           })
-        } catch (error) {
-          console.warn('Failed to clear concert permissions cache:', error)
-        }
+        } catch (error) {}
       },
 
       // Check authentication status on app load

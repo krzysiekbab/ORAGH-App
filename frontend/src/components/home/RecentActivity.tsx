@@ -229,7 +229,6 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, isLoading }
             endIcon={<ArrowForwardIcon />}
             onClick={() => {
               // TODO: Navigate to activity/forum page when implemented
-              console.log('Navigate to activity page')
             }}
           >
             Zobacz wszystkie

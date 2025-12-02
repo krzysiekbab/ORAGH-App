@@ -105,7 +105,6 @@ const ConcertDetailPage: React.FC = () => {
         await registerForConcert(currentConcert.id)
       }
     } catch (error) {
-      console.error('Registration error:', error)
       // Error is already handled by the store
     }
   }
