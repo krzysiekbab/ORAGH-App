@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate, useParams } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { useAuthStore } from './stores/authStore'
 import DashboardLayout from './components/layout/DashboardLayout'
@@ -16,7 +16,6 @@ import ConcertDetailPage from './pages/concerts/ConcertDetailPage'
 import EditConcertPage from './pages/concerts/EditConcertPage'
 import SeasonsPage from './pages/seasons/SeasonsPage'
 import SeasonDetailPage from './pages/seasons/SeasonDetailPage'
-import SeasonEventsPage from './pages/seasons/SeasonEventsPage'
 import AttendancePage from './pages/attendance/AttendancePage'
 import MarkAttendancePage from './pages/attendance/MarkAttendancePage'
 import ForumPage from './pages/forum/ForumPage'
@@ -134,10 +133,6 @@ function App() {
       <Route 
         path="/seasons/:seasonId" 
         element={<ProtectedRoute><SeasonDetailPage /></ProtectedRoute>} 
-      />
-      <Route 
-        path="/seasons/:seasonId/events" 
-        element={<ProtectedRoute><SeasonEventsPage /></ProtectedRoute>} 
       />
       
       {/* Attendance routes */}

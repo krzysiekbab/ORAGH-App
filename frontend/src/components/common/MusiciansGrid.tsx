@@ -5,13 +5,14 @@ import {
   Grid2,
   Chip,
   Avatar,
-  Paper,
   Collapse,
-  Button,
+  IconButton,
+  Card,
+  CardContent,
 } from '@mui/material'
 import {
-  Visibility as VisibilityIcon,
-  VisibilityOff as VisibilityOffIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material'
 import userService from '../../services/user'
 import { getMediaUrl } from '../../config/api'
@@ -91,35 +92,25 @@ const MusiciansGrid: React.FC<MusiciansGridProps> = ({
   }
 
   return (
-    <Paper sx={{ p: { xs: 2, md: 3 } }}>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: { xs: 'flex-start', md: 'center' },
-          flexDirection: { xs: 'column', md: 'row' },
-          gap: { xs: 1, md: 0 },
-          mb: { xs: 2, md: 2 },
-        }}
-      >
-        <Typography variant="h5" sx={{ fontSize: { xs: '1.1rem', md: '1.5rem' } }}>
-          {title} {showCount && `(${musicians.length})`}
-        </Typography>
-        <Button
+    <Card>
+      <CardContent>
+        <Box 
+          display="flex" 
+          justifyContent="space-between" 
+          alignItems="center" 
+          mb={2}
+          sx={{ cursor: 'pointer' }}
           onClick={() => setShowSections(!showSections)}
-          variant="text"
-          endIcon={showSections ? <VisibilityOffIcon /> : <VisibilityIcon />}
-          sx={{
-            fontSize: { xs: '0.75rem', md: '0.875rem' },
-            alignSelf: { xs: 'flex-end', md: 'center' },
-          }}
         >
-          {showSections ? 'Ukryj sekcje' : 'Pokaż sekcje'}
-        </Button>
-      </Box>
+          <Typography variant="h6" fontWeight="bold">
+            {title} {showCount && `(${musicians.length})`}
+          </Typography>
+          <IconButton size="small">
+            {showSections ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </IconButton>
+        </Box>
 
-      <Collapse in={showSections}>
-        <Box sx={{ mt: 2 }}>
+        <Collapse in={showSections}>
           <Grid2 container spacing={{ xs: 2, md: 3 }}>
             {instrumentChoices.map((instrumentChoice) => {
               const instrument = instrumentChoice.value
@@ -235,9 +226,9 @@ const MusiciansGrid: React.FC<MusiciansGridProps> = ({
               )
             })}
           </Grid2>
-        </Box>
-      </Collapse>
-    </Paper>
+        </Collapse>
+      </CardContent>
+    </Card>
   )
 }
 

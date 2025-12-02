@@ -43,6 +43,7 @@ import EditSeasonModal from './components/EditSeasonModal'
 import DeleteSeasonDialog from './components/DeleteSeasonDialog'
 import { getMediaUrl } from '../../config/api'
 import MusiciansGrid from '../../components/common/MusiciansGrid'
+import SeasonEventsSection from '../../components/seasons/SeasonEventsSection'
 import seasonService, { AvailableMusician } from '../../services/season'
 
 const SeasonDetailPage: React.FC = () => {
@@ -233,20 +234,6 @@ const SeasonDetailPage: React.FC = () => {
             </Typography>
           </Box>
           
-          {/* Button for all users */}
-          <Box display="flex" gap={1} flexWrap="wrap" width={{ xs: '100%', sm: 'auto' }}>
-            <Button
-              variant="outlined"
-              startIcon={<EventIcon />}
-              onClick={() => navigate(`/seasons/${seasonId}/events`)}
-              size="small"
-              sx={{ flexGrow: { xs: 1, sm: 0 } }}
-            >
-              <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>Wydarzenia</Box>
-              <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>Wydarzenia</Box>
-            </Button>
-          </Box>
-          
           {isBoardMember() && (
             <Box display="flex" gap={1} flexWrap="wrap" width={{ xs: '100%', sm: 'auto' }}>
               <Button
@@ -397,8 +384,13 @@ const SeasonDetailPage: React.FC = () => {
 
         {/* Musicians Grid */}
         {selectedSeason.musicians && selectedSeason.musicians.length > 0 && (
-          <MusiciansGrid musicians={selectedSeason.musicians} />
+          <Box sx={{ mb: 3 }}>
+            <MusiciansGrid musicians={selectedSeason.musicians} />
+          </Box>
         )}
+
+        {/* Season Events Section */}
+        <SeasonEventsSection seasonId={selectedSeason.id} />
       </Box>
 
       {/* Modals and Dialogs */}
@@ -468,6 +460,11 @@ const SeasonDetailPage: React.FC = () => {
                         tabIndex={-1}
                         disableRipple
                       />
+                      <ListItemAvatar>
+                        <Avatar src={musician.profile_photo || undefined}>
+                          {musician.full_name.split(' ').map(n => n.charAt(0)).join('')}
+                        </Avatar>
+                      </ListItemAvatar>
                       <ListItemText
                         primary={musician.full_name}
                         secondary={`${musician.email} ${musician.instrument ? `• ${musician.instrument}` : ''}`}

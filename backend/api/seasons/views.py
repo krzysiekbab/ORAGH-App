@@ -300,13 +300,17 @@ class SeasonViewSet(viewsets.ModelViewSet):
         
         musicians_data = []
         for musician in available_musicians:
+            profile_photo_url = None
+            if musician.photo:
+                profile_photo_url = request.build_absolute_uri(musician.photo.url)
+            
             musicians_data.append({
                 'id': musician.id,
                 'user_id': musician.user.id,
                 'full_name': f"{musician.user.first_name} {musician.user.last_name}",
                 'instrument': musician.instrument,
                 'email': musician.user.email,
-                'profile_photo': musician.photo.url if musician.photo else None
+                'profile_photo': profile_photo_url
             })
         
         return Response({
