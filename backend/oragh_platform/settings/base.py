@@ -152,6 +152,16 @@ LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/admin/'
 LOGOUT_REDIRECT_URL = '/admin/'
 
+# Email settings (base configuration, overridden in development/production)
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@oragh.com')
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@oragh.com')
+
+# Frontend URL for activation links
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+
+# Site name for emails
+SITE_NAME = 'ORAGH Platform'
+
 # File upload settings
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024  # 2MB

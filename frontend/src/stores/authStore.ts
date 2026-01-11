@@ -10,6 +10,8 @@ interface AuthState {
   isLoading: boolean
   error: string | null
   hasCheckedAuth: boolean // Add this to track if we've checked auth yet
+  registrationSuccess: boolean // Track if registration was successful
+  isAccountPending: boolean // Track if login failed due to pending account activation
 
   // Actions
   login: (credentials: LoginCredentials) => Promise<boolean>
@@ -17,7 +19,9 @@ interface AuthState {
   logout: () => void
   checkAuth: () => Promise<void>
   clearError: () => void
+  clearNavigationState: () => void  // Clears errors but not isAccountPending
   setUser: (user: User | null) => void
+  clearRegistrationSuccess: () => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -29,10 +33,12 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
       hasCheckedAuth: false,
+      registrationSuccess: false,
+      isAccountPending: false,
 
       // Login action
       login: async (credentials: LoginCredentials) => {
-        set({ isLoading: true, error: null })
+        set({ isLoading: true, error: null, isAccountPending: false })
         
         try {
           const tokens = await authService.login(credentials)
@@ -46,50 +52,61 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true, 
             isLoading: false,
             error: null,
-            hasCheckedAuth: true
+            hasCheckedAuth: true,
+            isAccountPending: false
           })
           
           return true
         } catch (error: any) {
-          const errorMessage = error.response?.data?.detail || 
-                              error.response?.data?.non_field_errors?.[0] ||
-                              'Nieprawidłowa nazwa użytkownika lub hasło'
+          let errorMessage = 'Nieprawidłowa nazwa użytkownika lub hasło'
+          let isPending = false
+          
+          const detail = error.response?.data?.detail || ''
+          const nonFieldErrors = error.response?.data?.non_field_errors?.[0] || ''
+          
+          // Check for inactive account error (Polish and English variants)
+          if (detail.toLowerCase().includes('no active account') || 
+              detail.toLowerCase().includes('nie znaleziono aktywnego konta') ||
+              detail.toLowerCase().includes('inactive') ||
+              nonFieldErrors.toLowerCase().includes('no active account') ||
+              nonFieldErrors.toLowerCase().includes('nie znaleziono aktywnego konta')) {
+            isPending = true
+            errorMessage = 'Twoje konto oczekuje na zatwierdzenie przez administratora.'
+          } else if (detail) {
+            errorMessage = detail
+          } else if (nonFieldErrors) {
+            errorMessage = nonFieldErrors
+          }
           
           set({ 
             isLoading: false, 
             error: errorMessage,
             isAuthenticated: false,
             user: null,
-            hasCheckedAuth: true
+            hasCheckedAuth: true,
+            isAccountPending: isPending
           })
           
           return false
         }
       },
 
-      // Register action
+      // Register action - returns success but user is NOT logged in (needs admin approval)
       register: async (data: RegisterData) => {
-        set({ isLoading: true, error: null })
+        set({ isLoading: true, error: null, registrationSuccess: false })
         
         try {
           const response = await authService.register(data)
-          authService.storeTokens(response)
           
-          // Response from register endpoint includes user data
-          const user = response.user || {
-            id: 1,
-            username: data.username,
-            email: data.email,
-            first_name: data.first_name,
-            last_name: data.last_name,
-          }
-          
+          // Registration successful, but user is NOT authenticated yet
+          // They need to wait for admin approval
           set({ 
-            user, 
-            isAuthenticated: true, 
+            user: null, 
+            isAuthenticated: false, 
             isLoading: false,
             error: null,
-            hasCheckedAuth: true
+            hasCheckedAuth: true,
+            registrationSuccess: true
           })
           
           return true
@@ -190,9 +207,19 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Clear error
+      // Clear error and pending state
       clearError: () => {
+        set({ error: null, isAccountPending: false })
+      },
+
+      // Clear only errors for navigation (preserves isAccountPending)
+      clearNavigationState: () => {
         set({ error: null })
+      },
+
+      // Clear registration success flag
+      clearRegistrationSuccess: () => {
+        set({ registrationSuccess: false })
       },
 
       // Set user (for external updates)

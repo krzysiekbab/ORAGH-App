@@ -6,6 +6,7 @@ import DashboardLayout from './components/layout/DashboardLayout'
 import PermissionProtectedRoute from './components/auth/PermissionProtectedRoute'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
+import ActivateAccountPage from './pages/auth/ActivateAccountPage'
 import ProfilePage from './pages/profiles/ProfilePage'
 import EditProfilePage from './pages/profiles/EditProfilePage'
 import ChangePasswordPage from './pages/profiles/ChangePasswordPage'
@@ -84,11 +85,15 @@ function App() {
       {/* Public routes */}
       <Route 
         path="/login" 
-        element={hasCheckedAuth && !isAuthenticated ? <LoginPage /> : hasCheckedAuth && isAuthenticated ? <Navigate to="/" replace /> : <CircularProgress />} 
+        element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />} 
       />
       <Route 
         path="/register" 
-        element={hasCheckedAuth && !isAuthenticated ? <RegisterPage /> : hasCheckedAuth && isAuthenticated ? <Navigate to="/" replace /> : <CircularProgress />} 
+        element={isAuthenticated ? <Navigate to="/" replace /> : <RegisterPage />} 
+      />
+      <Route 
+        path="/admin/activate/:token" 
+        element={<ActivateAccountPage />} 
       />
       
       {/* Protected routes */}

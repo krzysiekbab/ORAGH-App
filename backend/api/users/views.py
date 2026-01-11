@@ -22,18 +22,24 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
     
     def create(self, request, *args, **kwargs):
-        """Create user and return JWT tokens."""
+        """
+        Create user account (inactive until admin approval).
+        Does NOT return JWT tokens - user must wait for admin activation.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        # Generate JWT tokens
-        refresh = RefreshToken.for_user(user)
-        
+        # Return success message without tokens (user cannot login yet)
         return Response({
-            'user': UserSerializer(user).data,
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
+            'success': True,
+            'message': 'Rejestracja przebiegła pomyślnie. Twoje konto oczekuje na zatwierdzenie przez administratora. Otrzymasz email, gdy konto zostanie aktywowane.',
+            'user': {
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            }
         }, status=status.HTTP_201_CREATED)
 
 
@@ -166,4 +172,115 @@ def user_permissions(request):
     return Response({
         'groups': groups,
         'permissions': permissions
+    })
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([permissions.AllowAny])
+def activate_account(request, token):
+    """
+    Activate a user account using the activation token.
+    GET: Display activation confirmation page (for admin clicking email link)
+    POST: Perform the actual activation
+    
+    This endpoint is called when admin clicks the activation link in their email.
+    """
+    from .models import AccountActivationToken
+    from .emails import send_account_activated_email
+    
+    try:
+        activation_token = AccountActivationToken.objects.select_related('user').get(token=token)
+    except AccountActivationToken.DoesNotExist:
+        return Response({
+            'success': False,
+            'error': 'Nieprawidłowy token aktywacyjny.'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check if already used
+    if activation_token.is_used:
+        return Response({
+            'success': False,
+            'error': 'To konto zostało już aktywowane.',
+            'activated_at': activation_token.activated_at
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Check if token expired
+    if activation_token.is_expired:
+        return Response({
+            'success': False,
+            'error': 'Token aktywacyjny wygasł. Użytkownik musi zarejestrować się ponownie.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    user = activation_token.user
+    
+    if request.method == 'GET':
+        # Return user info for confirmation page
+        return Response({
+            'success': True,
+            'action': 'confirm',
+            'user': {
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'date_joined': user.date_joined,
+            },
+            'message': f'Czy chcesz aktywować konto użytkownika {user.first_name} {user.last_name}?'
+        })
+    
+    # POST - perform activation
+    if activation_token.activate():
+        # Send confirmation email to user
+        send_account_activated_email(user)
+        
+        return Response({
+            'success': True,
+            'message': f'Konto użytkownika {user.first_name} {user.last_name} zostało aktywowane. Użytkownik otrzymał email z potwierdzeniem.'
+        })
+    
+    return Response({
+        'success': False,
+        'error': 'Nie udało się aktywować konta.'
+    }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def pending_activations(request):
+    """
+    List all pending account activations (for admin panel).
+    Only accessible by staff/superusers.
+    """
+    from .models import AccountActivationToken
+    
+    if not request.user.is_staff:
+        return Response({
+            'error': 'Brak uprawnień do przeglądania tej strony.'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    pending = AccountActivationToken.objects.filter(
+        is_used=False
+    ).select_related('user', 'user__musicianprofile').order_by('-created_at')
+    
+    pending_list = []
+    for token in pending:
+        user = token.user
+        pending_list.append({
+            'token': str(token.token),
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'date_joined': user.date_joined,
+            },
+            'instrument': user.musicianprofile.instrument if hasattr(user, 'musicianprofile') else None,
+            'created_at': token.created_at,
+            'is_expired': token.is_expired,
+        })
+    
+    return Response({
+        'count': len(pending_list),
+        'pending_activations': pending_list
     })

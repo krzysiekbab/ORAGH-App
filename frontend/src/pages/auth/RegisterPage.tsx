@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { 
   Container, 
   Paper, 
@@ -10,13 +9,13 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-  CircularProgress
+  MenuItem
 } from '@mui/material'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import React, { useEffect, useRef } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import userService from '../../services/user'
 import toast from 'react-hot-toast'
@@ -50,11 +49,29 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>
 
 export default function RegisterPage() {
-  const navigate = useNavigate()
-  const { register, isLoading, error, clearError } = useAuthStore()
-  const [showSuccess, setShowSuccess] = useState(false)
+  const { register, isLoading, error, clearError, clearNavigationState, registrationSuccess, clearRegistrationSuccess } = useAuthStore()
+  const location = useLocation()
   
   const instrumentChoices = userService.getInstrumentChoices()
+  
+  // Track previous location.key to detect actual navigation
+  const prevLocationKey = useRef<string | null>(null)
+
+  // Clear errors from login page when entering this page
+  useEffect(() => {
+    if (prevLocationKey.current === null) {
+      // First mount - clear errors from other pages but NOT registrationSuccess
+      clearNavigationState()
+      prevLocationKey.current = location.key
+    } else if (prevLocationKey.current !== location.key) {
+      // Actual navigation happened - clear everything
+      clearNavigationState()
+      clearRegistrationSuccess()
+      prevLocationKey.current = location.key
+    }
+    // Re-renders with same location.key - do nothing (preserves registrationSuccess)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key])
 
   const {
     control,
@@ -80,27 +97,29 @@ export default function RegisterPage() {
     const success = await register(data)
     
     if (success) {
-      setShowSuccess(true)
-      toast.success('Rejestracja zakończona pomyślnie!')
-      
-      // Redirect to home page after short delay
-      setTimeout(() => {
-        navigate('/')
-      }, 2000)
+      toast.success('Rejestracja przebiegła pomyślnie!')
     }
   }
 
-  if (showSuccess) {
+  if (registrationSuccess) {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>
         <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="h4" color="primary" gutterBottom>
-            Witamy w ORAGH! 🎵
+          <Typography variant="h5" color="primary" gutterBottom>
+            Rejestracja zakończona
           </Typography>
-          <Typography variant="body1" sx={{ mb: 3 }}>
-            Twoje konto zostało pomyślnie utworzone. Za chwilę zostaniesz przekierowany...
-          </Typography>
-          <CircularProgress />
+          <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
+            Twoje konto oczekuje na zatwierdzenie przez administratora. 
+            Otrzymasz email z potwierdzeniem, gdy będziesz mógł się zalogować.
+          </Alert>
+          <Button 
+            variant="outlined" 
+            component={Link} 
+            to="/login"
+            onClick={clearRegistrationSuccess}
+          >
+            Przejdź do logowania
+          </Button>
         </Paper>
       </Container>
     )

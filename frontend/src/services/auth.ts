@@ -27,6 +27,18 @@ export interface AuthResponse {
   user?: User
 }
 
+// Response from registration (no tokens - account needs admin approval)
+export interface RegisterResponse {
+  success: boolean
+  message: string
+  user: {
+    username: string
+    email: string
+    first_name: string
+    last_name: string
+  }
+}
+
 export interface AuthError {
   detail?: string
   username?: string[]
@@ -43,8 +55,19 @@ class AuthService {
     return response.data
   }
 
-  async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/users/register/', data)
+  async register(data: RegisterData): Promise<RegisterResponse> {
+    const response = await apiClient.post<RegisterResponse>('/users/register/', data)
+    return response.data
+  }
+
+  // Activate user account (for admin)
+  async getActivationInfo(token: string): Promise<any> {
+    const response = await apiClient.get(`/users/activate/${token}/`)
+    return response.data
+  }
+
+  async activateAccount(token: string): Promise<any> {
+    const response = await apiClient.post(`/users/activate/${token}/`)
     return response.data
   }
 

@@ -106,16 +106,20 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return attrs
     
     def create(self, validated_data):
-        """Create user with musician profile."""
+        """Create user with musician profile. User is inactive until admin approves."""
+        from .models import AccountActivationToken
+        from .emails import send_activation_request_to_admin
+        
         # Extract profile data
         instrument = validated_data.pop('instrument')
         birthday = validated_data.pop('birthday')
         password1 = validated_data.pop('password1')
         validated_data.pop('password2')  # Remove confirmation password
         
-        # Create user
+        # Create user with is_active=False (requires admin approval)
         user = User.objects.create_user(
             password=password1,
+            is_active=False,  # User cannot login until admin approves
             **validated_data
         )
         
@@ -129,6 +133,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             instrument=instrument,
             birthday=birthday
         )
+        
+        # Create activation token and send email to admin
+        activation_token = AccountActivationToken.objects.create(user=user)
+        send_activation_request_to_admin(user, activation_token)
         
         return user
 

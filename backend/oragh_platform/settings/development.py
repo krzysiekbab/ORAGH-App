@@ -36,8 +36,13 @@ INTERNAL_IPS = [
     'localhost',
 ]
 
-# Email backend for development
+# Email backend for development (emails are printed to console)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@oragh-dev.com'
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@oragh-dev.com')
+
+# Frontend URL for activation links (Docker uses port 3000)
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 
 # Logging configuration
 LOGGING = {

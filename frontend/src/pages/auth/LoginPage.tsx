@@ -28,9 +28,12 @@ type LoginFormData = z.infer<typeof loginSchema>
 const LoginPage: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, isLoading, error, clearError, isAuthenticated } = useAuthStore()
+  const { login, isLoading, error, clearError, isAuthenticated, isAccountPending, clearNavigationState, clearRegistrationSuccess } = useAuthStore()
   
   const from = (location.state as any)?.from?.pathname || '/'
+  
+  // Track previous location.key to detect actual navigation
+  const prevLocationKey = React.useRef<string | null>(null)
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -38,6 +41,22 @@ const LoginPage: React.FC = () => {
       navigate(from, { replace: true })
     }
   }, [isAuthenticated, navigate, from])
+
+  // Clear state when entering this page
+  useEffect(() => {
+    if (prevLocationKey.current === null) {
+      // First mount - clear registrationSuccess from register page but NOT isAccountPending
+      clearRegistrationSuccess()
+      prevLocationKey.current = location.key
+    } else if (prevLocationKey.current !== location.key) {
+      // Actual navigation happened - clear everything
+      clearNavigationState()
+      clearRegistrationSuccess()
+      prevLocationKey.current = location.key
+    }
+    // Re-renders with same location.key - do nothing (preserves isAccountPending)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key])
 
   // Form setup
   const {
@@ -48,20 +67,13 @@ const LoginPage: React.FC = () => {
     resolver: zodResolver(loginSchema),
   })
 
-  // Clear error when component mounts
-  useEffect(() => {
-    clearError()
-  }, [clearError])
-
   const onSubmit = async (data: LoginFormData) => {
     const success = await login(data)
     if (success) {
       toast.success('Zalogowano pomyślnie!')
       navigate(from, { replace: true })
-    } else {
-      // Show error toast when login fails
-      toast.error(error || 'Nieprawidłowa nazwa użytkownika lub hasło')
     }
+    // Don't show toast for errors - we display them in the UI
   }
 
   return (
@@ -90,7 +102,15 @@ const LoginPage: React.FC = () => {
           />
           
           <CardContent>
-            {error && (
+            {/* Message for pending account activation */}
+            {isAccountPending && (
+              <Alert severity="info" sx={{ mb: 2 }} onClose={clearError}>
+                Twoje konto oczekuje na zatwierdzenie przez administratora. Otrzymasz email, gdy zostanie aktywowane.
+              </Alert>
+            )}
+
+            {/* Regular error message (not for pending accounts) */}
+            {error && !isAccountPending && (
               <Alert severity="error" sx={{ mb: 2 }} onClose={clearError}>
                 {error}
               </Alert>

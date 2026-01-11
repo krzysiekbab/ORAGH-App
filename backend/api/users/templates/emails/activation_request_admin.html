@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nowa rejestracja</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #1976d2;
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px 0;
+        }
+        .user-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid #1976d2;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .user-info p {
+            margin: 5px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4caf50;
+            color: white !important;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 10px 5px;
+        }
+        .button.reject {
+            background-color: #f44336;
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 {{ site_name }}</h1>
+            <p>Nowa prośba o rejestrację</p>
+        </div>
+        
+        <div class="content">
+            <p>Cześć!</p>
+            <p>Nowy użytkownik zarejestrował się w aplikacji i oczekuje na Twoją akceptację:</p>
+            
+            <div class="user-info">
+                <p><strong>Imię i nazwisko:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                <p><strong>Nazwa użytkownika:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                {% if user.musicianprofile %}
+                <p><strong>Instrument:</strong> {{ user.musicianprofile.get_instrument_display }}</p>
+                <p><strong>Data urodzenia:</strong> {{ user.musicianprofile.birthday|date:"d.m.Y" }}</p>
+                {% endif %}
+                <p><strong>Data rejestracji:</strong> {{ user.date_joined|date:"d.m.Y H:i" }}</p>
+            </div>
+            
+            <p>Jeśli rozpoznajesz tę osobę jako członka orkiestry, kliknij przycisk poniżej, aby aktywować konto:</p>
+            
+            <div class="button-container">
+                <a href="{{ activation_url }}" class="button">✓ Aktywuj konto</a>
+            </div>
+            
+            <div class="warning">
+                <strong>⚠️ Uwaga:</strong> Aktywuj konto tylko jeśli jesteś pewien/pewna, że ta osoba jest członkiem orkiestry. 
+                Jeśli nie rozpoznajesz tego użytkownika, możesz zignorować tę wiadomość lub usunąć konto z panelu administracyjnego.
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Ta wiadomość została wygenerowana automatycznie przez {{ site_name }}.</p>
+            <p>Link aktywacyjny jest ważny przez 30 dni.</p>
+        </div>
+    </div>
+</body>
+</html>

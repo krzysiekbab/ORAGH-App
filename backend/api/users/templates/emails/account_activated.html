@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konto aktywowane</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #4caf50;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #4caf50;
+            margin: 0;
+            font-size: 24px;
+        }
+        .success-icon {
+            font-size: 48px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .content {
+            padding: 20px 0;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            background-color: #1976d2;
+            color: white !important;
+            padding: 14px 35px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        .features {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .features h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .features ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .features li {
+            margin: 8px 0;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 {{ site_name }}</h1>
+        </div>
+        
+        <div class="success-icon">
+            🎉
+        </div>
+        
+        <div class="content">
+            <h2>Witaj w orkiestrze, {{ user.first_name }}!</h2>
+            
+            <p>Świetna wiadomość! Twoje konto zostało właśnie aktywowane.</p>
+            <p>Możesz teraz zalogować się do aplikacji i korzystać ze wszystkich funkcji.</p>
+            
+            <a href="{{ login_url }}" class="button">Zaloguj się</a>
+            
+            <div class="features">
+                <h3>Co możesz teraz robić?</h3>
+                <ul>
+                    <li>📅 Przeglądać nadchodzące koncerty</li>
+                    <li>✅ Potwierdzać swoją obecność na próbach i koncertach</li>
+                    <li>💬 Uczestniczyć w dyskusjach na forum</li>
+                    <li>👥 Przeglądać listę muzyków</li>
+                    <li>⚙️ Zarządzać swoim profilem</li>
+                </ul>
+            </div>
+            
+            <p>Do zobaczenia na próbie! 🎶</p>
+        </div>
+        
+        <div class="footer">
+            <p>Ta wiadomość została wygenerowana automatycznie przez {{ site_name }}.</p>
+            <p>Jeśli masz pytania, skontaktuj się z administratorem.</p>
+        </div>
+    </div>
+</body>
+</html>
