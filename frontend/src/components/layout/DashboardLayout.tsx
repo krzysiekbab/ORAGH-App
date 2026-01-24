@@ -29,7 +29,6 @@ import {
   Forum as ForumIcon,
   EventNote as EventNoteIcon,
   CalendarToday as CalendarTodayIcon,
-  BarChart as BarChartIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   AccountCircle as AccountCircleIcon,

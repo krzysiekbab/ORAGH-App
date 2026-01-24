@@ -54,8 +54,8 @@ const MarkAttendancePage: React.FC = () => {
             // Get the attendance grid to get the proper ordering of musicians
             const attendanceGrid = await seasonService.getSeasonAttendanceGrid(event.season)
             // Flatten the structured attendance grid to get musicians in the same order as AttendancePage
-            const flattenedMusicians = attendanceGrid.attendance_grid.flatMap(section => 
-              section.user_rows.map(userRow => ({
+            const flattenedMusicians = attendanceGrid.attendance_grid.flatMap((section: any) => 
+              section.user_rows.map((userRow: any) => ({
                 ...userRow.musician_profile,
                 user: userRow.user,
                 section_name: section.section_name
@@ -93,8 +93,8 @@ const MarkAttendancePage: React.FC = () => {
           // Get the attendance grid to get the proper ordering of musicians
           const attendanceGrid = await seasonService.getSeasonAttendanceGrid(data.season)
           // Flatten the structured attendance grid to get musicians in the same order as AttendancePage
-          const flattenedMusicians = attendanceGrid.attendance_grid.flatMap(section => 
-            section.user_rows.map(userRow => ({
+          const flattenedMusicians = attendanceGrid.attendance_grid.flatMap((section: any) => 
+            section.user_rows.map((userRow: any) => ({
               ...userRow.musician_profile,
               user: userRow.user,
               section_name: section.section_name

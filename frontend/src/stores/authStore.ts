@@ -96,7 +96,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null, registrationSuccess: false })
         
         try {
-          const response = await authService.register(data)
+          await authService.register(data)
           
           // Registration successful, but user is NOT authenticated yet
           // They need to wait for admin approval
