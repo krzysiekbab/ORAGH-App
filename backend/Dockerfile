@@ -26,8 +26,8 @@ RUN pip install -r requirements.txt
 # Copy project
 COPY . /app/
 
-# Create media and static directories
-RUN mkdir -p /app/media /app/staticfiles
+# Create media subdirectories and static directories
+RUN mkdir -p /app/media/profile_photos /app/media/general /app/staticfiles /app/logs
 
 # Collect static files
 RUN python manage.py collectstatic --noinput || true
