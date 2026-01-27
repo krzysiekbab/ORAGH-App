@@ -25,22 +25,30 @@ DATABASES = {
     }
 }
 
-# CORS settings for production
+# CORS settings for production (React / API)
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF settings for production (Django Admin / Forms)
+# IMPORTANT: Fixes "Bad Request (400)" in Admin Panel behind HTTPS
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',')
 
 # Security settings
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-# HTTPS settings (uncomment when using HTTPS)
-# SECURE_SSL_REDIRECT = True
-# SECURE_HSTS_SECONDS = 31536000
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
+# HTTPS settings
+# Essential for running behind Nginx with SSL
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# HSTS settings (HTTP Strict Transport Security)
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -107,16 +115,3 @@ CACHES = {
 # Session configuration - using database backend
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400  # 24 hours
-
-# File storage (uncomment and configure for cloud storage)
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
-# AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-# AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-# AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
-# AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
-# AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-# AWS_DEFAULT_ACL = 'public-read'
-# AWS_S3_OBJECT_PARAMETERS = {
-#     'CacheControl': 'max-age=86400',
-# }
