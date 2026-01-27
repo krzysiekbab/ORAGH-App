@@ -11,7 +11,7 @@ def send_activation_request_to_admin(user, activation_token):
     """
     Send email to admin requesting activation of a new user account.
     """
-    activation_url = f"{settings.FRONTEND_URL}/admin/activate/{activation_token.token}"
+    activation_url = f"{settings.FRONTEND_URL}/activate/{activation_token.token}"
     
     context = {
         'user': user,

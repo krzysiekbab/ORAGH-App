@@ -111,7 +111,7 @@ export default function RegisterPage() {
           </Typography>
           <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
             Twoje konto oczekuje na zatwierdzenie przez administratora. 
-            Otrzymasz email z potwierdzeniem, gdy będziesz mógł się zalogować.
+            Będziesz mógł się zalogować po zaakceptowaniu przez administratora.
           </Alert>
           <Button 
             variant="outlined" 

@@ -108,7 +108,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create user with musician profile. User is inactive until admin approves."""
         from .models import AccountActivationToken
-        from .emails import send_activation_request_to_admin
         
         # Extract profile data
         instrument = validated_data.pop('instrument')
@@ -134,9 +133,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             birthday=birthday
         )
         
-        # Create activation token and send email to admin
-        activation_token = AccountActivationToken.objects.create(user=user)
-        send_activation_request_to_admin(user, activation_token)
+        # Create activation token (for admin panel only - no email sent)
+        AccountActivationToken.objects.create(user=user)
         
         return user
 

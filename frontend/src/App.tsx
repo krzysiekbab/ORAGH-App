@@ -92,7 +92,7 @@ function App() {
         element={isAuthenticated ? <Navigate to="/" replace /> : <RegisterPage />} 
       />
       <Route 
-        path="/admin/activate/:token" 
+        path="/activate/:token" 
         element={<ActivateAccountPage />} 
       />
       
