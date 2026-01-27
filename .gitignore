@@ -24,8 +24,10 @@ frontend/build/
 # package-lock.json
 backend/logs/django.log
 
-# Ignore media files
-backend/media/
+# Ignore uploaded media files (but keep general assets like logo)
+backend/media/profile_photos/
+backend/media/*
+!backend/media/general/
 
 # Ignore data files
 backend/data/
