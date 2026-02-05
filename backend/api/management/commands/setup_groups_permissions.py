@@ -25,15 +25,16 @@ class Command(BaseCommand):
         try:
             user_ct = ContentType.objects.get(app_label='auth', model='user')
             concert_ct = ContentType.objects.get(app_label='concerts', model='concert')
-            season_ct = ContentType.objects.get(app_label='attendance', model='season')
-            event_ct = ContentType.objects.get(app_label='attendance', model='event')
-            attendance_ct = ContentType.objects.get(app_label='attendance', model='attendance')
+            season_ct = ContentType.objects.get(app_label='seasons', model='season')
+            event_ct = ContentType.objects.get(app_label='seasons', model='event')
+            attendance_ct = ContentType.objects.get(app_label='seasons', model='attendance')
             # Forum content types
             directory_ct = ContentType.objects.get(app_label='forum', model='directory')
             post_ct = ContentType.objects.get(app_label='forum', model='post')
             comment_ct = ContentType.objects.get(app_label='forum', model='comment')
         except ContentType.DoesNotExist as e:
             self.stdout.write(self.style.ERROR(f'Content type not found: {e}'))
+            self.stdout.write(self.style.WARNING('Make sure all migrations are applied: python manage.py migrate'))
             return
         
         # Helper function to get permission safely
@@ -92,7 +93,7 @@ class Command(BaseCommand):
         if perm: musician_permissions.append(perm)
         
         musician_group.permissions.set(musician_permissions)
-        self.stdout.write(f'✅ musician group: {len(musician_permissions)} permissions')
+        self.stdout.write(f'[OK] musician group: {len(musician_permissions)} permissions assigned')
         
         # === BOARD GROUP PERMISSIONS ===
         # Board gets all musician permissions + management permissions
@@ -163,7 +164,7 @@ class Command(BaseCommand):
         # Note: Musicians already have basic post/comment permissions from musician_permissions
         
         board_group.permissions.set(board_permissions)
-        self.stdout.write(f'✅ board group: {len(board_permissions)} permissions')
+        self.stdout.write(f'[OK] board group: {len(board_permissions)} permissions assigned')
         
         self.stdout.write('\n=== PERMISSION SUMMARY ===')
         self.stdout.write('musician: view concerts/attendance, register for concerts')
@@ -171,6 +172,6 @@ class Command(BaseCommand):
         self.stdout.write('board: all musician permissions + full management of concerts/seasons/events/attendance')
         self.stdout.write('       + forum moderation capabilities (pin/lock posts, moderate content)')
         
-        self.stdout.write(self.style.SUCCESS('\n✅ Groups and permissions set up successfully!'))
-        self.stdout.write('\n💡 Now you can assign users to groups in Django Admin')
-        self.stdout.write('💡 Board members can create and manage seasons')
+        self.stdout.write(self.style.SUCCESS('\nGroups and permissions set up successfully.'))
+        self.stdout.write('\nNote: Users can be assigned to groups in Django Admin.')
+        self.stdout.write('Note: Board members can create and manage seasons.')

@@ -51,7 +51,7 @@ class Command(BaseCommand):
             return User.objects.get(username=username)
         except User.DoesNotExist:
             self.stdout.write(
-                self.style.ERROR(f'❌ User "{username}" does not exist')
+                self.style.ERROR(f'[ERROR] User "{username}" does not exist')
             )
             self.list_available_users()
             return None
@@ -62,18 +62,18 @@ class Command(BaseCommand):
             group = Group.objects.get(name=group_name)
         except Group.DoesNotExist:
             self.stdout.write(
-                self.style.ERROR(f'❌ Group "{group_name}" does not exist')
+                self.style.ERROR(f'[ERROR] Group "{group_name}" does not exist')
             )
             return
         
         if user.groups.filter(name=group_name).exists():
             self.stdout.write(
-                self.style.WARNING(f'⚠️  {user.username} is already in {group_name} group')
+                self.style.WARNING(f'[WARNING] {user.username} is already in {group_name} group')
             )
         else:
             user.groups.add(group)
             self.stdout.write(
-                self.style.SUCCESS(f'✅ Added {user.username} to {group_name} group')
+                self.style.SUCCESS(f'[SUCCESS] Added {user.username} to {group_name} group')
             )
         
         self.show_user_details(user)
@@ -84,25 +84,25 @@ class Command(BaseCommand):
             group = Group.objects.get(name=group_name)
         except Group.DoesNotExist:
             self.stdout.write(
-                self.style.ERROR(f'❌ Group "{group_name}" does not exist')
+                self.style.ERROR(f'[ERROR] Group "{group_name}" does not exist')
             )
             return
         
         if user.groups.filter(name=group_name).exists():
             user.groups.remove(group)
             self.stdout.write(
-                self.style.SUCCESS(f'✅ Removed {user.username} from {group_name} group')
+                self.style.SUCCESS(f'[SUCCESS] Removed {user.username} from {group_name} group')
             )
         else:
             self.stdout.write(
-                self.style.WARNING(f'⚠️  {user.username} is not in {group_name} group')
+                self.style.WARNING(f'[WARNING] {user.username} is not in {group_name} group')
             )
         
         self.show_user_details(user)
     
     def list_users(self):
         """List all users and their group memberships"""
-        self.stdout.write('👥 USER GROUP MEMBERSHIPS')
+        self.stdout.write('USER GROUP MEMBERSHIPS')
         self.stdout.write('=' * 70)
         
         users = User.objects.all().order_by('username')
@@ -112,13 +112,13 @@ class Command(BaseCommand):
             groups_display = ', '.join(groups) if groups else 'No groups'
             
             # Add access level indicator
-            access_level = '🏛️' if 'board' in groups else '🎵' if 'musician' in groups else '⚠️'
+            access_level = '[BOARD]   ' if 'board' in groups else '[MUSICIAN]' if 'musician' in groups else '[LIMITED] '
             
             self.stdout.write(f'{access_level} {user.username:15} | {name_display:20} | {groups_display}')
     
     def list_groups(self):
         """List all groups and their permission counts"""
-        self.stdout.write('🏛️  GROUP PERMISSIONS SUMMARY')
+        self.stdout.write('GROUP PERMISSIONS SUMMARY')
         self.stdout.write('=' * 60)
         
         groups = Group.objects.all().order_by('name')
@@ -127,63 +127,63 @@ class Command(BaseCommand):
             member_count = group.user_set.count()
             
             # Show key permissions for attendance system
-            attendance_perms = group.permissions.filter(content_type__app_label='attendance').count()
+            attendance_perms = group.permissions.filter(content_type__app_label='seasons').count()
             
             self.stdout.write(
-                f'{group.name:12} | {perm_count:2} total perms | {attendance_perms:2} attendance perms | {member_count:2} members'
+                f'{group.name:12} | {perm_count:2} total perms | {attendance_perms:2} seasons perms | {member_count:2} members'
             )
         
-        self.stdout.write('\n📋 Permission Details:')
-        self.stdout.write('• musician: View-only access to attendance system')
-        self.stdout.write('• board: Full CRUD access to seasons/events/attendance')
+        self.stdout.write('\nPermission Details:')
+        self.stdout.write('  musician: View-only access to attendance system')
+        self.stdout.write('  board: Full CRUD access to seasons/events/attendance')
     
     def list_available_users(self):
         """Show available users when username not found"""
-        self.stdout.write('\n💡 Available users:')
+        self.stdout.write('\nAvailable users:')
         users = User.objects.all().order_by('username')
         for user in users:
             name_display = f'{user.first_name} {user.last_name}'.strip()
             if name_display:
-                self.stdout.write(f'  • {user.username} ({name_display})')
+                self.stdout.write(f'  - {user.username} ({name_display})')
             else:
-                self.stdout.write(f'  • {user.username}')
+                self.stdout.write(f'  - {user.username}')
     
     def show_user_details(self, user):
         """Show detailed information about user's groups and permissions"""
         current_groups = [g.name for g in user.groups.all()]
-        self.stdout.write(f'\n👤 USER DETAILS: {user.username}')
+        self.stdout.write(f'\nUSER DETAILS: {user.username}')
         self.stdout.write('-' * 40)
         
         name_display = f'{user.first_name} {user.last_name}'.strip()
         if name_display:
-            self.stdout.write(f'📝 Name: {name_display}')
+            self.stdout.write(f'Name: {name_display}')
         
         if current_groups:
-            self.stdout.write(f'👥 Groups: {", ".join(current_groups)}')
+            self.stdout.write(f'Groups: {", ".join(current_groups)}')
             
             # Show attendance permissions specifically
             attendance_permissions = set()
             for group in user.groups.all():
-                group_perms = group.permissions.filter(content_type__app_label='attendance')
+                group_perms = group.permissions.filter(content_type__app_label='seasons')
                 attendance_permissions.update([p.codename for p in group_perms])
             
             if attendance_permissions:
-                self.stdout.write(f'🎼 Attendance Permissions: {len(attendance_permissions)}')
+                self.stdout.write(f'Attendance Permissions: {len(attendance_permissions)}')
                 if 'manage_seasons' in attendance_permissions:
-                    self.stdout.write('   ✅ Can manage seasons')
+                    self.stdout.write('   [+] Can manage seasons')
                 if 'add_event' in attendance_permissions:
-                    self.stdout.write('   ✅ Can create events')
+                    self.stdout.write('   [+] Can create events')
                 if 'change_attendance' in attendance_permissions:
-                    self.stdout.write('   ✅ Can edit attendance records')
+                    self.stdout.write('   [+] Can edit attendance records')
                     
         else:
-            self.stdout.write('👥 Groups: None')
-            self.stdout.write('🎼 Attendance Permissions: None')
+            self.stdout.write('Groups: None')
+            self.stdout.write('Attendance Permissions: None')
         
         # Show access level summary
         if 'board' in current_groups:
-            self.stdout.write('🏛️  Access Level: BOARD (Full attendance management)')
+            self.stdout.write('Access Level: BOARD (Full attendance management)')
         elif 'musician' in current_groups:
-            self.stdout.write('🎵 Access Level: MUSICIAN (View attendance only)')
+            self.stdout.write('Access Level: MUSICIAN (View attendance only)')
         else:
-            self.stdout.write('⚠️  Access Level: LIMITED (No group permissions)')
+            self.stdout.write('Access Level: LIMITED (No group permissions)')
