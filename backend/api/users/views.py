@@ -5,7 +5,9 @@ from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from .models import MusicianProfile
 from .serializers import (
     UserRegistrationSerializer, 
@@ -33,7 +35,7 @@ class RegisterView(generics.CreateAPIView):
         # Return success message without tokens (user cannot login yet)
         return Response({
             'success': True,
-            'message': 'Rejestracja przebiegła pomyślnie. Twoje konto oczekuje na zatwierdzenie przez administratora. Otrzymasz email, gdy konto zostanie aktywowane.',
+            'message': 'Rejestracja przebiegła pomyślnie. Twoje konto oczekuje na zatwierdzenie przez administratora. Będziesz mógł się zalogować po zaakceptowaniu przez administratora.',
             'user': {
                 'username': user.username,
                 'email': user.email,
@@ -41,6 +43,54 @@ class RegisterView(generics.CreateAPIView):
                 'last_name': user.last_name,
             }
         }, status=status.HTTP_201_CREATED)
+
+
+class CustomLoginView(TokenObtainPairView):
+    """
+    Custom login view that provides more detailed error messages.
+    Distinguishes between:
+    - Non-existent user / wrong password
+    - Existing user with is_active=False (pending approval)
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        if not username or not password:
+            return Response({
+                'detail': 'Nazwa użytkownika i hasło są wymagane.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if user exists
+        try:
+            user = User.objects.get(username=username)
+            
+            # IMPORTANT: Check password FIRST (regardless of is_active status)
+            # This prevents revealing account existence when wrong password is provided
+            if not user.check_password(password):
+                # Wrong password - use generic error message
+                return Response({
+                    'detail': 'Nieprawidłowa nazwa użytkownika lub hasło.'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            # Password is correct - now check if user is active
+            if not user.is_active:
+                # User exists with correct password but account is pending activation
+                return Response({
+                    'detail': 'Twoje konto oczekuje na zatwierdzenie przez administratora. Będziesz mógł się zalogować po zaakceptowaniu przez administratora.',
+                    'account_status': 'pending'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            # User is active and password is correct - use parent class to generate tokens
+            return super().post(request, *args, **kwargs)
+            
+        except User.DoesNotExist:
+            # User doesn't exist - use same generic error message
+            return Response({
+                'detail': 'Nieprawidłowa nazwa użytkownika lub hasło.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):

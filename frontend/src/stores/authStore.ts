@@ -62,20 +62,21 @@ export const useAuthStore = create<AuthState>()(
           let isPending = false
           
           const detail = error.response?.data?.detail || ''
-          const nonFieldErrors = error.response?.data?.non_field_errors?.[0] || ''
+          const accountStatus = error.response?.data?.account_status || ''
           
-          // Check for inactive account error (Polish and English variants)
-          if (detail.toLowerCase().includes('no active account') || 
-              detail.toLowerCase().includes('nie znaleziono aktywnego konta') ||
-              detail.toLowerCase().includes('inactive') ||
-              nonFieldErrors.toLowerCase().includes('no active account') ||
-              nonFieldErrors.toLowerCase().includes('nie znaleziono aktywnego konta')) {
+          // Check if backend explicitly marked account as pending
+          if (accountStatus === 'pending') {
             isPending = true
-            errorMessage = 'Twoje konto oczekuje na zatwierdzenie przez administratora.'
+            errorMessage = detail || 'Twoje konto oczekuje na zatwierdzenie przez administratora. Będziesz mógł się zalogować po zaakceptowaniu przez administratora.'
           } else if (detail) {
+            // Use specific error message from backend
             errorMessage = detail
-          } else if (nonFieldErrors) {
-            errorMessage = nonFieldErrors
+          } else {
+            // Check non_field_errors as fallback
+            const nonFieldErrors = error.response?.data?.non_field_errors?.[0] || ''
+            if (nonFieldErrors) {
+              errorMessage = nonFieldErrors
+            }
           }
           
           set({ 

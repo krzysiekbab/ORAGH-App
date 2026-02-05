@@ -105,7 +105,8 @@ const LoginPage: React.FC = () => {
             {/* Message for pending account activation */}
             {isAccountPending && (
               <Alert severity="info" sx={{ mb: 2 }} onClose={clearError}>
-                Twoje konto oczekuje na zatwierdzenie przez administratora. Otrzymasz email, gdy zostanie aktywowane.
+                Twoje konto oczekuje na zatwierdzenie przez administratora.
+                Będziesz mógł się zalogować po zaakceptowaniu przez administratora.
               </Alert>
             )}
 
