@@ -61,12 +61,12 @@ class AuthService {
   }
 
   // Activate user account (for admin)
-  async getActivationInfo(token: string): Promise<any> {
+  async getActivationInfo(token: string): Promise<{ user_email: string; is_valid: boolean }> {
     const response = await apiClient.get(`/users/activate/${token}/`)
     return response.data
   }
 
-  async activateAccount(token: string): Promise<any> {
+  async activateAccount(token: string): Promise<{ detail: string; user?: User }> {
     const response = await apiClient.post(`/users/activate/${token}/`)
     return response.data
   }

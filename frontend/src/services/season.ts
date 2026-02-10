@@ -1,5 +1,6 @@
 import { apiClient } from './api'
 import type { PaginatedResponse } from '../types/common'
+import type { Event, AttendanceGrid } from './attendance'
 
 // Type definitions
 export interface Season {
@@ -51,6 +52,27 @@ export interface SeasonFilters {
   search?: string
   page?: number
   page_size?: number
+}
+
+export interface SeasonMusician {
+  id: number
+  user: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  instrument: string
+  profile_photo?: string | null
+  active: boolean
+}
+
+export interface SeasonMusiciansResponse {
+  sections: Array<{
+    section_name: string
+    musicians: SeasonMusician[]
+  }>
 }
 
 export interface AvailableMusician {
@@ -115,12 +137,12 @@ class SeasonService {
     return response.data
   }
 
-  async getSeasonMusicians(id: number): Promise<{ sections: Array<{ section_name: string; musicians: any[] }> }> {
+  async getSeasonMusicians(id: number): Promise<SeasonMusiciansResponse> {
     const response = await apiClient.get(`${this.basePath}/${id}/musicians/`)
     return response.data
   }
 
-  async getSeasonEvents(id: number, filters: { type?: string; month?: number } = {}): Promise<any[]> {
+  async getSeasonEvents(id: number, filters: { type?: string; month?: number } = {}): Promise<Event[]> {
     const params = new URLSearchParams()
     
     if (filters.type) {
@@ -137,7 +159,7 @@ class SeasonService {
   async getSeasonAttendanceGrid(
     id: number, 
     filters: { event_type?: string; month?: number } = {}
-  ): Promise<any> {
+  ): Promise<AttendanceGrid> {
     const params = new URLSearchParams()
     
     if (filters.event_type) {

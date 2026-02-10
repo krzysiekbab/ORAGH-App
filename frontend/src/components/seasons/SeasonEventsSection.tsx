@@ -33,6 +33,12 @@ import { useNavigate } from 'react-router-dom'
 import seasonService from '../../services/season'
 import { Event } from '../../services/attendance'
 import { usePermissions } from '../../hooks/usePermissions'
+import axios from 'axios'
+
+interface EventFilters {
+  type?: string
+  month?: number
+}
 
 interface SeasonEventsSectionProps {
   seasonId: number
@@ -53,14 +59,18 @@ const SeasonEventsSection: React.FC<SeasonEventsSectionProps> = ({ seasonId }) =
     try {
       setLoading(true)
       setError(null)
-      const filters: any = {}
+      const filters: EventFilters = {}
       if (typeFilter) filters.type = typeFilter
       if (monthFilter > 0) filters.month = monthFilter
       
       const data = await seasonService.getSeasonEvents(seasonId, filters)
       setEvents(data)
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Nie udało się pobrać wydarzeń')
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.detail || 'Nie udało się pobrać wydarzeń')
+      } else {
+        setError('Nie udało się pobrać wydarzeń')
+      }
       setEvents([])
     } finally {
       setLoading(false)

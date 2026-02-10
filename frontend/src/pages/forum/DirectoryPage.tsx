@@ -225,7 +225,9 @@ const DirectoryPage: React.FC = () => {
         path.unshift(currentDirectory) // Add to beginning of array
         currentId = currentDirectory.parent || null
       }
-    } catch (error) {}
+    } catch {
+      // Path building failed, return partial path
+    }
     
     return path
   }
@@ -302,7 +304,8 @@ const DirectoryPage: React.FC = () => {
         // Load user permissions first, then directory data
         const groups = await loadUserPermissions()
         await loadDirectoryData(groups)
-      } catch (error) {
+      } catch {
+        // Error handled in loadDirectoryData
       } finally {
         setIsNavigating(false)
       }

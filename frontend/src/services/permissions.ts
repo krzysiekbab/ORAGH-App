@@ -13,13 +13,9 @@ class PermissionsService {
       return this.cachedPermissions
     }
 
-    try {
-      const response = await apiClient.get<UserPermissions>('/users/permissions/')
-      this.cachedPermissions = response.data
-      return response.data
-    } catch (error) {
-      throw error // Throw instead of returning empty permissions
-    }
+    const response = await apiClient.get<UserPermissions>('/users/permissions/')
+    this.cachedPermissions = response.data
+    return response.data
   }
 
   async getUserProfile(): Promise<UserProfile> {
@@ -27,13 +23,9 @@ class PermissionsService {
       return this.cachedProfile
     }
 
-    try {
-      const response = await apiClient.get<UserProfile>('/users/profile/')
-      this.cachedProfile = response.data
-      return response.data
-    } catch (error) {
-      throw error
-    }
+    const response = await apiClient.get<UserProfile>('/users/profile/')
+    this.cachedProfile = response.data
+    return response.data
   }
 
   // Permission checking methods

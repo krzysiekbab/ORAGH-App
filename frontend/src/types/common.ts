@@ -48,5 +48,5 @@ export interface PaginatedResponse<T> {
 export interface ApiError {
   detail?: string
   message?: string
-  [key: string]: any
+  [key: string]: unknown
 }

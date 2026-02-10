@@ -154,21 +154,27 @@ export const useAuthStore = create<AuthState>()(
         // Clear user profile cache when logging out
         try {
           useUserStore.getState().clearProfile()
-        } catch (error) {}
+        } catch {
+          // Ignore - store may not be initialized
+        }
         
         // Clear permissions cache when logging out
         try {
           import('../services/permissions').then(({ permissionsService }) => {
             permissionsService.clearCache()
           })
-        } catch (error) {}
+        } catch {
+          // Ignore - dynamic import may fail
+        }
         
         // Clear concert permissions cache when logging out
         try {
           import('./concertStore').then(({ useConcertStore }) => {
             useConcertStore.getState().clearPermissions()
           })
-        } catch (error) {}
+        } catch {
+          // Ignore - dynamic import may fail
+        }
       },
 
       // Check authentication status on app load

@@ -69,7 +69,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         first_name: '',
         last_name: '',
       })
-    } catch (error) {}
+    } catch {
+      // Failed to parse token, ignore
+    }
   }
 
   const login = async (username: string, password: string): Promise<boolean> => {

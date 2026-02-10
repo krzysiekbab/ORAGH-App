@@ -66,7 +66,8 @@ const EventActions: React.FC<EventActionsProps> = ({ event, onRefreshNeeded }) =
           await fetchAttendanceGrid(event.season)
         }
       }
-    } catch (error) {
+    } catch {
+      // Error is handled by the store's error state
     } finally {
       setDeleting(false)
     }

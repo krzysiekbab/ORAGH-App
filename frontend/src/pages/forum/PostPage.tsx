@@ -273,7 +273,9 @@ const PostPage: React.FC = () => {
         // Load user permissions first, then post data
         const groups = await loadUserPermissions()
         await loadPostData(groups)
-      } catch (error) {}
+      } catch {
+        // Error handled in loadPostData
+      }
     }
 
     initializeData()

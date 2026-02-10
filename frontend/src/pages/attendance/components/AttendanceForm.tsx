@@ -80,7 +80,8 @@ const AttendanceForm: React.FC<AttendanceFormProps> = ({
         // Load existing attendance for editing
         loadExistingAttendance(musiciansData)
       }
-    } catch (error) {
+    } catch {
+      // Error handled by parent component
     } finally {
       setLoadingMusicians(false)
     }
