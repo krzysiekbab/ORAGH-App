@@ -8,8 +8,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init:/docker-entrypoint-initdb.d
-    ports:
-      - "5432:5432"
+    # Baza dostepna tylko w wewnetrznej sieci Docker (brak mapowania portu na host).
+    expose:
+      - "5432"
     networks:
       - oragh_network
     restart: unless-stopped
@@ -24,7 +25,6 @@ services:
       - .env
     environment:
       - DJANGO_SETTINGS_MODULE=oragh_platform.settings.production
-      - DATABASE_URL=postgresql://oragh_user:oragh_password@db:5432/oragh_db
     volumes:
       - ./backend/media:/app/media
       - static_files:/app/staticfiles
@@ -33,6 +33,14 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+    # Healthcheck nadpisany tu (a nie w obrazie), by dzialal bez przebudowy.
+    # X-Forwarded-Proto: https omija SECURE_SSL_REDIRECT (gunicorn na :8000 to czyste HTTP).
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen(u.Request('http://localhost:8000/api/health/', headers={'X-Forwarded-Proto': 'https'}))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
     command: >
       sh -c "mkdir -p /app/logs &&
       echo 'Czekam na baze danych...' &&
@@ -40,7 +48,7 @@ services:
       echo 'Baza gotowa!' &&
       python manage.py migrate &&
       python manage.py collectstatic --noinput &&
-      gunicorn oragh_platform.wsgi:application --bind 0.0.0.0:8000"
+      gunicorn oragh_platform.wsgi:application --bind 0.0.0.0:8000 --workers 3"
 
   # Nginx Reverse Proxy (serves frontend static files + proxies backend)
   nginx:
@@ -62,6 +70,13 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
+    # 127.0.0.1 (nie localhost) — busybox wget woli IPv6 [::1], a nginx slucha tylko na IPv4.
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
 
 volumes:
   postgres_data:

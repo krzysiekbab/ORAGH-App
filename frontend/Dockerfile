@@ -36,8 +36,10 @@ RUN chown -R nginx:nginx /usr/share/nginx/html && \
 EXPOSE 80 443
 
 # Health check
+# Uwaga: uzywamy 127.0.0.1 (a nie localhost) — busybox wget rozwiazuje localhost
+# najpierw na IPv6 [::1], a nginx nasluchuje tylko na IPv4 (listen 80) -> "Connection refused".
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1
 
 # Run nginx
 CMD ["nginx", "-g", "daemon off;"]
